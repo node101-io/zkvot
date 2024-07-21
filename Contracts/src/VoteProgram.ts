@@ -8,7 +8,9 @@ import {
   ZkProgram,
 } from 'o1js';
 
-export class MerkleWitnessClass extends MerkleWitness(32) {}
+const MERKLE_DEPTH = 32;
+
+export class MerkleWitnessClass extends MerkleWitness(MERKLE_DEPTH) {}
 
 export class VoteProgramPublicInputs extends Struct({
   nullifierRoot: Field,
@@ -49,9 +51,9 @@ export const VoteProgram = ZkProgram({
         // check if the nullifier is not spent
 
         return {
-          nullifierRoot: Field.random(),
-          votersRoot: Field.random(),
-          vote: Field.random(),
+          nullifierRoot: Field.from(0),
+          votersRoot: Field.from(0),
+          vote: Field.from(0),
         };
       },
     },
