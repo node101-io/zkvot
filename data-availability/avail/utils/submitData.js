@@ -1,4 +1,4 @@
-const initializeAvail = require('./initializeAvail');
+const initializeAvail = require('./initialize');
 
 module.exports = async (data) => {
   const { initializedAPI, clientAccount, options } = await initializeAvail();
