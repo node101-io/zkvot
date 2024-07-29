@@ -1,12 +1,38 @@
 const fetch = require('../../utils/fetch');
+const isPortInUse = require('../../utils/isPortInUse');
+
+const isCelestiaInstalled = require('./functions/isCelestiaInstalled');
 
 const DEFAULT_MAX_TEXT_FIELD_LENGTH = 1e4;
-const DEFAULT_RPC_URL = 'http://127.0.0.1:26658';
+const DEFAULT_RPC_PORT = 10101;
+const DEFAULT_RPC_URL = 'http://127.0.0.1:10101';
 const DEFAULT_TX_FEE = 0.002;
 
 // Could be turned into a class - need to learn more about classes though
 const Celestia = {
-  init: callback => {}, // To be planned - will install the light node on :10101 if not already running
+  init: callback => {
+    isPortInUse(DEFAULT_RPC_PORT, (err, inUse) => {
+      if (err)
+        return callback(err);
+
+      if (inUse)
+        isCelestiaInstalled(DEFAULT_RPC_URL, (err, installed) => {
+          if (err)
+            return callback(err);
+
+          if (installed)
+            return callback(null, 'celestia_installed'); // Good to go, Celestia is installed
+
+          if (!installed)
+            return callback('celestia_not_installed'); // Use another port or kill the process on the port to start Celestia
+        });
+
+      if (!inUse) {
+        // To be planned - will install the light node on :10101 if not already installed
+        return callback('celestia_not_installed');
+      }
+    });
+  },
   /**
    * @typedef {Object} GetData
    * @property {number} blockHeight
@@ -16,7 +42,7 @@ const Celestia = {
   /**
    * @callback getDataCallback
    * @param {string|null} error
-   * @param {Object[]|null} blobsData
+   * @param {Array|null} blobsData
    */
 
   /**
@@ -34,23 +60,14 @@ const Celestia = {
     if (!data.namespaceHex || typeof data.namespaceHex != 'string' || !data.namespaceHex.trim().length || data.namespaceHex.trim().length > DEFAULT_MAX_TEXT_FIELD_LENGTH)
       return callback('bad_request');
 
-    fetch(DEFAULT_RPC_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': process.env.CELESTIA_NODE_AUTH_KEY
-      },
-      body: JSON.stringify({
-        id: 1,
-        jsonrpc: '2.0',
-        method: 'blob.GetAll',
-        params: [
-          data.blockHeight,
-          [
-            data.namespaceHex.trim()
-          ]
+    fetch(DEFAULT_RPC_URL,{
+      method: 'blob.GetAll',
+      params: [
+        data.blockHeight,
+        [
+          data.namespaceHex.trim()
         ]
-      })
+      ]
     }, (err, res) => {
       if (err)
         return callback(err);
@@ -90,28 +107,19 @@ const Celestia = {
       return callback('bad_request');
 
     fetch(DEFAULT_RPC_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': process.env.CELESTIA_NODE_AUTH_KEY
-      },
-      body: JSON.stringify({
-        id: 1,
-        jsonrpc: '2.0',
-        method: 'blob.Submit',
-        params: [
-          [
-            {
-              namespace: data.namespaceHex.trim(),
-              data: data.dataHex.trim(),
-              share_version: 1,
-              commitment: data.commitment.trim(),
-              index: 0
-            }
-          ],
-          DEFAULT_TX_FEE
-        ]
-      })
+      method: 'blob.Submit',
+      params: [
+        [
+          {
+            namespace: data.namespaceHex.trim(),
+            data: data.dataHex.trim(),
+            share_version: 1,
+            commitment: data.commitment.trim(),
+            index: 0
+          }
+        ],
+        DEFAULT_TX_FEE
+      ]
     }, (err, res) => {
       if (err)
         return callback(err);
