@@ -40,5 +40,8 @@
   },
   "engines": {
     "node": ">=18.14.0"
+  },
+  "dependencies": {
+    "mina-signer": "^3.0.7"
   }
 }
