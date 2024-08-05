@@ -1,6 +1,8 @@
 const fetch = require('../../utils/fetch');
 const isPortInUse = require('../../utils/isPortInUse');
 
+const encodeToBase64 = require('./functions/encodeToBase64');
+const isBase64 = require('./functions/isBase64');
 const isCelestiaInstalled = require('./functions/isCelestiaInstalled');
 
 const DEFAULT_MAX_TEXT_FIELD_LENGTH = 1e4;
@@ -36,7 +38,7 @@ const Celestia = {
   /**
    * @typedef {Object} GetData
    * @property {number} blockHeight
-   * @property {string} namespaceHex
+   * @property {string} namespace
    */
 
   /**
@@ -57,7 +59,7 @@ const Celestia = {
     if (!data.blockHeight || isNaN(data.blockHeight) || Number(data.blockHeight) < 0)
       return callback('bad_request');
 
-    if (!data.namespaceHex || typeof data.namespaceHex != 'string' || !data.namespaceHex.trim().length || data.namespaceHex.trim().length > DEFAULT_MAX_TEXT_FIELD_LENGTH)
+    if (!data.namespace || typeof data.namespace != 'string' || !data.namespace.trim().length || data.namespace.trim().length > DEFAULT_MAX_TEXT_FIELD_LENGTH || !isBase64(data.namespace))
       return callback('bad_request');
 
     fetch(DEFAULT_RPC_URL,{
@@ -65,7 +67,7 @@ const Celestia = {
       params: [
         data.blockHeight,
         [
-          data.namespaceHex.trim()
+          data.namespace.trim()
         ]
       ]
     }, (err, res) => {
@@ -76,55 +78,47 @@ const Celestia = {
     });
   },
   /**
-   * @typedef {Object} SubmitData
-   * @property {string} namespaceHex
-   * @property {string} dataHex
-   * @property {string} commitment
+   * @callback submitDataCallback
+   * @param {string|null} error
+   * @param {string|null} blockHeight
    */
 
   /**
-   * @callback submitDataCallback
-   * @param {string|null} error
-   * @param {string|number|null} blockHeight
-   * */
-
-  /**
-   * @param {SubmitData} data
+   * @param {string} namespace
+   * @param {Object} data
    * @param {submitDataCallback} callback
    * @returns {void}
-   * */
-  submitData: (data, callback) => {
+   */
+  submitData: (namespace, data, callback) => {
+    if (!namespace || typeof namespace != 'string' || !namespace.trim().length || namespace.trim().length > DEFAULT_MAX_TEXT_FIELD_LENGTH || !isBase64(namespace))
+      return callback('bad_request');
+
     if (!data || typeof data != 'object')
       return callback('bad_request');
 
-    if (!data.namespaceHex || typeof data.namespaceHex != 'string' || !data.namespaceHex.trim().length || data.namespaceHex.trim().length > DEFAULT_MAX_TEXT_FIELD_LENGTH)
-      return callback('bad_request');
-
-    if (!data.dataHex || typeof data.dataHex != 'string' || !data.dataHex.trim().length || data.dataHex.trim().length > DEFAULT_MAX_TEXT_FIELD_LENGTH)
-      return callback('bad_request');
-
-    if (!data.commitment || typeof data.commitment != 'string' || !data.commitment.trim().length || data.commitment.trim().length > DEFAULT_MAX_TEXT_FIELD_LENGTH)
-      return callback('bad_request');
-
-    fetch(DEFAULT_RPC_URL, {
-      method: 'blob.Submit',
-      params: [
-        [
-          {
-            namespace: data.namespaceHex.trim(),
-            data: data.dataHex.trim(),
-            share_version: 1,
-            commitment: data.commitment.trim(),
-            index: 0
-          }
-        ],
-        DEFAULT_TX_FEE
-      ]
-    }, (err, res) => {
+    encodeToBase64(data, (err, encodedData) => {
       if (err)
         return callback(err);
 
-      return callback(null, res.result);
+      fetch(DEFAULT_RPC_URL, {
+        method: 'blob.Submit',
+        params: [
+          [
+            {
+              namespace: namespace.trim(),
+              data: encodedData.trim(),
+              share_version: 0,
+              index: -1
+            }
+          ],
+          DEFAULT_TX_FEE
+        ]
+      }, (err, res) => {
+        if (err)
+          return callback(err);
+
+        return callback(null, res.result);
+      });
     });
   }
 };
