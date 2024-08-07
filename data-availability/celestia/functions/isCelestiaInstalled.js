@@ -14,7 +14,7 @@ const fetch = require('../../../utils/fetch');
  * @returns {void}
  */
 module.exports = (rpc_url, callback) => {
-  if (!rpc_url || !validator.isURL(rpc_url))
+  if (!rpc_url || !validator.isURL(rpc_url.toString()))
     return callback('bad_request');
 
   fetch(rpc_url, {

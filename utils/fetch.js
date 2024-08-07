@@ -24,7 +24,7 @@ const WALLET_NOT_FUNDED_ERROR_MESSAGE_REGEX = /account (.*?) not/;
  * @returns {void}
  */
 module.exports = (url, options, callback) => {
-  if (!url || !validator.isURL(url))
+  if (!url || !validator.isURL(url.toString()))
     return callback('bad_request');
 
   if (!options || typeof options != 'object')
@@ -33,14 +33,14 @@ module.exports = (url, options, callback) => {
   if (!options.method || typeof options.method != 'string' || !options.method.trim().length || options.method.trim().length > DEFAULT_MAX_TEXT_FIELD_LENGTH)
     return callback('bad_request');
 
-  if (!options.params || !Array.isArray(options.params) || !options.params.length)
+  if (!options.params || !Array.isArray(options.params))
     return callback('bad_request');
 
   fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': process.env.CELESTIA_NODE_AUTH_KEY
+      'Authorization': 'Bearer ' + process.env.CELESTIA_NODE_AUTH_KEY
     },
     body: JSON.stringify({
       id: 1,
