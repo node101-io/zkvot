@@ -1,11 +1,12 @@
 const dockerCLI = require('docker-cli-js');
+
 const isDockerActivecommand = require('../commands/is-docker-active/command');
 
 const Docker = new dockerCLI.Docker();
 
 /**
  * @callback isDockerActiveCallback
- * @param {null} error
+ * @param {null} err
  * @param {boolean} active
  */
 

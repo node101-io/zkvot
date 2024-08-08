@@ -1,5 +1,6 @@
 const os = require('os');
 
+const activateDocker = require('./functions/activateDocker');
 const installDocker = require('./functions/installDocker');
 const isDockerActive = require('./functions/isDockerActive');
 const isDockerInstalled = require('./functions/isDockerInstalled');
@@ -14,22 +15,33 @@ module.exports = {
         return callback(err);
 
       if (!installed) {
-        installDocker(platform, (err, installed) => {
+        installDocker(platform, err => {
           if (err)
             return callback(err);
 
-          return callback(null, 'docker_installed'); // finito
+          activateDocker(platform, err => {
+            if (err)
+              return callback(err);
+
+            return callback(null);
+          });
         });
-      };
+      }
 
       isDockerActive((err, active) => {
         if (err)
           return callback(err);
 
-        if (!active)
-          return callback(null, 'docker_inactive');
+        if (!active) {
+          activateDocker(platform, err => {
+            if (err)
+              return callback(err);
 
-        return callback(null, 'docker_active');
+            return callback(null);
+          });
+        };
+
+        return callback(null);
       });
     });
   }

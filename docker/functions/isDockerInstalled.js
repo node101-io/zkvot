@@ -1,11 +1,11 @@
 const dockerCLI = require('docker-cli-js');
-const isDockerInstalledCommand = require('../commands/isDockerInstalled');
+const isDockerInstalledCommand = require('../commands/is-docker-installed/command');
 
 const Docker = new dockerCLI.Docker();
 
 /**
  * @callback isDockerInstalledCallback
- * @param {null} error
+ * @param {null} err
  * @param {boolean} installed
  */
 

@@ -1,13 +1,13 @@
 const childProcess = require('child_process');
 
+const installBrew = require('./installBrew');
 const isBrewInstalled = require('./isBrewInstalled');
 
 const installDockerCommand = require('../commands/install-docker/darwin/command');
 
 /**
  * @callback installDockerCallback
- * @param {string|null} error
- * @param {boolean} installed
+ * @param {string|null} err
  */
 
 /**
@@ -24,8 +24,23 @@ module.exports = (platform, callback) => {
       if (err)
         return callback(err);
 
-      if (!installed)
-        return callback(null, false); // Will install brew
+      if (!installed) {
+        installBrew(err => {
+          if (err)
+            return callback(err);
+
+          childProcess
+            .exec(installDockerCommand(), (err, stdout, stderr) => {
+              if (err)
+                return callback('unknown_error');
+
+              if (!stdout || stdout != 0)
+                return callback('docker_install_failed');
+
+              return callback(null);
+            });
+        });
+      };
 
       childProcess
         .exec(installDockerCommand(), (err, stdout, stderr) => {
