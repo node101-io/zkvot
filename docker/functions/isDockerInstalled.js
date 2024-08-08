@@ -13,7 +13,7 @@ const Docker = new dockerCLI.Docker();
  * @param {isDockerInstalledCallback} callback
  * @returns {void}
  */
-const is = callback => {
+module.exports = callback => {
   const originalStderrWrite = process.stderr.write;
   const originalStdoutWrite = process.stdout.write;
 
@@ -29,10 +29,3 @@ const is = callback => {
     return callback(null, true);
   });
 };
-
-is((err, installed) => {
-  if (err)
-    return console.error(err);
-
-  console.log(installed);
-});
