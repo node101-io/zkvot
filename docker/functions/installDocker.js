@@ -2,7 +2,7 @@ const childProcess = require('child_process');
 
 const isBrewInstalled = require('./isBrewInstalled');
 
-const installDockerCommand = require('../commands/installDocker/darwin');
+const installDockerCommand = require('../commands/install-docker/darwin/command');
 
 /**
  * @callback installDockerCallback

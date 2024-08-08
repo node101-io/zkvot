@@ -1,6 +1,6 @@
 const childProcess = require('child_process');
 
-const isBrewInstalledCommand = require('../commands/isBrewInstalled');
+const isBrewInstalledCommand = require('../commands/is-brew-installed/command');
 
 /**
  * @callback isBrewInstalledCallback
