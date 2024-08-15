@@ -8,6 +8,7 @@ const IS_DOCKER_INSTALLED_COMMAND = `--version`;
 
 /**
  * @callback isDockerInstalledCallback
+ * @param {string|null} err
  * @param {boolean} isInstalled
  */
 
@@ -20,9 +21,9 @@ module.exports = callback => {
     IS_DOCKER_INSTALLED_COMMAND,
     err => {
       if (err)
-        return callback(false);
+        return callback(null, false);
 
-      return callback(true);
+      return callback(null, true);
     }
   );
 };

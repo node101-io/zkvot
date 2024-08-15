@@ -4,58 +4,51 @@ const activateDocker = require('./methods/activateDocker');
 const isDockerActive = require('./methods/isDockerActive');
 const isDockerInstalled = require('./methods/isDockerInstalled');
 
-const getDockerInstallationUrlByPlatform = require('./utils/getDockerInstallationUrlByPlatform');
-
-const SUPPORTED_PLATFORMS = [ 'darwin', 'linux' ];
+const getDockerInstallationUrlByOs = require('./utils/getDockerInstallationUrlByOs');
 
 const platform = os.platform();
+const arch = os.arch();
 
 // Will be turned into a class
 module.exports = {
-  init: (platform, callback) => {
-    if (!platform || typeof platform != 'string' || !platform.trim().length)
-      return callback('bad_request');
+  isRunning: callback => {
+    isDockerInstalled((err, isInstalled) => {
+      if (err)
+        return callback(err);
 
-    if (!SUPPORTED_PLATFORMS.includes(platform))
-      return callback('platform_not_supported');
-
-    return callback(null);
-  },
-  isInstalled: callback => {
-    isDockerInstalled(isInstalled => {
       if (!isInstalled) {
-        getDockerInstallationUrlByPlatform(
-          platform,
-          (err, installationUrl) => {
-            if (err)
-              return callback(err);
-
-            return callback(null, installationUrl);
-          }
-        );
+        return callback('docker_not_installed');
       } else {
-        return callback(null, 'docker_installed');
+        isDockerActive((err, isActive) => {
+          if (err)
+            return callback(err);
+
+          if (!isActive) {
+            return callback('docker_not_active');
+          } else {
+            return callback(null, 'docker_active');
+          };
+        });
       };
     });
   },
-  isActive: callback => {
-    isDockerActive(isActive => {
-      if (!isActive) {
-        return callback('docker_not_active');
-      } else {
-        return callback(null, 'docker_active');
-      };
-    });
-  },
-  activate: (platform, callback) => {
-    if (!platform || typeof platform != 'string' || !platform.trim().length || !SUPPORTED_PLATFORMS.includes(platform))
-      return callback('bad_request');
-
+  activate: callback => {
     activateDocker(platform, err => {
       if (err)
         return callback(err);
 
       return callback(null, 'docker_activated');
+    });
+  },
+  getInstallationUrl: callback => {
+    getDockerInstallationUrlByOs({
+      platform,
+      arch
+    }, (err, installationUrl) => {
+      if (err)
+        return callback(err);
+
+      return callback(null, installationUrl);
     });
   }
 };

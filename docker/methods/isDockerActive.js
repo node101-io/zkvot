@@ -8,6 +8,7 @@ const IS_DOCKER_ACTIVE_COMMAND = `info`;
 
 /**
  * @callback isDockerActiveCallback
+ * @param {string|null} err
  * @param {boolean} isActive
  */
 
@@ -20,9 +21,9 @@ module.exports = callback => {
     IS_DOCKER_ACTIVE_COMMAND,
     err => {
       if (err)
-        return callback(false);
+        return callback(null, false);
 
-      return callback(true);
+      return callback(null, true);
     }
   );
 };
