@@ -1,11 +1,11 @@
 const validator = require('validator');
 
-const fetch = require('../../../utils/fetch');
+const celestiaRequest = require('./celestiaRequest');
 
 /**
  * @callback isCelestiaInstalledCallback
  * @param {string|null} error
- * @param {boolean|null} installed
+ * @param {boolean|null} isInstalled
  */
 
 /**
@@ -17,7 +17,7 @@ module.exports = (rpc_url, callback) => {
   if (!rpc_url || !validator.isURL(rpc_url.toString()))
     return callback('bad_request');
 
-  fetch(rpc_url, {
+  celestiaRequest(rpc_url, {
     method: 'node.Ready',
     params: []
   }, (err, res) => {

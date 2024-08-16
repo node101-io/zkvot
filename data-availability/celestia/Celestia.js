@@ -1,4 +1,4 @@
-const fetch = require('../../utils/fetch');
+const celestiaRequest = require('./functions/celestiaRequest');
 const isPortInUse = require('../../utils/isPortInUse');
 
 const encodeToBase64String = require('./functions/encodeToBase64String');
@@ -16,22 +16,21 @@ const Celestia = {
       if (err)
         return callback(err);
 
-      if (inUse)
-        isCelestiaInstalled(DEFAULT_RPC_URL, (err, installed) => {
-          if (err)
-            return callback(err);
-
-          if (installed)
-            return callback(null, 'celestia_installed'); // Good to go, Celestia is installed
-
-          if (!installed)
-            return callback('celestia_not_installed'); // Use another port or kill the process on the port to start Celestia
-        });
-
       if (!inUse) {
         // To be planned - will install the light node on :10101 if not already installed
         return callback('celestia_not_installed');
-      }
+      } else {
+        isCelestiaInstalled(DEFAULT_RPC_URL, (err, isInstalled) => {
+          if (err)
+            return callback(err);
+
+          if (!isInstalled) {
+            return callback('celestia_not_installed'); // Use another port or kill the process on the port to start Celestia
+          } else {
+            return callback(null, 'celestia_installed'); // Good to go, Celestia is installed
+          };
+        });
+      };
     });
   },
   /**
@@ -61,7 +60,7 @@ const Celestia = {
     if (!isBase64String(data.namespace))
       return callback('bad_request');
 
-    fetch(DEFAULT_RPC_URL,{
+    celestiaRequest(DEFAULT_RPC_URL,{
       method: 'blob.GetAll',
       params: [
         data.blockHeight,
@@ -99,7 +98,7 @@ const Celestia = {
       if (err)
         return callback(err);
 
-      fetch(DEFAULT_RPC_URL, {
+      celestiaRequest(DEFAULT_RPC_URL, {
         method: 'blob.Submit',
         params: [
           [
