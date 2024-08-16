@@ -1,10 +1,9 @@
 const os = require('os');
 
 const activateDocker = require('./methods/activateDocker');
+const getDockerInstallationUrlByOs = require('./utils/getDockerInstallationUrlByOs');
 const isDockerActive = require('./methods/isDockerActive');
 const isDockerInstalled = require('./methods/isDockerInstalled');
-
-const getDockerInstallationUrlByOs = require('./utils/getDockerInstallationUrlByOs');
 
 const platform = os.platform();
 const arch = os.arch();
