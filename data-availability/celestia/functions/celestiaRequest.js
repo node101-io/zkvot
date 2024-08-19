@@ -1,5 +1,7 @@
 const validator = require('validator');
 
+const AuthKey = require('./authKey');
+
 const DEFAULT_MAX_TEXT_FIELD_LENGTH = 1e4;
 
 const DATA_NOT_FOUND_ERROR_MESSAGE_REGEX = /blob: not found/;
@@ -40,7 +42,7 @@ module.exports = (url, options, callback) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + process.env.CELESTIA_NODE_AUTH_KEY
+      'Authorization': 'Bearer ' + AuthKey.get()
     },
     body: JSON.stringify({
       id: 1,

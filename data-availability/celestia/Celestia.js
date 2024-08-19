@@ -1,8 +1,9 @@
-const celestiaRequest = require('./functions/celestiaRequest');
 const isPortInUse = require('../../utils/isPortInUse');
 
-const encodeToBase64String = require('./functions/encodeToBase64String');
-const isBase64String = require('./functions/isBase64String');
+const encodeToBase64String = require('../../utils/encodeToBase64String');
+const isBase64String = require('../../utils/isBase64String');
+
+const celestiaRequest = require('./functions/celestiaRequest');
 const isCelestiaInstalled = require('./functions/isCelestiaInstalled');
 
 const DEFAULT_RPC_PORT = 10101;
@@ -27,7 +28,7 @@ const Celestia = {
           if (!isInstalled) {
             return callback('celestia_not_installed'); // Use another port or kill the process on the port to start Celestia
           } else {
-            return callback(null, 'celestia_installed'); // Good to go, Celestia is installed
+            return callback(null); // Celestia is installed and ready to use
           };
         });
       };

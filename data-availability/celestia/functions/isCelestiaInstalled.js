@@ -1,6 +1,8 @@
 const validator = require('validator');
 
+const AuthKey = require('./authKey');
 const celestiaRequest = require('./celestiaRequest');
+const fetchAuthKeyFromNode = require('./fetchAuthKeyFromNode');
 
 /**
  * @callback isCelestiaInstalledCallback
@@ -17,16 +19,23 @@ module.exports = (rpc_url, callback) => {
   if (!rpc_url || !validator.isURL(rpc_url.toString()))
     return callback('bad_request');
 
-  celestiaRequest(rpc_url, {
-    method: 'node.Ready',
-    params: []
-  }, (err, res) => {
+  fetchAuthKeyFromNode((err, authKey) => {
     if (err)
-      return callback(err);
-
-    if (!res || typeof res != 'object' || !res.result || typeof res.result != 'boolean')
       return callback(null, false);
 
-    return callback(null, true);
+    AuthKey.safeStore(authKey);
+
+    celestiaRequest(rpc_url, {
+      method: 'node.Ready',
+      params: []
+    }, (err, res) => {
+      if (err)
+        return callback(err);
+
+      if (!res || typeof res != 'object' || !res.result || typeof res.result != 'boolean')
+        return callback(null, false);
+
+      return callback(null, true);
+    });
   });
 };
