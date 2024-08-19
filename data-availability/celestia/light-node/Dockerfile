@@ -64,4 +64,5 @@ CMD celestia light start \
     --metrics \
     --metrics.endpoint ${CELESTIA_OTEL_URL} \
     --p2p.network ${CHAIN_ID} \
+    --rpc.addr http://0.0.0.0 \
     --rpc.port ${DEFAULT_RPC_PORT}
