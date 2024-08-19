@@ -1,5 +1,7 @@
 const net = require('net');
 
+const DEFAULT_RPC_URL = '127.0.0.1';
+
 /**
  * @callback isPortInUseCallback
  * @param {string|null} error
@@ -36,5 +38,5 @@ module.exports = (port, callback) => {
       return callback(null, true);
   });
 
-  socket.connect(port, '127.0.0.1');
+  socket.connect(port, DEFAULT_RPC_URL);
 };
