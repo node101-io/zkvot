@@ -1,16 +1,13 @@
 const os = require('os');
 
-const activateDocker = require('./methods/activateDocker');
-const getDockerInstallationUrlByOs = require('./utils/getDockerInstallationUrlByOs');
-const isDockerActive = require('./methods/isDockerActive');
-const isDockerInstalled = require('./methods/isDockerInstalled');
-
-const platform = os.platform();
-const arch = os.arch();
+const activateDocker = require('./functions/activateDocker');
+const getDockerInstallationUrlByOS = require('./functions/getDockerInstallationUrlByOS');
+const isDockerActive = require('./functions/isDockerActive');
+const isDockerInstalled = require('./functions/isDockerInstalled');
 
 // Will be turned into a class
 module.exports = {
-  isRunning: callback => {
+  checkReady: callback => {
     isDockerInstalled((err, isInstalled) => {
       if (err)
         return callback(err);
@@ -40,9 +37,9 @@ module.exports = {
     });
   },
   getInstallationUrl: callback => {
-    getDockerInstallationUrlByOs({
-      platform,
-      arch
+    getDockerInstallationUrlByOS({
+      platform: os.platform(),
+      arch: os.arch()
     }, (err, installationUrl) => {
       if (err)
         return callback(err);

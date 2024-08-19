@@ -28,24 +28,24 @@ module.exports = (data, callback) => {
     return callback('bad_request');
 
   if (data.platform == 'darwin') {
-    if (data.arch == 'arm64') {
+    if (data.arch == 'arm64')
       return callback(null, DOCKER_INSTALLATION_URL_DARWIN_ARM64);
-    } else if (data.arch == 'amd64') {
+
+    if (data.arch == 'amd64')
       return callback(null, DOCKER_INSTALLATION_URL_DARWIN_AMD64);
-    } else {
-      return callback('bad_request');
-    };
+
+    return callback('bad_request');
   } else if (data.platform == 'linux') {
     return callback(null, DOCKER_INSTALLATION_URL_LINUX);
   } else if (data.platform == 'win32') {
-    if (data.arch == 'x64') {
+    if (data.arch == 'x64')
       return callback(null, DOCKER_INSTALLATION_URL_WIN32_AMD64);
-    } else if (data.arch == 'arm64') {
+
+    if (data.arch == 'arm64')
       return callback(null, DOCKER_INSTALLATION_URL_WIN32_ARM64);
-    } else {
-      return callback('bad_request');
-    };
-  } else {
+
     return callback('bad_request');
+  } else {
+    return callback('not_supported');
   };
 };
