@@ -1,7 +1,7 @@
 import {
+  assert,
+  Experimental,
   Field,
-  MerkleMap,
-  MerkleMapWitness,
   Provable,
   SelfProof,
   Struct,
@@ -10,11 +10,12 @@ import {
 
 import { VoteProof } from './NewVote.js';
 
+class MerkleMap extends Experimental.IndexedMerkleMap(30) {}
+
 export class VoteAggregatorPublicInputs extends Struct({
   votersRoot: Field,
+  votedMapRoot: Field,
   voteId: Field,
-  previousVotedTreeRoot: Field,
-  merkleWitness: MerkleMapWitness,
 }) {}
 
 export class VoteAggregatorPublicOutputs extends Struct({
@@ -34,7 +35,7 @@ export const VoteAggregator = ZkProgram({
       privateInputs: [],
       async method(publicInput: VoteAggregatorPublicInputs) {
         let merkleMap = new MerkleMap();
-        let defaultRoot = merkleMap.getRoot();
+        let defaultRoot = merkleMap.root;
         return {
           totalAggregatedCount: Field.from(0),
           newVotedTreeRoot: defaultRoot,
@@ -44,61 +45,65 @@ export const VoteAggregator = ZkProgram({
       },
     },
     aggregateVotes: {
-      privateInputs: [SelfProof, VoteProof],
+      privateInputs: [SelfProof, VoteProof, MerkleMap],
       async method(
         publicInput: VoteAggregatorPublicInputs,
         previousProof: SelfProof<
           VoteAggregatorPublicInputs,
           VoteAggregatorPublicOutputs
         >,
-        vote: VoteProof
+        vote: VoteProof,
+        votedMap: MerkleMap
       ) {
         previousProof.verify();
 
         vote.verify();
+        // console.log(2);
 
         previousProof.publicInput.voteId.assertEquals(publicInput.voteId);
+        // console.log(3);
         previousProof.publicInput.votersRoot.assertEquals(
           publicInput.votersRoot
         );
-
+        // console.log(4);
         previousProof.publicOutput.newVotedTreeRoot.assertEquals(
-          publicInput.previousVotedTreeRoot
+          publicInput.votedMapRoot
         );
-
+        // console.log(5);
         vote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
+        // console.log(6);
         vote.publicInput.votingId.assertEquals(publicInput.voteId);
-
-        let [calculatedRoot, calculatedKey] =
-          publicInput.merkleWitness.computeRootAndKeyV2(Field.from(0));
-
-        publicInput.previousVotedTreeRoot.assertEquals(calculatedRoot);
-        vote.publicOutput.identifierHash.assertEquals(calculatedKey);
-
-        let [newRoot, newKey] = publicInput.merkleWitness.computeRootAndKeyV2(
-          vote.publicOutput.vote
+        // console.log(7);
+        votedMap.length.assertEquals(
+          previousProof.publicOutput.totalAggregatedCount.add(1)
         );
+        // console.log(8);
+        votedMap.root.assertEquals(publicInput.votedMapRoot);
+        // console.log(9, votedMap.root);
+        votedMap.insert(vote.publicOutput.nullifier, vote.publicOutput.vote);
+        // console.log(10);
+        const newRoot = votedMap.root;
+        // console.log(11);
+        // const totalAggregatedCount = previousProof.publicOutput.yeys.add(
+        //   previousProof.publicOutput.nays
+        // );
 
-        newKey.assertEquals(calculatedKey); // is it necessary?
-
-        const totalAggregatedCount = previousProof.publicOutput.yeys.add(
-          previousProof.publicOutput.nays
-        );
-
-        previousProof.publicOutput.totalAggregatedCount.assertEquals(
-          totalAggregatedCount
-        );
+        // previousProof.publicOutput.totalAggregatedCount.assertEquals(
+        //   totalAggregatedCount
+        // );
 
         const yeys = Provable.if(
           vote.publicOutput.vote.equals(Field.from(2)),
           previousProof.publicOutput.yeys.add(1),
           previousProof.publicOutput.yeys
         );
+        // console.log(12);
         const nays = Provable.if(
           vote.publicOutput.vote.equals(Field.from(1)),
           previousProof.publicOutput.nays.add(1),
           previousProof.publicOutput.nays
         );
+        // console.log(13);
 
         return {
           totalAggregatedCount:
