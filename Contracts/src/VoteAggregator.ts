@@ -7,6 +7,7 @@ import {
   Struct,
   ZkProgram,
 } from 'o1js';
+
 import { VoteProof } from './NewVote.js';
 
 export class VoteAggregatorPublicInputs extends Struct({
