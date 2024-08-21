@@ -7,19 +7,21 @@ import {
   Poseidon,
   verify,
   Experimental,
+  setNumberOfWorkers,
 } from 'o1js';
 
 import { MerkleWitnessClass } from './utils.js';
 
 import { Vote, VotePrivateInputs, VotePublicInputs } from './NewVote.js';
+
 import {
-  VoteAggregator,
-  VoteAggregatorPublicInputs,
-} from './VoteAggregator.js';
+  linearAggregation,
+  RangeAggregationPublicInputs,
+} from './rangeAggregation.js';
 
 let Local = await Mina.LocalBlockchain({ proofsEnabled: true });
 Mina.setActiveInstance(Local);
-// setNumberOfWorkers(8);
+// setNumberOfWorkers(4);
 
 let votersArray: Array<[privateKey: PrivateKey, publicKey: PublicKey]> = [];
 
@@ -66,7 +68,7 @@ let voteProofs = [];
 
 let votingId = Field.from(123);
 
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 5; i++) {
   let vote = BigInt((i % 2) + 1);
   let privateKey = votersArray[i][0];
   let merkleTreeWitness = votersTree.getWitness(BigInt(i));
@@ -92,53 +94,61 @@ for (let i = 0; i < 10; i++) {
   voteProofs.push(voteProof);
 }
 
+voteProofs.sort((a, b) => {
+  if (
+    a.publicOutput.nullifier.toBigInt() < b.publicOutput.nullifier.toBigInt()
+  ) {
+    return -1;
+  }
+  if (
+    a.publicOutput.nullifier.toBigInt() > b.publicOutput.nullifier.toBigInt()
+  ) {
+    return 1;
+  }
+  return 0;
+});
+
+console.log(
+  'Sorted vote proofs:',
+  voteProofs.map((p) => p.publicOutput.nullifier.value)
+);
+
 // console.log('vote aggregator digest', await VoteAggregator.digest());
 
 console.log('compiling vote aggregator program');
 
 let { verificationKey: voteAggregatorVerificationKey } =
-  await VoteAggregator.compile();
+  await linearAggregation.compile();
 console.log(
   'verification key',
   voteAggregatorVerificationKey.data.slice(0, 10) + '..'
 );
 
-console.log('base proof');
-class MerkleMap extends Experimental.IndexedMerkleMap(30) {}
-
-let countedVotersMap = new MerkleMap();
-// console.log(countedVotersMap);
-// console.log(countedVotersMap.root);
-
-// let countedVotersMapWitness = countedVotersMap.getWitness(Field.from(0));
-let baseProof = await VoteAggregator.base({
-  votersRoot: votersRoot,
-  votedMapRoot: countedVotersMap.root,
-  voteId: votingId,
-});
 console.log('aggregating votes');
+let voteId = votingId;
+let publicInput = new RangeAggregationPublicInputs({
+  votersRoot: votersRoot,
+  voteId: voteId,
+});
+let upperbound = Field.from(voteProofs[0].publicOutput.nullifier).sub(
+  Field.from(1)
+);
+let previousProof = await linearAggregation.base(
+  publicInput,
+  Field.from(0),
+  upperbound
+);
 
-let previousProof = baseProof;
-
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 5; i++) {
   let voteProof = voteProofs[i];
-  let voteId = votingId;
-  // console.log(countedVotersMap);
-  // console.log(countedVotersMap.root);
-
-  let publicInput = new VoteAggregatorPublicInputs({
-    votersRoot: votersRoot,
-    votedMapRoot: countedVotersMap.root,
-    voteId: voteId,
-  });
 
   let time = Date.now();
   // console.log(1);
-  let proof = await VoteAggregator.aggregateVotes(
+  let proof = await linearAggregation.capacity_1_append_right(
     publicInput,
     previousProof,
     voteProof,
-    countedVotersMap.clone()
+    Field.from(voteProof.publicOutput.nullifier)
   );
   console.log(`Vote ${i} proof took ${(Date.now() - time) / 1000} seconds `);
   // console.log(
@@ -149,22 +159,7 @@ for (let i = 0; i < 10; i++) {
   if (!ok) {
     throw new Error(`Vote ${i} proof failed to verify`);
   }
-  // console.log(
-  //   `Vote ${i} total aggregated count: ${proof.publicOutput.totalAggregatedCount.toString()}`
-  // );
   previousProof = proof;
-  countedVotersMap.root = countedVotersMap.root;
-  // console.log('val', voteProof.publicOutput.nullifier.value);
-  // console.log(countedVotersMap.length);
-  // console.log('oldroot', countedVotersMap.root);
-  // console.log('new root', proof.publicOutput.newVotedTreeRoot);
-  countedVotersMap.insert(
-    voteProof.publicOutput.nullifier,
-    voteProof.publicOutput.vote
-  );
-  countedVotersMap.root = countedVotersMap.root;
-  // console.log(countedVotersMap);
-  // console.log(countedVotersMap.root);
 }
 
 console.log('done');

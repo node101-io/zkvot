@@ -97,13 +97,13 @@ export const linearAggregation = ZkProgram({
         previousProof.verify();
         vote.verify();
 
-        Provable.asProver(() => {
-          console.log(
-            1,
-            vote.publicInput.votersRoot.toBigInt(),
-            publicInput.votersRoot.toBigInt()
-          );
-        });
+        // Provable.asProver(() => {
+        //   console.log(
+        //     1,
+        //     vote.publicInput.votersRoot.toBigInt(),
+        //     publicInput.votersRoot.toBigInt()
+        //   );
+        // });
         vote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
 
         const previousLowerBound = previousProof.publicOutput.rangeLowerBound;
@@ -111,14 +111,14 @@ export const linearAggregation = ZkProgram({
 
         const nullifier = vote.publicOutput.nullifier;
 
-        Provable.asProver(() => {
-          console.log(2, previousUpperBound.toBigInt(), nullifier.toBigInt());
-        });
-        previousUpperBound.assertLessThan(nullifier);
+        // Provable.asProver(() => {
+        //   console.log(2, previousUpperBound.toBigInt(), nullifier.toBigInt());
+        // });
+        // previousUpperBound.assertLessThan(nullifier);
 
-        Provable.asProver(() => {
-          console.log(3, upperBound.toBigInt(), nullifier.toBigInt());
-        });
+        // Provable.asProver(() => {
+        //   console.log(3, upperBound.toBigInt(), nullifier.toBigInt());
+        // });
         upperBound.assertGreaterThanOrEqual(nullifier);
 
         const yeys = Provable.if(
@@ -133,9 +133,9 @@ export const linearAggregation = ZkProgram({
           previousProof.publicOutput.nays
         );
 
-        Provable.asProver(() => {
-          console.log(4, yeys.toBigInt(), nays.toBigInt());
-        });
+        // Provable.asProver(() => {
+        //   console.log(4, yeys.toBigInt(), nays.toBigInt());
+        // });
         return {
           totalAggregatedCount:
             previousProof.publicOutput.totalAggregatedCount.add(1),
