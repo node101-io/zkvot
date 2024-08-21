@@ -17,7 +17,7 @@ export class VotePublicInputs extends Struct({
 
 export class VotePublicOutputs extends Struct({
   vote: Field,
-  identifierHash: Field,
+  nullifier: Field,
 }) {}
 
 export class VotePrivateInputs extends Struct({
@@ -42,14 +42,14 @@ export const Vote = ZkProgram({
           .calculateRoot(Poseidon.hash(voterPublicKey.toFields()))
           .assertEquals(publicInput.votersRoot);
 
-        let identifierHash = Poseidon.hash([
+        let nullifier = Poseidon.hash([
           Poseidon.hash(privateInput.privateKey.toFields()),
           publicInput.votingId,
         ]);
 
         return {
           vote: publicInput.vote,
-          identifierHash: identifierHash,
+          nullifier: nullifier,
         };
       },
     },
