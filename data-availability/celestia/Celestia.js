@@ -4,6 +4,7 @@ const encodeToBase64String = require('../../utils/encodeToBase64String');
 const isBase64String = require('../../utils/isBase64String');
 
 const celestiaRequest = require('./functions/celestiaRequest');
+const installCelestia = require('./functions/installCelestia');
 const isCelestiaInstalled = require('./functions/isCelestiaInstalled');
 
 const DEFAULT_RPC_PORT = 10101;
@@ -18,8 +19,12 @@ const Celestia = {
         return callback(err);
 
       if (!inUse) {
-        // To be planned - will install the light node on :10101 if not already installed
-        return callback('celestia_not_installed');
+        installCelestia((err, res) => {
+          if (err)
+            return callback(err);
+
+          return callback('celestia_installed_successfully');
+        });
       } else {
         isCelestiaInstalled(DEFAULT_RPC_URL, (err, isInstalled) => {
           if (err)

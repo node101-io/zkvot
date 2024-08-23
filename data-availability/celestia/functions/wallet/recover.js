@@ -4,7 +4,7 @@ const childProcess = require('child_process');
  * @param {RecoverWalletData} data
  * @returns {string}
  */
-const RECOVER_WALLET_COMMAND =  data =>`
+const RECOVER_WALLET_COMMAND = data =>`
   docker exec zkvote-node-celestia bash -c '(
     echo y;
     echo ${data.mnemonic};
