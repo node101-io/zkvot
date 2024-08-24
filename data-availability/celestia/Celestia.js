@@ -1,18 +1,32 @@
 const isPortInUse = require('../../utils/isPortInUse');
-
 const encodeToBase64String = require('../../utils/encodeToBase64String');
 const isBase64String = require('../../utils/isBase64String');
+
+const address = require('./functions/wallet/address');
+const balance = require('./functions/wallet/balance');
+const create = require('./functions/wallet/create');
+const recover = require('./functions/wallet/recover');
 
 const celestiaRequest = require('./functions/celestiaRequest');
 const installCelestia = require('./functions/installCelestia');
 const isCelestiaInstalled = require('./functions/isCelestiaInstalled');
+const restartCelestia = require('./functions/restartCelestia');
+const uninstallCelestia = require('./functions/uninstallCelestia');
 
 const DEFAULT_RPC_PORT = 10101;
 const DEFAULT_RPC_URL = 'http://127.0.0.1:10101';
 const DEFAULT_TX_FEE = 0.002;
 
-// Could be turned into a class - need to learn more about classes though
 const Celestia = {
+  /**
+   * @callback initCallback
+   * @param {string|null} err
+   */
+
+  /**
+   * @param {initCallback} callback
+   * @returns {void}
+   */
   init: callback => {
     isPortInUse(DEFAULT_RPC_PORT, (err, inUse) => {
       if (err)
@@ -31,12 +45,106 @@ const Celestia = {
             return callback(err);
 
           if (!isInstalled) {
-            return callback('celestia_not_installed'); // Use another port or kill the process on the port to start Celestia
+            return callback('port_in_use_by_another_service');
           } else {
-            return callback(null); // Celestia is installed and ready to use
+            return callback(null);
           };
         });
       };
+    });
+  },
+  /**
+   * @callback createWalletCallback
+   * @param {string|null} err
+   * @param {Object|null} wallet
+   */
+
+  /**
+   * @param {createWalletCallback} callback
+   * @returns {void}
+   */
+  createWallet: callback => {
+    create((err, wallet) => {
+      if (err)
+        return callback(err);
+
+      restartCelestia(err => {
+        if (err)
+          return callback(err);
+
+        return callback(null, wallet);
+      });
+    })
+  },
+  /**
+   * @typedef {Object} RecoverData
+   * @property {string} mnemonic
+   */
+
+  /**
+   * @callback recoverWalletCallback
+   * @param {string|null} err
+   * @param {Object|null} wallet
+   */
+
+  /**
+   * @param {RecoverData} data
+   * @param {recoverWalletCallback} callback
+   * @returns {void}
+   */
+  recoverWallet: (data, callback) => {
+    if (!data || typeof data != 'object')
+      return callback('bad_request');
+
+    if (!data.mnemonic || typeof data.mnemonic != 'string' || !data.mnemonic.trim().length)
+      return callback('bad_request');
+
+    recover(data, (err, wallet) => {
+      if (err)
+        return callback(err);
+
+      restartCelestia(err => {
+        if (err)
+          return callback(err);
+
+        return callback(null, wallet);
+      });
+    });
+  },
+  /**
+   * @callback getWalletAddressCallback
+   * @param {string|null} err
+   * @param {string|null} address
+   */
+
+  /**
+   * @param {getWalletAddressCallback} callback
+   * @returns {void}
+   */
+  getWalletAddress: callback => {
+    address(DEFAULT_RPC_URL, (err, address) => {
+      if (err)
+        return callback(err);
+
+      return callback(null, address);
+    });
+  },
+  /**
+   * @callback getWalletBalanceCallback
+   * @param {string|null} err
+   * @param {Object|null} balance
+   */
+
+  /**
+   * @param {getWalletBalanceCallback} callback
+   * @returns {void}
+   */
+  getWalletBalance: callback => {
+    balance(DEFAULT_RPC_URL, (err, balance) => {
+      if (err)
+        return callback(err);
+
+      return callback(null, balance);
     });
   },
   /**
@@ -122,6 +230,23 @@ const Celestia = {
 
         return callback(null, res.result);
       });
+    });
+  },
+  /**
+   * @callback uninstallCallback
+   * @param {string|null} err
+   */
+
+  /**
+   * @param {uninstallCallback} callback
+   * @returns {void}
+   */
+  uninstall: callback => {
+    uninstallCelestia((err, res) => {
+      if (err)
+        return callback(err);
+
+      return callback(null);
     });
   }
 };
