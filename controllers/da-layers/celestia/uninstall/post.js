@@ -1,4 +1,4 @@
-const Celestia = require('../../../../data-availability/celestia/Celestia');
+const Celestia = require('../../../../da-layers/celestia/Celestia');
 
 module.exports = (req, res) => {
   Celestia.uninstall((err, res) => {
