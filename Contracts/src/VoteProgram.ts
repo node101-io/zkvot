@@ -1,6 +1,5 @@
 import {
   Field,
-  MerkleWitness,
   Poseidon,
   PrivateKey,
   PublicKey,
@@ -9,35 +8,52 @@ import {
 } from 'o1js';
 import { MerkleWitnessClass } from './utils.js';
 
-export class VoteProgramPublicInputs extends Struct({}) {}
-
-export class VoteProgramPublicOutputs extends Struct({
+// public inputlar outputta verilmezse degistirilebilir mi?
+export class VotePublicInputs extends Struct({
+  votingId: Field,
   vote: Field,
+  votersRoot: Field,
 }) {}
 
-export class VoteProgramPrivateInputs extends Struct({}) {}
+export class VotePublicOutputs extends Struct({
+  vote: Field,
+  nullifier: Field,
+}) {}
 
-export const VoteProgram = ZkProgram({
-  name: 'VoteProgram',
+export class VotePrivateInputs extends Struct({
+  privateKey: PrivateKey,
+  votersMerkleWitness: MerkleWitnessClass,
+}) {}
 
-  publicInput: VoteProgramPublicInputs,
-  publicOutput: VoteProgramPublicOutputs,
+export const Vote = ZkProgram({
+  name: 'Vote',
+  publicInput: VotePublicInputs,
+  publicOutput: VotePublicOutputs,
 
   methods: {
-    castVote: {
-      privateInputs: [VoteProgramPrivateInputs],
+    vote: {
+      privateInputs: [VotePrivateInputs],
       async method(
-        publicInput: VoteProgramPublicInputs,
-        privateInput: VoteProgramPrivateInputs
+        publicInput: VotePublicInputs,
+        privateInput: VotePrivateInputs
       ) {
+        let voterPublicKey = PublicKey.fromPrivateKey(privateInput.privateKey);
+        privateInput.votersMerkleWitness
+          .calculateRoot(Poseidon.hash(voterPublicKey.toFields()))
+          .assertEquals(publicInput.votersRoot);
+
+        let nullifier = Poseidon.hash([
+          Poseidon.hash(privateInput.privateKey.toFields()),
+          publicInput.votingId,
+        ]);
+
         return {
-          nullifierRoot: Field.from(0),
-          votersRoot: Field.from(0),
-          vote: Field.from(0),
+          vote: publicInput.vote,
+          nullifier: nullifier,
         };
       },
     },
   },
 });
 
-export class VoteProgramProof extends ZkProgram.Proof(VoteProgram) {}
+export class VoteProof extends ZkProgram.Proof(Vote) {}

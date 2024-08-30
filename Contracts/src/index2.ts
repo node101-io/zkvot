@@ -6,18 +6,16 @@ import {
   PublicKey,
   Poseidon,
   verify,
-  Experimental,
-  setNumberOfWorkers,
 } from 'o1js';
 
 import { MerkleWitnessClass } from './utils.js';
 
-import { Vote, VotePrivateInputs, VotePublicInputs } from './NewVote.js';
+import { Vote, VotePrivateInputs, VotePublicInputs } from './VoteProgram.js';
 
 import {
-  linearAggregation,
+  RangeAggregationProgram,
   RangeAggregationPublicInputs,
-} from './rangeAggregation.js';
+} from './RangeAggregationProgram.js';
 
 let Local = await Mina.LocalBlockchain({ proofsEnabled: true });
 Mina.setActiveInstance(Local);
@@ -118,7 +116,7 @@ console.log(
 console.log('compiling vote aggregator program');
 
 let { verificationKey: voteAggregatorVerificationKey } =
-  await linearAggregation.compile();
+  await RangeAggregationProgram.compile();
 console.log(
   'verification key',
   voteAggregatorVerificationKey.data.slice(0, 10) + '..'
@@ -133,7 +131,7 @@ let publicInput = new RangeAggregationPublicInputs({
 let upperbound = Field.from(voteProofs[0].publicOutput.nullifier).sub(
   Field.from(1)
 );
-let previousProof = await linearAggregation.base(
+let previousProof = await RangeAggregationProgram.base(
   publicInput,
   Field.from(0),
   upperbound
@@ -144,7 +142,7 @@ for (let i = 0; i < 5; i++) {
 
   let time = Date.now();
   // console.log(1);
-  let proof = await linearAggregation.capacity_1_append_right(
+  let proof = await RangeAggregationProgram.capacity_1_append_right(
     publicInput,
     previousProof,
     voteProof,
