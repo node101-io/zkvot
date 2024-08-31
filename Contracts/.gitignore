@@ -11,3 +11,6 @@ coverage
 
 # Never commit keys to Git!
 keys
+
+voteproofs.json
+votersRoot.json
