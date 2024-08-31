@@ -13,20 +13,18 @@ export class LeafNode<N extends BigInt, VP> {
 export class InnerNode<N extends BigInt, AP, VP> {
   includedVotes: N[];
   range: [N, N];
-  aggregatorProof: AP | null;
   leftChild: InnerNode<N, AP, VP> | LeafNode<N, VP> | null;
   rightChild: InnerNode<N, AP, VP> | LeafNode<N, VP> | null;
 
   constructor(
     includedVotes: N[],
     range: [N, N],
-    aggregatorProof: AP | null,
+
     leftChild: InnerNode<N, AP, VP> | LeafNode<N, VP> | null,
     rightChild: InnerNode<N, AP, VP> | LeafNode<N, VP> | null
   ) {
     this.includedVotes = includedVotes;
     this.range = range;
-    this.aggregatorProof = aggregatorProof;
     this.leftChild = leftChild;
     this.rightChild = rightChild;
   }
@@ -89,7 +87,6 @@ export class SegmentTree<N extends BigInt, AP, VP> {
       return new InnerNode<N, AP, VP>(
         includedVotes,
         range,
-        null,
         leftChild,
         rightChild
       );
@@ -124,7 +121,6 @@ export class SegmentTree<N extends BigInt, AP, VP> {
           return new InnerNode<N, AP, VP>(
             newIncludedVotes,
             newRange,
-            null,
             node,
             newLeaf
           );
@@ -132,7 +128,6 @@ export class SegmentTree<N extends BigInt, AP, VP> {
           return new InnerNode<N, AP, VP>(
             newIncludedVotes,
             newRange,
-            null,
             newLeaf,
             node
           );
@@ -334,6 +329,5 @@ traverseOrder.forEach((node, index) => {
       .map((v) => v.toString())
       .join(', ')}]`
   );
-  console.log(`Aggregator proof: ${node.aggregatorProof}`);
   console.log();
 });

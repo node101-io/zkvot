@@ -37,7 +37,7 @@ votersArray.sort((a) => {
 
 let votersTree = new MerkleTree(32);
 
-for (let i = 0; i < 20; i++) {
+for (let i = 0; i < 40; i++) {
   let leaf = Poseidon.hash(votersArray[i][1].toFields());
   votersTree.setLeaf(BigInt(i), leaf);
 }
@@ -53,10 +53,10 @@ let { verificationKey } = await Vote.compile();
 console.log('verification key', verificationKey.data.slice(0, 10) + '..');
 
 console.log('casting votes');
-let voteProofs = [];
 
 let votingId = Field.from(123);
 
+let voteProofs = [];
 for (let i = 0; i < 20; i++) {
   let vote = BigInt((i % 2) + 1);
   let privateKey = votersArray[i][0];
@@ -95,6 +95,35 @@ voteProofs.sort((a, b) => {
 });
 
 await fs.writeFile('voteProofs.json', JSON.stringify(voteProofs, null, 2));
+
+voteProofs = [];
+for (let i = 20; i < 40; i++) {
+  let vote = BigInt((i % 2) + 1);
+  let privateKey = votersArray[i][0];
+  let merkleTreeWitness = votersTree.getWitness(BigInt(i));
+  let witness = new MerkleWitnessClass(merkleTreeWitness);
+
+  let votePublicInputs = new VotePublicInputs({
+    votingId: votingId,
+    vote: Field.from(vote),
+    votersRoot: votersRoot,
+  });
+  let votePrivateInputs = new VotePrivateInputs({
+    privateKey: privateKey,
+    votersMerkleWitness: witness,
+  });
+
+  let time = Date.now();
+  let voteProof = await Vote.vote(votePublicInputs, votePrivateInputs);
+
+  console.log(`vote ${i} proof took ${(Date.now() - time) / 1000} seconds `);
+  voteProofs.push(voteProof);
+}
+
+await fs.writeFile(
+  'voteProofsRandom.json',
+  JSON.stringify(voteProofs, null, 2)
+);
 
 let { verificationKey: voteAggregatorVerificationKey } =
   await RangeAggregationProgram.compile();

@@ -6,7 +6,7 @@ import {
 } from './SegmentTreeAggregator.js';
 import fs from 'fs';
 import { Vote, VoteProof } from './VoteProgram.js';
-import { Field, Poseidon, verify } from 'o1js';
+import { Field, verify } from 'o1js';
 import {
   AggregateProof,
   RangeAggregationProgram,
@@ -75,7 +75,6 @@ for (let i = 0; i < aggregateOrder.length; i++) {
 
   if (segmentTree.cachedAggregatorProofs.has(includedVotesHash)) {
     aggregateProof = segmentTree.cachedAggregatorProofs.get(includedVotesHash);
-    node.aggregatorProof = aggregateProof;
   }
 
   if (leftChild && rightChild) {
@@ -143,11 +142,10 @@ for (let i = 0; i < aggregateOrder.length; i++) {
       );
     }
   } else if (leftChild) {
-    if (
-      leftChild instanceof InnerNode &&
-      leftChild.aggregatorProof instanceof AggregateProof
-    ) {
-      aggregateProof = leftChild.aggregatorProof;
+    if (leftChild instanceof InnerNode) {
+      aggregateProof = segmentTree.getCachedAggregatorProof(
+        SegmentTree.includedVotesHash(leftChild.includedVotes) as bigint
+      );
     } else if (
       leftChild instanceof LeafNode &&
       leftChild.voteProof instanceof VoteProof
@@ -161,11 +159,10 @@ for (let i = 0; i < aggregateOrder.length; i++) {
       );
     }
   } else if (rightChild) {
-    if (
-      rightChild instanceof InnerNode &&
-      rightChild.aggregatorProof instanceof AggregateProof
-    ) {
-      aggregateProof = rightChild.aggregatorProof;
+    if (rightChild instanceof InnerNode) {
+      aggregateProof = segmentTree.getCachedAggregatorProof(
+        SegmentTree.includedVotesHash(rightChild.includedVotes) as bigint
+      );
     } else if (
       rightChild instanceof LeafNode &&
       rightChild.voteProof instanceof VoteProof
@@ -180,7 +177,6 @@ for (let i = 0; i < aggregateOrder.length; i++) {
     }
   }
 
-  node.aggregatorProof = aggregateProof;
   segmentTree.cachedAggregatorProofs.set(
     SegmentTree.includedVotesHash(node.includedVotes) as bigint,
     aggregateProof
