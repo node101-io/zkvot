@@ -1,3 +1,5 @@
+import { Field, Poseidon } from 'o1js';
+
 export class LeafNode<N extends BigInt, VP> {
   nullifier: N;
   voteProof: VP;
@@ -175,6 +177,36 @@ export class SegmentTree<N extends BigInt, AP, VP> {
     };
 
     this.root = insertRecursive(this.root, newLeaf);
+  }
+
+  traverse(): Array<InnerNode<N, AP, VP>> {
+    const nodes: Array<InnerNode<N, AP, VP>> = [];
+    const queue: Array<InnerNode<N, AP, VP> | LeafNode<N, VP>> = [];
+
+    if (this.root) {
+      queue.push(this.root);
+
+      while (queue.length > 0) {
+        const currentNode = queue.shift();
+        if (currentNode && currentNode instanceof InnerNode) {
+          nodes.push(currentNode);
+
+          if (currentNode.leftChild) {
+            queue.push(currentNode.leftChild);
+          }
+          if (currentNode.rightChild) {
+            queue.push(currentNode.rightChild);
+          }
+        }
+      }
+    }
+
+    return nodes.reverse();
+  }
+
+  static includedVotesHash<N extends BigInt>(includedVotes: N[]): BigInt {
+    const nullifierArray = includedVotes.map((v) => Field.from(v.toString()));
+    return Poseidon.hash(nullifierArray).toBigInt();
   }
 }
 

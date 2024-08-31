@@ -21,7 +21,7 @@ export const RangeAggregationProgram = ZkProgram({
   publicOutput: RangeAggregationPublicOutputs,
 
   methods: {
-    base: {
+    base_empty: {
       privateInputs: [Field, Field],
       async method(
         publicInput: RangeAggregationPublicInputs,
@@ -37,16 +37,66 @@ export const RangeAggregationProgram = ZkProgram({
         };
       },
     },
-    capacity_1_append_left: {
-      privateInputs: [SelfProof, VoteProof, Field],
+    base_two: {
+      privateInputs: [VoteProof, VoteProof],
+      async method(
+        publicInput: RangeAggregationPublicInputs,
+        lowerVote: VoteProof,
+        upperVote: VoteProof
+      ) {
+        lowerVote.verify();
+        upperVote.verify();
+
+        lowerVote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
+        upperVote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
+
+        const lowerNullifier = lowerVote.publicOutput.nullifier;
+        const upperNullifier = upperVote.publicOutput.nullifier;
+
+        lowerNullifier.assertLessThan(upperNullifier);
+
+        const yeys = Provable.if(
+          lowerVote.publicOutput.vote.equals(Field.from(2)),
+          Field.from(1),
+          Field.from(0)
+        ).add(
+          Provable.if(
+            upperVote.publicOutput.vote.equals(Field.from(2)),
+            Field.from(1),
+            Field.from(0)
+          )
+        );
+
+        const nays = Provable.if(
+          lowerVote.publicOutput.vote.equals(Field.from(1)),
+          Field.from(1),
+          Field.from(0)
+        ).add(
+          Provable.if(
+            upperVote.publicOutput.vote.equals(Field.from(1)),
+            Field.from(1),
+            Field.from(0)
+          )
+        );
+
+        return {
+          totalAggregatedCount: Field.from(2),
+          rangeLowerBound: lowerNullifier,
+          rangeUpperBound: upperNullifier,
+          yeys: yeys,
+          nays: nays,
+        };
+      },
+    },
+    append_left: {
+      privateInputs: [SelfProof, VoteProof],
       async method(
         publicInput: RangeAggregationPublicInputs,
         previousProof: SelfProof<
           RangeAggregationPublicInputs,
           RangeAggregationPublicOutputs
         >,
-        vote: VoteProof,
-        lowerBound: Field
+        vote: VoteProof
       ) {
         previousProof.verify();
         vote.verify();
@@ -59,7 +109,6 @@ export const RangeAggregationProgram = ZkProgram({
         const nullifier = vote.publicOutput.nullifier;
 
         previousLowerBound.assertGreaterThan(nullifier);
-        lowerBound.assertLessThanOrEqual(nullifier);
 
         const yeys = Provable.if(
           vote.publicOutput.vote.equals(Field.from(2)),
@@ -76,23 +125,22 @@ export const RangeAggregationProgram = ZkProgram({
         return {
           totalAggregatedCount:
             previousProof.publicOutput.totalAggregatedCount.add(1),
-          rangeLowerBound: lowerBound,
+          rangeLowerBound: nullifier,
           rangeUpperBound: previousUpperBound,
           yeys: yeys,
           nays: nays,
         };
       },
     },
-    capacity_1_append_right: {
-      privateInputs: [SelfProof, VoteProof, Field],
+    append_right: {
+      privateInputs: [SelfProof, VoteProof],
       async method(
         publicInput: RangeAggregationPublicInputs,
         previousProof: SelfProof<
           RangeAggregationPublicInputs,
           RangeAggregationPublicOutputs
         >,
-        vote: VoteProof,
-        upperBound: Field
+        vote: VoteProof
       ) {
         previousProof.verify();
         vote.verify();
@@ -104,7 +152,7 @@ export const RangeAggregationProgram = ZkProgram({
 
         const nullifier = vote.publicOutput.nullifier;
 
-        upperBound.assertGreaterThanOrEqual(nullifier);
+        previousUpperBound.assertLessThan(nullifier);
 
         const yeys = Provable.if(
           vote.publicOutput.vote.equals(Field.from(2)),
@@ -122,7 +170,7 @@ export const RangeAggregationProgram = ZkProgram({
           totalAggregatedCount:
             previousProof.publicOutput.totalAggregatedCount.add(1),
           rangeLowerBound: previousLowerBound,
-          rangeUpperBound: upperBound,
+          rangeUpperBound: nullifier,
           yeys: yeys,
           nays: nays,
         };
@@ -130,3 +178,5 @@ export const RangeAggregationProgram = ZkProgram({
     },
   },
 });
+
+export class AggregateProof extends ZkProgram.Proof(RangeAggregationProgram) {}
