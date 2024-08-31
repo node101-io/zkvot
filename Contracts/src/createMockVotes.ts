@@ -12,6 +12,7 @@ import {
 import { MerkleWitnessClass } from './utils.js';
 
 import { Vote, VotePrivateInputs, VotePublicInputs } from './VoteProgram.js';
+import { RangeAggregationProgram } from './RangeAggregationProgram.js';
 
 let Local = await Mina.LocalBlockchain({ proofsEnabled: true });
 Mina.setActiveInstance(Local);
@@ -94,3 +95,18 @@ voteProofs.sort((a, b) => {
 });
 
 await fs.writeFile('voteProofs.json', JSON.stringify(voteProofs, null, 2));
+
+let { verificationKey: voteAggregatorVerificationKey } =
+  await RangeAggregationProgram.compile();
+
+await fs.writeFile(
+  'voteAggregatorVerificationKey.json',
+  JSON.stringify(
+    {
+      data: voteAggregatorVerificationKey.data,
+      hash: voteAggregatorVerificationKey.hash.toString(),
+    },
+    null,
+    2
+  )
+);

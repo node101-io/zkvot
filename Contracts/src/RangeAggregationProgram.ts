@@ -37,6 +37,36 @@ export const RangeAggregationProgram = ZkProgram({
         };
       },
     },
+    base_one: {
+      privateInputs: [VoteProof],
+      async method(publicInput: RangeAggregationPublicInputs, vote: VoteProof) {
+        vote.verify();
+
+        vote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
+
+        const nullifier = vote.publicOutput.nullifier;
+
+        const yeys = Provable.if(
+          vote.publicOutput.vote.equals(Field.from(2)),
+          Field.from(1),
+          Field.from(0)
+        );
+
+        const nays = Provable.if(
+          vote.publicOutput.vote.equals(Field.from(1)),
+          Field.from(1),
+          Field.from(0)
+        );
+
+        return {
+          totalAggregatedCount: Field.from(1),
+          rangeLowerBound: nullifier,
+          rangeUpperBound: nullifier,
+          yeys: yeys,
+          nays: nays,
+        };
+      },
+    },
     base_two: {
       privateInputs: [VoteProof, VoteProof],
       async method(
@@ -171,6 +201,50 @@ export const RangeAggregationProgram = ZkProgram({
             previousProof.publicOutput.totalAggregatedCount.add(1),
           rangeLowerBound: previousLowerBound,
           rangeUpperBound: nullifier,
+          yeys: yeys,
+          nays: nays,
+        };
+      },
+    },
+    merge: {
+      privateInputs: [SelfProof, SelfProof],
+      async method(
+        publicInput: RangeAggregationPublicInputs,
+        leftProof: SelfProof<
+          RangeAggregationPublicInputs,
+          RangeAggregationPublicOutputs
+        >,
+        rightProof: SelfProof<
+          RangeAggregationPublicInputs,
+          RangeAggregationPublicOutputs
+        >
+      ) {
+        leftProof.verify();
+        rightProof.verify();
+
+        leftProof.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
+        rightProof.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
+
+        const leftLowerBound = leftProof.publicOutput.rangeLowerBound;
+        const leftUpperBound = leftProof.publicOutput.rangeUpperBound;
+        const rightLowerBound = rightProof.publicOutput.rangeLowerBound;
+        const rightUpperBound = rightProof.publicOutput.rangeUpperBound;
+
+        leftUpperBound.assertLessThan(rightLowerBound);
+
+        const yeys = leftProof.publicOutput.yeys.add(
+          rightProof.publicOutput.yeys
+        );
+        const nays = leftProof.publicOutput.nays.add(
+          rightProof.publicOutput.nays
+        );
+
+        return {
+          totalAggregatedCount: leftProof.publicOutput.totalAggregatedCount.add(
+            rightProof.publicOutput.totalAggregatedCount
+          ),
+          rangeLowerBound: leftLowerBound,
+          rangeUpperBound: rightUpperBound,
           yeys: yeys,
           nays: nays,
         };
