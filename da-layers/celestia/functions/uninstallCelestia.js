@@ -1,7 +1,7 @@
 const childProcess = require('child_process');
 const path = require('path');
 
-const INSTALL_LIGHT_NODE_COMMAND = 'docker compose down --volumes --remove-orphans --rmi all';
+const UNINSTALL_LIGHT_NODE_COMMAND = 'docker compose down --volumes --remove-orphans --rmi all';
 
 /**
  * @callback uninstallCelestiaCallback
@@ -14,7 +14,7 @@ const INSTALL_LIGHT_NODE_COMMAND = 'docker compose down --volumes --remove-orpha
  */
 module.exports = callback => {
   childProcess.exec(
-    INSTALL_LIGHT_NODE_COMMAND,
+    UNINSTALL_LIGHT_NODE_COMMAND,
     { cwd: path.join(__dirname, '../light-node') },
     (err, stdout, stderr) => {
       if (err)
