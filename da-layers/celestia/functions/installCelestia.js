@@ -16,14 +16,10 @@ const LIGHT_NODE_ALREADY_INSTALLED_REGEX = /Container (.*?) Running/;
  * @returns {void}
  */
 module.exports = callback => {
-  console.log(9, "hey");
   childProcess.exec(
     INSTALL_LIGHT_NODE_COMMAND,
     { cwd: path.join(__dirname, '../light-node') },
     (err, stdout, stderr) => {
-      console.log(10, err);
-      console.log(11, stdout);
-      console.log(12, stderr);
       if (err)
         return callback('terminal_error');
 

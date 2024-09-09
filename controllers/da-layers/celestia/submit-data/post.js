@@ -15,9 +15,14 @@ module.exports = (req, res) => {
     req.body.data,
     (err, blockHeight) => {
       if (err)
-        return res.json({ err: err });
+        return res.json({ success: false, error: err });
 
-      return res.json({ data : blockHeight });
+      return res.json({
+        success: true,
+        data : {
+          block_height: blockHeight
+        }
+      });
     }
   );
 };

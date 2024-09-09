@@ -15,8 +15,8 @@ module.exports = (req, res) => {
     namespace: req.body.namespace
   }, (err, blobsData) => {
     if (err)
-      return res.json({ err: err });
+      return res.json({ success: false, error: err });
 
-    return res.json({ data: blobsData });
+    return res.json({ success: true, data: blobsData });
   });
 };

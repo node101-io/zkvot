@@ -29,17 +29,12 @@ const Celestia = {
    * @returns {void}
    */
   init: callback => {
-    console.log(1, "called");
     isPortInUse(DEFAULT_RPC_PORT, (err, inUse) => {
-      console.log(2, "called");
-      console.log(2.5, err);
       if (err)
         return callback(err);
-      console.log(2.75, inUse);
+
       if (!inUse) {
         installCelestia((err, res) => {
-          console.log(3, "called");
-          console.log(3.5, err);
           if (err)
             return callback(err);
 
@@ -47,7 +42,6 @@ const Celestia = {
         });
       } else {
         isCelestiaInstalled(DEFAULT_RPC_URL, (err, isInstalled) => {
-          console.log(4, "called");
           if (err)
             return callback(err);
 
