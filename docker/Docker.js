@@ -5,37 +5,62 @@ const getDockerInstallationUrlByOS = require('./functions/getDockerInstallationU
 const isDockerActive = require('./functions/isDockerActive');
 const isDockerInstalled = require('./functions/isDockerInstalled');
 
-// Will be turned into a class
-module.exports = {
-  checkReady: callback => {
+const Docker = {
+  /**
+   * @callback isReadyCallback
+   * @param {null} err
+   * @param {boolean} isReady
+   */
+  /**
+   * @param {isReadyCallback} callback
+   * @returns {void}
+   */
+  isReady: callback => {
     isDockerInstalled((err, isInstalled) => {
       if (err)
         return callback(err);
 
       if (!isInstalled) {
-        return callback('docker_not_installed');
+        return callback(null, false);
       } else {
         isDockerActive((err, isActive) => {
           if (err)
             return callback(err);
 
           if (!isActive) {
-            return callback('docker_not_active');
+            return callback(null, false);
           } else {
-            return callback(null, 'docker_active');
+            return callback(null, true);
           };
         });
       };
     });
   },
+  /**
+   * @callback activateCallback
+   * @param {string|null} err
+   */
+  /**
+   * @param {activateCallback} callback
+   * @returns {void}
+   */
   activate: callback => {
-    activateDocker(platform, err => {
+    activateDocker(os.platform(), err => {
       if (err)
         return callback(err);
 
-      return callback(null, 'docker_activated');
+      return callback(null);
     });
   },
+  /**
+   * @callback getInstallationUrlCallback
+   * @param {string|null} err
+   * @param {string|null} installationUrl
+   */
+  /**
+   * @param {getInstallationUrlCallback} callback
+   * @returns {void}
+   */
   getInstallationUrl: callback => {
     getDockerInstallationUrlByOS({
       platform: os.platform(),
@@ -48,3 +73,5 @@ module.exports = {
     });
   }
 };
+
+module.exports = Docker;

@@ -15,7 +15,6 @@ const CREATE_WALLET_COMMAND = `
  * @param {string|null} err
  * @param {Object|null} wallet
  */
-
 /**
  * @param {createWalletCallback} callback
  * @returns {void}

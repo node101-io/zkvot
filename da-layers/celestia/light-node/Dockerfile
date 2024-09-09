@@ -59,7 +59,7 @@ RUN celestia ${NODE_TYPE} init --p2p.network ${CHAIN_ID}
 
 CMD celestia light start \
     --core.ip ${RPC_ENDPOINT} \
-    --keyring.accname ${DEFAULT_KEY_NAME} \
+    --keyring.keyname ${DEFAULT_KEY_NAME} \
     --metrics.tls=false \
     --metrics \
     --metrics.endpoint ${CELESTIA_OTEL_URL} \

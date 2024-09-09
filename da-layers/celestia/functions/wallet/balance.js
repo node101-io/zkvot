@@ -7,7 +7,6 @@ const celestiaRequest = require('../celestiaRequest');
  * @param {string|null} err
  * @param {Object|null} balance
  */
-
 /**
  * @param {string} rpc_url
  * @param {getBalanceCallback} callback

@@ -13,34 +13,41 @@ const isCelestiaInstalled = require('./functions/isCelestiaInstalled');
 const restartCelestia = require('./functions/restartCelestia');
 const uninstallCelestia = require('./functions/uninstallCelestia');
 
-const DEFAULT_RPC_PORT = 10101;
-const DEFAULT_RPC_URL = 'http://127.0.0.1:10101';
+const DEFAULT_RPC_PORT = 10102;
+const DEFAULT_RPC_URL = 'http://127.0.0.1:10102';
 const DEFAULT_TX_FEE = 0.002;
+
+const SYNCING_IN_PROGRESS_ERROR_MESSAGE_REGEX = /header: syncing in progress:/;
 
 const Celestia = {
   /**
    * @callback initCallback
    * @param {string|null} err
    */
-
   /**
    * @param {initCallback} callback
    * @returns {void}
    */
   init: callback => {
+    console.log(1, "called");
     isPortInUse(DEFAULT_RPC_PORT, (err, inUse) => {
+      console.log(2, "called");
+      console.log(2.5, err);
       if (err)
         return callback(err);
-
+      console.log(2.75, inUse);
       if (!inUse) {
         installCelestia((err, res) => {
+          console.log(3, "called");
+          console.log(3.5, err);
           if (err)
             return callback(err);
 
-          return callback('celestia_installed_successfully');
+          return callback(null);
         });
       } else {
         isCelestiaInstalled(DEFAULT_RPC_URL, (err, isInstalled) => {
+          console.log(4, "called");
           if (err)
             return callback(err);
 
@@ -58,7 +65,6 @@ const Celestia = {
    * @param {string|null} err
    * @param {Object|null} wallet
    */
-
   /**
    * @param {createWalletCallback} callback
    * @returns {void}
@@ -80,13 +86,11 @@ const Celestia = {
    * @typedef {Object} RecoverData
    * @property {string} mnemonic
    */
-
   /**
    * @callback recoverWalletCallback
    * @param {string|null} err
    * @param {Object|null} wallet
    */
-
   /**
    * @param {RecoverData} data
    * @param {recoverWalletCallback} callback
@@ -116,7 +120,6 @@ const Celestia = {
    * @param {string|null} err
    * @param {string|null} address
    */
-
   /**
    * @param {getWalletAddressCallback} callback
    * @returns {void}
@@ -134,7 +137,6 @@ const Celestia = {
    * @param {string|null} err
    * @param {Object|null} balance
    */
-
   /**
    * @param {getWalletBalanceCallback} callback
    * @returns {void}
@@ -149,16 +151,14 @@ const Celestia = {
   },
   /**
    * @typedef {Object} GetData
-   * @property {number} blockHeight
+   * @property {number} block_height
    * @property {string} namespace
    */
-
   /**
    * @callback getDataCallback
    * @param {string|null} error
    * @param {Array|null} blobsData
    */
-
   /**
    * @param {GetData} data
    * @param {getDataCallback} callback
@@ -168,7 +168,7 @@ const Celestia = {
     if (!data || typeof data != 'object')
       return callback('bad_request');
 
-    if (!data.blockHeight || isNaN(data.blockHeight) || Number(data.blockHeight) < 0)
+    if (!data.block_height || isNaN(data.block_height) || Number(data.block_height) < 0)
       return callback('bad_request');
 
     if (!isBase64String(data.namespace))
@@ -177,7 +177,7 @@ const Celestia = {
     celestiaRequest(DEFAULT_RPC_URL,{
       method: 'blob.GetAll',
       params: [
-        data.blockHeight,
+        data.block_height,
         [
           data.namespace.trim()
         ]
@@ -185,6 +185,9 @@ const Celestia = {
     }, (err, res) => {
       if (err)
         return callback(err);
+
+      if (SYNCING_IN_PROGRESS_ERROR_MESSAGE_REGEX.test(res.error.message))
+        return callback('syncing_in_progress');
 
       return callback(null, res.result);
     });
@@ -194,7 +197,6 @@ const Celestia = {
    * @param {string|null} error
    * @param {string|null} blockHeight
    */
-
   /**
    * @param {string} namespace
    * @param {Object} data
@@ -219,10 +221,12 @@ const Celestia = {
             {
               namespace: namespace.trim(),
               data: encodedData.trim(),
-              share_version: 0 // not needed but added
+              share_version: 0
             }
           ],
-          DEFAULT_TX_FEE
+          {
+            gas_price: DEFAULT_TX_FEE
+          }
         ]
       }, (err, res) => {
         if (err)
@@ -236,7 +240,6 @@ const Celestia = {
    * @callback uninstallCallback
    * @param {string|null} err
    */
-
   /**
    * @param {uninstallCallback} callback
    * @returns {void}

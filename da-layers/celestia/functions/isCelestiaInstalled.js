@@ -23,19 +23,22 @@ module.exports = (rpc_url, callback) => {
     if (err)
       return callback(null, false);
 
-    AuthKey.safeStore(authKey);
-
-    celestiaRequest(rpc_url, {
-      method: 'node.Ready',
-      params: []
-    }, (err, res) => {
+    AuthKey.safeStore(authKey, err => {
       if (err)
-        return callback(err);
-
-      if (!res || typeof res != 'object' || !res.result || typeof res.result != 'boolean')
         return callback(null, false);
 
-      return callback(null, true);
+      celestiaRequest(rpc_url, {
+        method: 'node.Ready',
+        params: []
+      }, (err, res) => {
+        if (err)
+          return callback(err);
+
+        if (!res || typeof res != 'object' || !res.result || typeof res.result != 'boolean')
+          return callback(null, false);
+
+        return callback(null, true);
+      });
     });
   });
 };

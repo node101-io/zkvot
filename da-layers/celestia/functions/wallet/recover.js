@@ -21,13 +21,11 @@ const RECOVER_WALLET_COMMAND = data =>`
  * @typedef {Object} RecoverWalletData
  * @property {string} mnemonic
  */
-
 /**
  * @callback recoverWalletCallback
  * @param {string|null} err
  * @param {Object|null} wallet
  */
-
 /**
  * @param {RecoverWalletData} data
  * @param {recoverWalletCallback} callback
