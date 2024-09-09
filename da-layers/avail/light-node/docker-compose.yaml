@@ -1,0 +1,16 @@
+services:
+  avail-light-node:
+    build:
+      context: .
+      args:
+        UBUNTU_VERSION: 22.04
+        CHAIN_ID: turing
+        DAEMON_HOME: /root/.avail
+        DAEMON_NAME: avail-light
+        DAEMON_VERSION: v1.9.0
+        DEFAULT_RPC_PORT: 10103
+    platform: linux/amd64
+    container_name: zkvote-node-avail
+    restart: always
+    ports:
+      - 10103:10103
