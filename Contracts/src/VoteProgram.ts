@@ -8,7 +8,6 @@ import {
 } from 'o1js';
 import { MerkleWitnessClass } from './utils.js';
 
-// public inputlar outputta verilmezse degistirilebilir mi?
 export class VotePublicInputs extends Struct({
   votingId: Field,
   vote: Field,
