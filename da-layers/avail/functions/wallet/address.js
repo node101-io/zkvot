@@ -5,7 +5,7 @@ const SafeStore = require('../../../../utils/safeStore');
 
 module.exports = callback => {
   cryptoWaitReady()
-    .then(_ => getKeyringFromSeed(SafeStore.getAvailMnemonic().replace(/'/g, "")))
+    .then(_ => getKeyringFromSeed(SafeStore.getAvailMnemonic()))
     .then(res => {
       return callback(null, res.address);
     })
