@@ -15,3 +15,7 @@ keys
 voteproofs.json
 votersRoot.json
 voteAggregatorVerificationKey.json
+voteProofsRandom.json
+env.json
+
+.env
