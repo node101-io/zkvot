@@ -1,8 +1,9 @@
 const childProcess = require('child_process');
 const path = require('path');
 
-const AuthKey = require('./authKey');
 const fetchAuthKeyFromNode = require('./fetchAuthKeyFromNode');
+
+const SafeStore = require('../../../utils/safeStore');
 
 const INSTALL_LIGHT_NODE_COMMAND = 'docker compose up --detach';
 const LIGHT_NODE_ALREADY_INSTALLED_REGEX = /Container (.*?) Running/;
@@ -32,7 +33,7 @@ module.exports = callback => {
         if (err)
           return callback(err);
 
-        AuthKey.safeStore(authKey, err => {
+        SafeStore.keepCelestiaAuthKey(authKey, err => {
           if (err)
             return callback(err);
 

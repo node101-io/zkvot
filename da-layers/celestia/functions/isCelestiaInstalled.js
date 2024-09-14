@@ -1,8 +1,9 @@
 const validator = require('validator');
 
-const AuthKey = require('./authKey');
 const celestiaRequest = require('./celestiaRequest');
 const fetchAuthKeyFromNode = require('./fetchAuthKeyFromNode');
+
+const SafeStore = require('../../../utils/safeStore');
 
 /**
  * @callback isCelestiaInstalledCallback
@@ -23,7 +24,7 @@ module.exports = (rpc_url, callback) => {
     if (err)
       return callback(null, false);
 
-    AuthKey.safeStore(authKey, err => {
+    SafeStore.keepCelestiaAuthKey(authKey, err => {
       if (err)
         return callback(null, false);
 

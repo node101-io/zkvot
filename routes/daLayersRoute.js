@@ -2,6 +2,14 @@ const express = require('express');
 
 const router = express.Router();
 
+const initAvailDAPostController = require('../controllers/da-layers/avail/init/post');
+const uninstallAvailDAPostController = require('../controllers/da-layers/avail/uninstall/post');
+
+const getWalletAddressAvailDAPostController = require('../controllers/da-layers/avail/wallet/address/post');
+const getWalletBalanceAvailDAPostController = require('../controllers/da-layers/avail/wallet/balance/post');
+const createWalletAvailDAPostController = require('../controllers/da-layers/avail/wallet/create/post');
+const recoverWalletAvailDAPostController = require('../controllers/da-layers/avail/wallet/recover/post');
+
 const getDataCelestiaDAPostController = require('../controllers/da-layers/celestia/get-data/post');
 const initCelestiaDAPostController = require('../controllers/da-layers/celestia/init/post');
 const submitDataCelestiaDAPostController = require('../controllers/da-layers/celestia/submit-data/post');
@@ -11,6 +19,32 @@ const getWalletAddressCelestiaDAPostController = require('../controllers/da-laye
 const getWalletBalanceCelestiaDAPostController = require('../controllers/da-layers/celestia/wallet/balance/post');
 const createWalletCelestiaDAPostController = require('../controllers/da-layers/celestia/wallet/create/post');
 const recoverWalletCelestiaDAPostController = require('../controllers/da-layers/celestia/wallet/recover/post');
+
+router.post(
+  '/avail/init',
+  initAvailDAPostController
+);
+router.post(
+  '/avail/uninstall',
+  uninstallAvailDAPostController
+);
+
+router.post(
+  '/avail/wallet/address',
+  getWalletAddressAvailDAPostController
+);
+router.post(
+  '/avail/wallet/balance',
+  getWalletBalanceAvailDAPostController
+);
+router.post(
+  '/avail/wallet/create',
+  createWalletAvailDAPostController
+);
+router.post(
+  '/avail/wallet/recover',
+  recoverWalletAvailDAPostController
+);
 
 router.post(
   '/celestia/get-data',

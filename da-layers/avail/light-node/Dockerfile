@@ -43,7 +43,8 @@ RUN echo "bootstraps=['/dns/bootnode.1.lightclient.turing.avail.so/tcp/37000/p2p
     echo "ot_collector_endpoint=\"http://otel.lightclient.turing.avail.so:4317\"" >> ${CONFIG_FILE} && \
     echo "genesis_hash='d3d2f3a3495dc597434a99d7d449ebad6616db45e4e4f178f31cc6fa14378b70'" >> ${CONFIG_FILE} && \
     echo "http_server_host='0.0.0.0'" >> ${CONFIG_FILE} && \
-    echo "http_server_port=${DEFAULT_RPC_PORT}" >> ${CONFIG_FILE}
+    echo "http_server_port=${DEFAULT_RPC_PORT}" >> ${CONFIG_FILE} && \
+    echo "app_id=1" >> ${CONFIG_FILE}
 
 RUN wget -q https://github.com/availproject/avail-light/releases/download/${DAEMON_VERSION}/avail-light-linux-amd64.tar.gz
 RUN tar -xzf avail-light-linux-amd64.tar.gz

@@ -17,7 +17,7 @@ const {
 
 dotenv.config();
 
-const AuthKey = require('./da-layers/celestia/functions/authKey');
+const SafeStore = require('./utils/safeStore');
 
 const APP_PORT = process.env.APP_PORT || 3000;
 
@@ -80,7 +80,7 @@ autoUpdater.updateElectronApp();
 
 electronApp
   .on('ready', _ => {
-    AuthKey.init(err => {
+    SafeStore.init(err => {
       if (err) console.log(err);
 
       localServer.listen(APP_PORT, _ => {

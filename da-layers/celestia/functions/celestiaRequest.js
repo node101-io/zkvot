@@ -1,6 +1,6 @@
 const validator = require('validator');
 
-const AuthKey = require('./authKey');
+const SafeStore = require('../../../utils/safeStore');
 
 const DEFAULT_MAX_TEXT_FIELD_LENGTH = 1e4;
 
@@ -42,7 +42,7 @@ module.exports = (url, options, callback) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + AuthKey.get()
+      'Authorization': 'Bearer ' + SafeStore.getCelestiaAuthKey()
     },
     body: JSON.stringify({
       id: 1,
