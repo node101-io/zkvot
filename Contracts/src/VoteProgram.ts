@@ -3,6 +3,7 @@ import {
   Poseidon,
   PrivateKey,
   PublicKey,
+  Signature,
   Struct,
   ZkProgram,
 } from 'o1js';
@@ -20,7 +21,10 @@ export class VotePublicOutputs extends Struct({
 }) {}
 
 export class VotePrivateInputs extends Struct({
-  privateKey: PrivateKey,
+  // privateKey: PrivateKey,
+  voterKey: PublicKey,
+  signedVoteId: Signature,
+  signedVote: Signature,
   votersMerkleWitness: MerkleWitnessClass,
 }) {}
 
@@ -36,15 +40,22 @@ export const Vote = ZkProgram({
         publicInput: VotePublicInputs,
         privateInput: VotePrivateInputs
       ) {
-        let voterPublicKey = PublicKey.fromPrivateKey(privateInput.privateKey);
+        // let voterPublicKey = PublicKey.fromPrivateKey(privateInput.privateKey);
+        let voterPublicKey = privateInput.voterKey;
         privateInput.votersMerkleWitness
           .calculateRoot(Poseidon.hash(voterPublicKey.toFields()))
           .assertEquals(publicInput.votersRoot);
 
-        let nullifier = Poseidon.hash([
-          Poseidon.hash(privateInput.privateKey.toFields()),
+        privateInput.signedVoteId.verify(voterPublicKey, [
           publicInput.votingId,
         ]);
+
+        privateInput.signedVote.verify(voterPublicKey, [
+          publicInput.votingId,
+          publicInput.vote,
+        ]);
+
+        let nullifier = Poseidon.hash(privateInput.signedVoteId.toFields());
 
         return {
           vote: publicInput.vote,

@@ -7,6 +7,7 @@ import {
   PublicKey,
   Poseidon,
   verify,
+  Signature,
 } from 'o1js';
 
 import { MerkleWitnessClass } from './utils.js';
@@ -19,7 +20,7 @@ Mina.setActiveInstance(Local);
 
 let votersArray: Array<[privateKey: PrivateKey, publicKey: PublicKey]> = [];
 
-for (let i = 0; i < 20; i++) {
+for (let i = 0; i < 40; i++) {
   let privateKey = PrivateKey.random();
   let publicKey = privateKey.toPublicKey();
   votersArray.push([privateKey, publicKey]);
@@ -35,7 +36,7 @@ votersArray.sort((a) => {
   return 0;
 });
 
-let votersTree = new MerkleTree(32);
+let votersTree = new MerkleTree(20);
 
 for (let i = 0; i < 40; i++) {
   let leaf = Poseidon.hash(votersArray[i][1].toFields());
@@ -43,10 +44,9 @@ for (let i = 0; i < 40; i++) {
 }
 
 let votersRoot = votersTree.getRoot();
+console.log(`Voters root: ${votersRoot.toString()}`);
 
 await fs.writeFile('votersRoot.json', JSON.stringify(votersRoot, null, 2));
-
-console.log(`Voters root: ${votersRoot.toString()}`);
 
 console.log('compiling vote program');
 let { verificationKey } = await Vote.compile();
@@ -68,8 +68,12 @@ for (let i = 0; i < 20; i++) {
     vote: Field.from(vote),
     votersRoot: votersRoot,
   });
+  const signedVoteId = Signature.create(privateKey, [votingId]);
+  const signedVote = Signature.create(privateKey, [votingId, Field.from(vote)]);
   let votePrivateInputs = new VotePrivateInputs({
-    privateKey: privateKey,
+    voterKey: privateKey.toPublicKey(),
+    signedVoteId: signedVoteId,
+    signedVote: signedVote,
     votersMerkleWitness: witness,
   });
 
@@ -108,8 +112,12 @@ for (let i = 20; i < 40; i++) {
     vote: Field.from(vote),
     votersRoot: votersRoot,
   });
+  const signedVoteId = Signature.create(privateKey, [votingId]);
+  const signedVote = Signature.create(privateKey, [votingId, Field.from(vote)]);
   let votePrivateInputs = new VotePrivateInputs({
-    privateKey: privateKey,
+    voterKey: privateKey.toPublicKey(),
+    signedVoteId: signedVoteId,
+    signedVote: signedVote,
     votersMerkleWitness: witness,
   });
 
