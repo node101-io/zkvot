@@ -3,7 +3,7 @@ import {
   InnerNode,
   LeafNode,
   SegmentTree,
-} from './SegmentTreeAggregator.js';
+} from './SegmentTree.js';
 import fs from 'fs';
 import { Vote, VoteProof } from './VoteProgram.js';
 import { Field, verify } from 'o1js';

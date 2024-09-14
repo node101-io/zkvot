@@ -1,6 +1,7 @@
 import { Field, Poseidon } from 'o1js';
+import { IAggregateProof } from './cli/schema';
 
-export class LeafNode<N extends BigInt, VP> {
+export class LeafNode<N extends bigint, VP> {
   nullifier: N;
   voteProof: VP;
 
@@ -10,18 +11,18 @@ export class LeafNode<N extends BigInt, VP> {
   }
 }
 
-export class InnerNode<N extends BigInt, AP, VP> {
+export class InnerNode<N extends bigint, VP> {
   includedVotes: N[];
   range: [N, N];
-  leftChild: InnerNode<N, AP, VP> | LeafNode<N, VP> | null;
-  rightChild: InnerNode<N, AP, VP> | LeafNode<N, VP> | null;
+  leftChild: InnerNode<N, VP> | LeafNode<N, VP> | null;
+  rightChild: InnerNode<N, VP> | LeafNode<N, VP> | null;
 
   constructor(
     includedVotes: N[],
     range: [N, N],
 
-    leftChild: InnerNode<N, AP, VP> | LeafNode<N, VP> | null,
-    rightChild: InnerNode<N, AP, VP> | LeafNode<N, VP> | null
+    leftChild: InnerNode<N, VP> | LeafNode<N, VP> | null,
+    rightChild: InnerNode<N, VP> | LeafNode<N, VP> | null
   ) {
     this.includedVotes = includedVotes;
     this.range = range;
@@ -30,16 +31,24 @@ export class InnerNode<N extends BigInt, AP, VP> {
   }
 }
 
-export class SegmentTree<N extends BigInt, AP, VP> {
-  root: InnerNode<N, AP, VP> | LeafNode<N, VP> | null;
+export class SegmentTree<N extends bigint, AP, VP> {
+  root: InnerNode<N, VP> | LeafNode<N, VP> | null;
   cachedAggregatorProofs: Map<N, AP>;
 
-  constructor(root: InnerNode<N, AP, VP> | LeafNode<N, VP> | null = null) {
+  constructor(root: InnerNode<N, VP> | LeafNode<N, VP> | null = null) {
     this.root = root;
     this.cachedAggregatorProofs = new Map<N, AP>();
   }
 
-  static build<N extends BigInt, AP, VP>(
+  loadCachedAggregatorProofs(mappings: Array<[N, AP]>) {
+    this.cachedAggregatorProofs.clear();
+
+    mappings.forEach(([includedVotesHash, proof]) => {
+      this.cachedAggregatorProofs.set(includedVotesHash, proof);
+    });
+  }
+
+  static build<N extends bigint, AP, VP>(
     votes: LeafNode<N, VP>[]
   ): SegmentTree<N, AP, VP> {
     if (votes.length === 0) {
@@ -53,7 +62,7 @@ export class SegmentTree<N extends BigInt, AP, VP> {
     const buildTree = (
       start: number,
       end: number
-    ): InnerNode<N, AP, VP> | LeafNode<N, VP> => {
+    ): InnerNode<N, VP> | LeafNode<N, VP> => {
       if (start === end) {
         return votes[start];
       }
@@ -84,12 +93,7 @@ export class SegmentTree<N extends BigInt, AP, VP> {
 
       includedVotes.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 
-      return new InnerNode<N, AP, VP>(
-        includedVotes,
-        range,
-        leftChild,
-        rightChild
-      );
+      return new InnerNode<N, VP>(includedVotes, range, leftChild, rightChild);
     };
 
     const root = buildTree(0, votes.length - 1);
@@ -103,9 +107,9 @@ export class SegmentTree<N extends BigInt, AP, VP> {
     }
 
     const insertRecursive = (
-      node: InnerNode<N, AP, VP> | LeafNode<N, VP>,
+      node: InnerNode<N, VP> | LeafNode<N, VP>,
       newLeaf: LeafNode<N, VP>
-    ): InnerNode<N, AP, VP> | LeafNode<N, VP> => {
+    ): InnerNode<N, VP> | LeafNode<N, VP> => {
       if (node instanceof LeafNode) {
         const newRange: [N, N] = [
           node.nullifier < newLeaf.nullifier
@@ -118,14 +122,14 @@ export class SegmentTree<N extends BigInt, AP, VP> {
         const newIncludedVotes = [node.nullifier, newLeaf.nullifier];
 
         if (node.nullifier < newLeaf.nullifier) {
-          return new InnerNode<N, AP, VP>(
+          return new InnerNode<N, VP>(
             newIncludedVotes,
             newRange,
             node,
             newLeaf
           );
         } else {
-          return new InnerNode<N, AP, VP>(
+          return new InnerNode<N, VP>(
             newIncludedVotes,
             newRange,
             newLeaf,
@@ -174,9 +178,9 @@ export class SegmentTree<N extends BigInt, AP, VP> {
     this.root = insertRecursive(this.root, newLeaf);
   }
 
-  traverse(): Array<InnerNode<N, AP, VP>> {
-    const nodes: Array<InnerNode<N, AP, VP>> = [];
-    const queue: Array<InnerNode<N, AP, VP> | LeafNode<N, VP>> = [];
+  traverse(): Array<InnerNode<N, VP>> {
+    const nodes: Array<InnerNode<N, VP>> = [];
+    const queue: Array<InnerNode<N, VP> | LeafNode<N, VP>> = [];
 
     if (this.root) {
       queue.push(this.root);
@@ -199,7 +203,8 @@ export class SegmentTree<N extends BigInt, AP, VP> {
     return nodes.reverse();
   }
 
-  static includedVotesHash<N extends BigInt>(includedVotes: N[]): BigInt {
+  static includedVotesHash<N extends bigint>(includedVotes: N[]): bigint {
+    includedVotes.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
     const nullifierArray = includedVotes.map((v) => Field.from(v.toString()));
     return Poseidon.hash(nullifierArray).toBigInt();
   }
@@ -209,8 +214,8 @@ export class SegmentTree<N extends BigInt, AP, VP> {
   }
 }
 
-export function collectLeaves<N extends BigInt, AP, VP>(
-  node: InnerNode<N, AP, VP> | LeafNode<N, VP> | null,
+export function collectLeaves<N extends bigint, AP, VP>(
+  node: InnerNode<N, VP> | LeafNode<N, VP> | null,
   leaves: LeafNode<N, VP>[] = []
 ): LeafNode<N, VP>[] {
   if (!node) return leaves;
@@ -225,8 +230,8 @@ export function collectLeaves<N extends BigInt, AP, VP>(
   return leaves;
 }
 
-export function printTree<N extends BigInt, AP, VP>(
-  node: InnerNode<N, AP, VP> | LeafNode<N, VP> | null,
+export function printTree<N extends bigint, AP, VP>(
+  node: InnerNode<N, VP> | LeafNode<N, VP> | null,
   level: number = 0
 ): void {
   if (!node) return;

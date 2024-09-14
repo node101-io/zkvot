@@ -1,8 +1,4 @@
-import {
-  collectLeaves,
-  LeafNode,
-  SegmentTree,
-} from './SegmentTreeAggregator.js';
+import { collectLeaves, LeafNode, SegmentTree } from './SegmentTree.js';
 
 function getRandomBigInt(min: bigint, max: bigint): bigint {
   const range = max - min + BigInt(1);
@@ -16,7 +12,7 @@ function createRandomLeafNode(index: number): LeafNode<bigint, string> {
   return new LeafNode(nullifier, voteProof);
 }
 
-function isSorted<N extends BigInt, VP>(leaves: LeafNode<N, VP>[]): boolean {
+function isSorted<N extends bigint, VP>(leaves: LeafNode<N, VP>[]): boolean {
   for (let i = 0; i < leaves.length - 1; i++) {
     if (leaves[i].nullifier > leaves[i + 1].nullifier) {
       return false;
