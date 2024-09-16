@@ -36,9 +36,16 @@
     "typescript": "^5.1"
   },
   "peerDependencies": {
-    "o1js": "^1.*"
+    "o1js": "^1.7.0"
   },
   "engines": {
     "node": ">=18.14.0"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^5.5.0",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.5",
+    "mina-signer": "^3.0.7",
+    "mongoose": "^8.6.2"
   }
 }

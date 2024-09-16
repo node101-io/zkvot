@@ -1,63 +1,69 @@
 import {
   Field,
-  MerkleWitness,
   Poseidon,
   PrivateKey,
   PublicKey,
+  Signature,
   Struct,
   ZkProgram,
 } from 'o1js';
+import { MerkleWitnessClass } from './utils.js';
 
-const MERKLE_DEPTH = 32;
-
-export class MerkleWitnessClass extends MerkleWitness(MERKLE_DEPTH) {}
-
-export class VoteProgramPublicInputs extends Struct({
-  nullifierRoot: Field,
-  votersRoot: Field,
-}) {}
-
-export class VoteProgramPublicOutputs extends Struct({
-  nullifierRoot: Field,
-  votersRoot: Field,
+export class VotePublicInputs extends Struct({
+  votingId: Field,
   vote: Field,
+  votersRoot: Field,
 }) {}
 
-export class VoteProgramPrivateInputs extends Struct({
-  privateKey: PrivateKey,
-  nullifierWitness: MerkleWitnessClass,
-  votersWitness: MerkleWitnessClass,
+export class VotePublicOutputs extends Struct({
+  vote: Field,
+  nullifier: Field,
 }) {}
 
-export const VoteProgram = ZkProgram({
-  name: 'VoteProgram',
+export class VotePrivateInputs extends Struct({
+  // privateKey: PrivateKey,
+  voterKey: PublicKey,
+  signedVoteId: Signature,
+  signedVote: Signature,
+  votersMerkleWitness: MerkleWitnessClass,
+}) {}
 
-  publicInput: VoteProgramPublicInputs,
-  publicOutput: VoteProgramPublicOutputs,
+export const Vote = ZkProgram({
+  name: 'Vote',
+  publicInput: VotePublicInputs,
+  publicOutput: VotePublicOutputs,
 
   methods: {
-    castVote: {
-      privateInputs: [VoteProgramPrivateInputs],
+    vote: {
+      privateInputs: [VotePrivateInputs],
       async method(
-        publicInput: VoteProgramPublicInputs,
-        privateInput: VoteProgramPrivateInputs
+        publicInput: VotePublicInputs,
+        privateInput: VotePrivateInputs
       ) {
-        // check if the voter is eligible
-        let voterPublicKey = PublicKey.fromPrivateKey(privateInput.privateKey);
-        privateInput.votersWitness
+        // let voterPublicKey = PublicKey.fromPrivateKey(privateInput.privateKey);
+        let voterPublicKey = privateInput.voterKey;
+        privateInput.votersMerkleWitness
           .calculateRoot(Poseidon.hash(voterPublicKey.toFields()))
           .assertEquals(publicInput.votersRoot);
 
-        // check if the nullifier is not spent
+        privateInput.signedVoteId.verify(voterPublicKey, [
+          publicInput.votingId,
+        ]);
+
+        privateInput.signedVote.verify(voterPublicKey, [
+          publicInput.votingId,
+          publicInput.vote,
+        ]);
+
+        let nullifier = Poseidon.hash(privateInput.signedVoteId.toFields());
 
         return {
-          nullifierRoot: Field.from(0),
-          votersRoot: Field.from(0),
-          vote: Field.from(0),
+          vote: publicInput.vote,
+          nullifier: nullifier,
         };
       },
     },
   },
 });
 
-export class VoteProgramProof extends ZkProgram.Proof(VoteProgram) {}
+export class VoteProof extends ZkProgram.Proof(Vote) {}
