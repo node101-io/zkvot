@@ -2,6 +2,7 @@ import { Field, verify } from 'o1js';
 import {
   AggregateProof,
   RangeAggregationProgram,
+  VoteOptions,
 } from '../RangeAggregationProgram.js';
 import { Vote, VoteProof } from '../VoteProgram.js';
 import fs from 'fs/promises';
@@ -11,6 +12,8 @@ import Database from './database.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
+
+const addRandom = true;
 
 export const runAggregate = async (voteId: string) => {
   console.log('Compiling vote program');
@@ -27,6 +30,14 @@ export const runAggregate = async (voteId: string) => {
   const voteProofsJson = await fs.readFile('voteProofs.json');
   const voteProofs = JSON.parse(voteProofsJson.toString());
   console.log('Vote proofs read, there are', voteProofs.length, 'proofs found');
+
+  const voteProofsRandomJson = await fs.readFile('voteProofsRandom.json');
+  const voteProofsRandom = JSON.parse(voteProofsRandomJson.toString());
+  console.log(
+    'Random vote proofs read, there are',
+    voteProofsRandom.length,
+    'proofs found'
+  );
 
   console.log('Reading voters root');
   const votersRootJson = await fs.readFile('votersRoot.json');
@@ -47,10 +58,37 @@ export const runAggregate = async (voteId: string) => {
 
     if (ok) {
       leaves.push(leaf);
-      console.log('Vote proof is valid');
+      console.log(
+        'Vote proof is valid, vote for:',
+        leaf.voteProof.publicOutput.vote.toString()
+      );
     } else {
       console.log('Vote proof is invalid skipping');
       continue;
+    }
+  }
+
+  if (addRandom) {
+    console.log('Adding random votes');
+    for (let i = 0; i < voteProofsRandom.length; i++) {
+      const voteProof = await VoteProof.fromJSON(voteProofsRandom[i]);
+
+      const nullifier = voteProof.publicOutput.nullifier.toBigInt();
+
+      const leaf = new LeafNode(nullifier, voteProof);
+
+      const ok = await verify(leaf.voteProof, verificationKey);
+
+      if (ok) {
+        leaves.push(leaf);
+        console.log(
+          'Vote proof is valid, vote for:',
+          leaf.voteProof.publicOutput.vote.toString()
+        );
+      } else {
+        console.log('Vote proof is invalid skipping');
+        continue;
+      }
     }
   }
 
@@ -238,9 +276,23 @@ export const runAggregate = async (voteId: string) => {
       'Range upper bound:',
       rootAggregatorProof.publicOutput.rangeUpperBound.toString()
     );
-    console.log('Yeys:', rootAggregatorProof.publicOutput.yeys.toString());
-    console.log('Nays:', rootAggregatorProof.publicOutput.nays.toString());
+    let arr = VoteOptions.decompress(
+      rootAggregatorProof.publicOutput.voteOptions_1
+    ).toUInt32();
+
+    for (let i = 0; i < 7; i++) {
+      console.log(`voteOptions_${i + 1}:`, arr[i].toString());
+    }
+
+    arr = VoteOptions.decompress(
+      rootAggregatorProof.publicOutput.voteOptions_2
+    ).toUInt32();
+
+    for (let i = 0; i < 7; i++) {
+      console.log(`voteOptions_${i + 8}:`, arr[i].toString());
+    }
   }
+  return;
 };
 
-runAggregate('123');
+await runAggregate('123');

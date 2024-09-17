@@ -204,6 +204,12 @@ if (segmentTree.root instanceof InnerNode) {
     'Range upper bound:',
     rootAggregatorProof.publicOutput.rangeUpperBound.toString()
   );
-  console.log('Yeys:', rootAggregatorProof.publicOutput.yeys.toString());
-  console.log('Nays:', rootAggregatorProof.publicOutput.nays.toString());
+  console.log(
+    'voteOptions_1:',
+    rootAggregatorProof.publicOutput.voteOptions_1.toString()
+  );
+  console.log(
+    'voteOptions_2:',
+    rootAggregatorProof.publicOutput.voteOptions_2.toString()
+  );
 }
