@@ -45,7 +45,7 @@
     "@inquirer/prompts": "^5.5.0",
     "commander": "^12.1.0",
     "dotenv": "^16.4.5",
-    "mina-signer": "^3.0.7",
-    "mongoose": "^8.6.2"
+    "level": "^8.0.1",
+    "mina-signer": "^3.0.7"
   }
 }

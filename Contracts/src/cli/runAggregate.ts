@@ -7,13 +7,14 @@ import {
 import { Vote, VoteProof } from '../VoteProgram.js';
 import fs from 'fs/promises';
 import { InnerNode, LeafNode, SegmentTree } from '../SegmentTree.js';
-import { CachedProofs } from './schema.js';
-import Database from './database.js';
 import dotenv from 'dotenv';
+import { Level } from 'level';
+
+const db = new Level('./cachedProofsDb', { valueEncoding: 'json' });
 
 dotenv.config();
 
-const addRandom = true;
+const addRandom = false;
 
 export const runAggregate = async (voteId: string) => {
   console.log('Compiling vote program');
@@ -97,18 +98,19 @@ export const runAggregate = async (voteId: string) => {
 
   console.log('Connecting to database');
 
-  await Database.getInstance();
-
   try {
     console.log('Loading cached aggregator proofs');
 
-    const mappings = await CachedProofs.find({}).exec();
+    const mappings = [];
+
+    for await (const [key, value] of db.iterator()) {
+      mappings.push({ includedVotesHash: key, proof: value });
+    }
 
     if (mappings.length === 0) {
       console.log('No cached aggregator proofs found');
     } else {
-      console.log('Cached aggregator proofs found: ', mappings.length);
-      // segmentTree.cachedAggregatorProofs.clear();
+      console.log('Cached aggregator proofs found:', mappings.length);
     }
 
     for (let i = 0; i < mappings.length; i++) {
@@ -248,13 +250,10 @@ export const runAggregate = async (voteId: string) => {
     const proofString = JSON.stringify(proofJson);
 
     try {
-      await CachedProofs.create({
-        includedVotesHash: includedVotesHashString,
-        proof: proofString,
-      });
-      console.log('Cached proof saved to Mongo');
+      await db.put(includedVotesHashString, proofString);
+      console.log('Cached proof saved to LevelDB');
     } catch (e) {
-      console.log('Error saving cached proof to Mongo', e);
+      console.log('Error saving cached proof to LevelDB', e);
     }
     console.log('Aggregation time:', (Date.now() - time) / 1000, 'seconds');
   }
