@@ -1,13 +1,15 @@
+const { ApiPromise, WsProvider } = require('@polkadot/api');
+
 const address = require('./address');
 
-const { ApiPromise, WsProvider } = require('@polkadot/api');
+const AVAIL_WS_PROVIDER_ADDRESS = 'wss://turing-testnet.avail-rpc.com';
 
 module.exports = callback => {
   address((err, address) => {
     if (err)
       return callback(err);
 
-    const availWsProvider = new WsProvider(process.env.AVAIL_WS_PROVIDER_ADDRESS);
+    const availWsProvider = new WsProvider(AVAIL_WS_PROVIDER_ADDRESS);
 
     ApiPromise.create({ provider: availWsProvider })
       .then(api => api.query.system.account(address))
@@ -21,7 +23,7 @@ module.exports = callback => {
       .catch(err => {
         availWsProvider.disconnect();
 
-        return callback(err);
+        return callback('rpc_error');
       });
   });
 };

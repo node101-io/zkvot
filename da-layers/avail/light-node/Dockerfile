@@ -36,7 +36,7 @@ RUN mkdir -p ${DAEMON_HOME}/${CHAIN_ID}/data
 RUN mkdir -p ${DAEMON_HOME}/${CHAIN_ID}/identity
 
 RUN echo "bootstraps=['/dns/bootnode.1.lightclient.turing.avail.so/tcp/37000/p2p/12D3KooWBkLsNGaD3SpMaRWtAmWVuiZg1afdNSPbtJ8M8r9ArGRT']" > ${CONFIG_FILE} && \
-    echo "full_node_ws=['wss://avail-turing.public.blastapi.io','wss://turing-testnet.avail-rpc.com']" >> ${CONFIG_FILE} && \
+    echo "full_node_ws=['wss://turing-testnet.avail-rpc.com','wss://avail-turing.public.blastapi.io', 'wss://avail-turing-rpc.publicnode.com', 'wss://turing.public.curie.radiumblock.co/ws', 'wss://avail-turing.bountyblok.io']" >> ${CONFIG_FILE} && \
     echo "confidence=80.0" >> ${CONFIG_FILE} && \
     echo "avail_path=\"$DAEMON_HOME/turing/data\"" >> ${CONFIG_FILE} && \
     echo "kad_record_ttl=43200" >> ${CONFIG_FILE} && \
@@ -44,7 +44,9 @@ RUN echo "bootstraps=['/dns/bootnode.1.lightclient.turing.avail.so/tcp/37000/p2p
     echo "genesis_hash='d3d2f3a3495dc597434a99d7d449ebad6616db45e4e4f178f31cc6fa14378b70'" >> ${CONFIG_FILE} && \
     echo "http_server_host='0.0.0.0'" >> ${CONFIG_FILE} && \
     echo "http_server_port=${DEFAULT_RPC_PORT}" >> ${CONFIG_FILE} && \
-    echo "app_id=1" >> ${CONFIG_FILE}
+    echo "sync_start_block=755200" >> ${CONFIG_FILE} && \
+    echo "sync_finality_enable=true" >> ${CONFIG_FILE} && \
+    echo "app_id=101" >> ${CONFIG_FILE}
 
 RUN wget -q https://github.com/availproject/avail-light/releases/download/${DAEMON_VERSION}/avail-light-linux-amd64.tar.gz
 RUN tar -xzf avail-light-linux-amd64.tar.gz

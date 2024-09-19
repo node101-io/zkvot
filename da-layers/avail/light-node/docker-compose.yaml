@@ -7,7 +7,7 @@ services:
         CHAIN_ID: turing
         DAEMON_HOME: /root/.avail
         DAEMON_NAME: avail-light
-        DAEMON_VERSION: v1.9.0
+        DAEMON_VERSION: v1.11.0-rc3
         DEFAULT_RPC_PORT: 10103
     platform: linux/amd64
     container_name: zkvote-node-avail

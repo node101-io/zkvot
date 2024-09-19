@@ -46,7 +46,7 @@ const Celestia = {
             return callback(err);
 
           if (!isInstalled) {
-            return callback('port_in_use_by_another_service');
+            return callback('port_in_use');
           } else {
             return callback(null);
           };
@@ -180,6 +180,8 @@ const Celestia = {
       if (err)
         return callback(err);
 
+      console.log(1, res);
+
       if (SYNCING_IN_PROGRESS_ERROR_MESSAGE_REGEX.test(res.error.message))
         return callback('syncing_in_progress');
 
@@ -225,6 +227,8 @@ const Celestia = {
       }, (err, res) => {
         if (err)
           return callback(err);
+
+        console.log(0, res);
 
         return callback(null, res.result);
       });
