@@ -7,6 +7,7 @@ const create = require('./functions/wallet/create');
 const recover = require('./functions/wallet/recover');
 
 const availRequest = require('./functions/availRequest');
+const changeAppId = require('./functions/changeAppId');
 const installAvail = require('./functions/installAvail');
 const isAvailInstalled = require('./functions/isAvailInstalled');
 const restartAvail = require('./functions/restartAvail');
@@ -88,6 +89,25 @@ const Avail = {
         return callback(err);
 
       return callback(null, balance);
+    });
+  },
+  changeAppIdByProposal: (data, callback) => {
+    if (!data || typeof data != 'object')
+      return callback('bad_request');
+
+    if (!data.app_id || isNaN(data.app_id) || Number(data.app_id) < 0)
+      return callback('bad_request');
+
+    changeAppId(data, err => {
+      if (err)
+        return callback(err);
+
+      restartAvail(err => {
+        if (err)
+          return callback(err);
+
+        return callback(null);
+      });
     });
   },
   getData: (data, callback) => {
