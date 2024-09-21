@@ -14,6 +14,7 @@ services:
         NODE_TYPE: light
         RPC_ENDPOINT: rpc-mocha.pops.one
         CELESTIA_OTEL_URL: otel.celestia.tools:4318
+        TRUSTED_BLOCK_HASH: TRUSTED_BLOCK_HASH_PLACEHOLDER
     container_name: zkvote-node-celestia
     restart: always
     ports:

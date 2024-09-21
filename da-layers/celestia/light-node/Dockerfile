@@ -11,6 +11,7 @@ ARG DEFAULT_RPC_PORT
 ARG NODE_TYPE
 ARG RPC_ENDPOINT
 ARG CELESTIA_OTEL_URL
+ARG TRUSTED_BLOCK_HASH
 
 WORKDIR /root
 
@@ -28,6 +29,7 @@ ENV DEFAULT_RPC_PORT=${DEFAULT_RPC_PORT}
 ENV NODE_TYPE=${NODE_TYPE}
 ENV RPC_ENDPOINT=${RPC_ENDPOINT}
 ENV CELESTIA_OTEL_URL=${CELESTIA_OTEL_URL}
+ENV TRUSTED_BLOCK_HASH=${TRUSTED_BLOCK_HASH}
 
 RUN echo "export REPO=${REPO}" >> $HOME/.bash_profile && \
     echo "export PROJECT_FOLDER=${PROJECT_FOLDER}" >> $HOME/.bash_profile && \
@@ -38,7 +40,8 @@ RUN echo "export REPO=${REPO}" >> $HOME/.bash_profile && \
     echo "export DEFAULT_RPC_PORT=${DEFAULT_RPC_PORT}" >> $HOME/.bash_profile && \
     echo "export NODE_TYPE=${NODE_TYPE}" >> $HOME/.bash_profile && \
     echo "export RPC_ENDPOINT=${RPC_ENDPOINT}" >> $HOME/.bash_profile && \
-    echo "export CELESTIA_OTEL_URL=${CELESTIA_OTEL_URL}" >> $HOME/.bash_profile
+    echo "export CELESTIA_OTEL_URL=${CELESTIA_OTEL_URL}" >> $HOME/.bash_profile && \
+    echo "export TRUSTED_BLOCK_HASH=${TRUSTED_BLOCK_HASH}" >> $HOME/.bash_profile
 
 RUN git clone ${REPO} ${PROJECT_FOLDER}
 
@@ -55,12 +58,12 @@ RUN mv cel-key /usr/local/bin/
 
 WORKDIR /root
 
-RUN celestia ${NODE_TYPE} init --p2p.network ${CHAIN_ID}
+RUN celestia ${NODE_TYPE} init --p2p.network ${CHAIN_ID} --headers.trusted-hash ${TRUSTED_BLOCK_HASH}
 
 CMD celestia light start \
     --core.ip ${RPC_ENDPOINT} \
     --keyring.keyname ${DEFAULT_KEY_NAME} \
-    --metrics.tls=false \
+    --metrics.tls=true \
     --metrics \
     --metrics.endpoint ${CELESTIA_OTEL_URL} \
     --p2p.network ${CHAIN_ID} \

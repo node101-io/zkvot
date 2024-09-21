@@ -28,13 +28,13 @@ const Celestia = {
    * @param {initCallback} callback
    * @returns {void}
    */
-  init: callback => {
+  init: (data, callback) => {
     isPortInUse(DEFAULT_RPC_PORT, (err, inUse) => {
       if (err)
         return callback(err);
 
       if (!inUse) {
-        installCelestia((err, res) => {
+        installCelestia(data, (err, res) => {
           if (err)
             return callback(err);
 
@@ -180,9 +180,7 @@ const Celestia = {
       if (err)
         return callback(err);
 
-      console.log(1, res);
-
-      if (SYNCING_IN_PROGRESS_ERROR_MESSAGE_REGEX.test(res.error.message))
+      if (SYNCING_IN_PROGRESS_ERROR_MESSAGE_REGEX.test(res.error?.message))
         return callback('syncing_in_progress');
 
       return callback(null, res.result);
@@ -227,8 +225,6 @@ const Celestia = {
       }, (err, res) => {
         if (err)
           return callback(err);
-
-        console.log(0, res);
 
         return callback(null, res.result);
       });
