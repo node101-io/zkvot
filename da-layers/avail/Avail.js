@@ -17,13 +17,16 @@ const DEFAULT_RPC_PORT = 10103;
 const DEFAULT_RPC_URL = 'http://127.0.0.1:10103';
 
 const Avail = {
-  init: callback => {
+  init: (data, callback) => {
+    if (!data || typeof data != 'object')
+      return callback('bad_request');
+
     isPortInUse(DEFAULT_RPC_PORT, (err, inUse) => {
       if (err)
         return callback(err);
 
       if (!inUse) {
-        installAvail((err, res) => {
+        installAvail(data, (err, res) => {
           if (err)
             return callback(err);
 
@@ -57,10 +60,10 @@ const Avail = {
     });
   },
   recoverWallet: (data, callback) => {
-    if (!data || typeof data !== 'object')
+    if (!data || typeof data != 'object')
       return callback('bad_request');
 
-    if (!data.mnemonic || typeof data.mnemonic !== 'string' || !data.mnemonic.trim().length)
+    if (!data.mnemonic || typeof data.mnemonic != 'string' || !data.mnemonic.trim().length)
       return callback('bad_request');
 
     recover(data, (err, wallet) => {
@@ -111,7 +114,7 @@ const Avail = {
     });
   },
   getData: (data, callback) => {
-    if (!data || typeof data !== 'object')
+    if (!data || typeof data != 'object')
       return callback('bad_request');
 
     if (!data.block_height || isNaN(data.block_height) || Number(data.block_height) < 0)
@@ -127,7 +130,7 @@ const Avail = {
     });
   },
   submitData: (data, callback) => {
-    if (!data || typeof data !== 'object')
+    if (!data || typeof data != 'object')
       return callback('bad_request');
 
     encodeToBase64String(data, (err, encodedData) => {

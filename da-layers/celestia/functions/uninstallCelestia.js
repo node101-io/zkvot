@@ -1,5 +1,8 @@
+const { app } = require('electron');
 const childProcess = require('child_process');
 const path = require('path');
+
+const celestiaDockerFolderPath = path.join(app.getPath('userData'), 'zkvote-node/celestia');
 
 const UNINSTALL_LIGHT_NODE_COMMAND = 'docker compose down --volumes --rmi all';
 
@@ -15,7 +18,7 @@ const UNINSTALL_LIGHT_NODE_COMMAND = 'docker compose down --volumes --rmi all';
 module.exports = callback => {
   childProcess.exec(
     UNINSTALL_LIGHT_NODE_COMMAND,
-    { cwd: path.join(__dirname, '../light-node') },
+    { cwd: celestiaDockerFolderPath },
     (err, stdout, stderr) => {
       if (err)
         return callback('terminal_error');

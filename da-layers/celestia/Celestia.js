@@ -21,14 +21,22 @@ const SYNCING_IN_PROGRESS_ERROR_MESSAGE_REGEX = /header: syncing in progress:/;
 
 const Celestia = {
   /**
+   * @typedef {Object} InitData
+   * @property {string} block_hash
+   */
+  /**
    * @callback initCallback
    * @param {string|null} err
    */
   /**
+   * @param {InitData} data
    * @param {initCallback} callback
    * @returns {void}
    */
   init: (data, callback) => {
+    if (!data || typeof data != 'object')
+      return callback('bad_request');
+
     isPortInUse(DEFAULT_RPC_PORT, (err, inUse) => {
       if (err)
         return callback(err);

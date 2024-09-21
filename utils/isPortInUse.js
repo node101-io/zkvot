@@ -30,7 +30,7 @@ module.exports = (port, callback) => {
     return callback(null, false);
   });
 
-  socket.on('error', (err) => {
+  socket.on('error', err => {
     socket.destroy();
     if (err.code === 'ECONNREFUSED')
       return callback(null, false);
