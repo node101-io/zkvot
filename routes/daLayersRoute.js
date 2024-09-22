@@ -13,6 +13,7 @@ const getWalletBalanceAvailDAPostController = require('../controllers/da-layers/
 const createWalletAvailDAPostController = require('../controllers/da-layers/avail/wallet/create/post');
 const recoverWalletAvailDAPostController = require('../controllers/da-layers/avail/wallet/recover/post');
 
+const createNamespaceByVotingIdCelestiaDAPostController = require('../controllers/da-layers/celestia/create-namespace/post');
 const getDataCelestiaDAPostController = require('../controllers/da-layers/celestia/get-data/post');
 const initCelestiaDAPostController = require('../controllers/da-layers/celestia/init/post');
 const submitDataCelestiaDAPostController = require('../controllers/da-layers/celestia/submit-data/post');
@@ -61,6 +62,10 @@ router.post(
   recoverWalletAvailDAPostController
 );
 
+router.post(
+  '/celestia/create-namespace',
+  createNamespaceByVotingIdCelestiaDAPostController
+);
 router.post(
   '/celestia/get-data',
   getDataCelestiaDAPostController
