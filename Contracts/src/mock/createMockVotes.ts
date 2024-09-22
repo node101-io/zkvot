@@ -6,14 +6,15 @@ import {
   PrivateKey,
   PublicKey,
   Poseidon,
-  verify,
   Signature,
 } from 'o1js';
+import dotenv from 'dotenv';
+dotenv.config();
 
-import { MerkleWitnessClass } from './utils.js';
+import { MerkleWitnessClass } from '../utils.js';
 
-import { Vote, VotePrivateInputs, VotePublicInputs } from './VoteProgram.js';
-import { RangeAggregationProgram } from './RangeAggregationProgram.js';
+import { Vote, VotePrivateInputs, VotePublicInputs } from '../VoteProgram.js';
+import { RangeAggregationProgram } from '../RangeAggregationProgram.js';
 
 let Local = await Mina.LocalBlockchain({ proofsEnabled: true });
 Mina.setActiveInstance(Local);
@@ -26,11 +27,17 @@ for (let i = 0; i < 40; i++) {
   votersArray.push([privateKey, publicKey]);
 }
 
-votersArray.sort((a) => {
-  if (a[1] < a[1]) {
+votersArray.sort((a, b) => {
+  if (
+    Poseidon.hash(a[1].toFields()).toBigInt() <
+    Poseidon.hash(b[1].toFields()).toBigInt()
+  ) {
     return -1;
   }
-  if (a[1] > a[1]) {
+  if (
+    Poseidon.hash(a[1].toFields()).toBigInt() >
+    Poseidon.hash(b[1].toFields()).toBigInt()
+  ) {
     return 1;
   }
   return 0;
@@ -54,26 +61,33 @@ console.log('verification key', verificationKey.data.slice(0, 10) + '..');
 
 console.log('casting votes');
 
-let votingId = Field.from(123);
+const electionPrivateKey = PrivateKey.fromBase58(
+  // @ts-ignore
+  process.env.ELECTION_PRIVATE_KEY
+);
+const electionId = electionPrivateKey.toPublicKey();
 
 let voteProofs = [];
 for (let i = 0; i < 20; i++) {
-  let vote = BigInt(Math.floor(Math.random() * 14) + 1);
+  let vote = BigInt(Math.floor(Math.random() * 42) + 1);
   let privateKey = votersArray[i][0];
   let merkleTreeWitness = votersTree.getWitness(BigInt(i));
   let witness = new MerkleWitnessClass(merkleTreeWitness);
 
   let votePublicInputs = new VotePublicInputs({
-    votingId: votingId,
+    electionId: electionId,
     vote: Field.from(vote),
     votersRoot: votersRoot,
   });
-  const signedVoteId = Signature.create(privateKey, [votingId]);
-  const signedVote = Signature.create(privateKey, [votingId, Field.from(vote)]);
+  const signedVoteId = Signature.create(privateKey, electionId.toFields());
+  // const signedVote = Signature.create(privateKey, [
+  //   ...electionId.toFields(),
+  //   Field.from(vote),
+  // ]);
   let votePrivateInputs = new VotePrivateInputs({
     voterKey: privateKey.toPublicKey(),
     signedVoteId: signedVoteId,
-    signedVote: signedVote,
+    // signedVote: signedVote,
     votersMerkleWitness: witness,
   });
 
@@ -102,22 +116,25 @@ await fs.writeFile('voteProofs.json', JSON.stringify(voteProofs, null, 2));
 
 voteProofs = [];
 for (let i = 20; i < 40; i++) {
-  let vote = BigInt(Math.floor(Math.random() * 14) + 1);
+  let vote = BigInt(Math.floor(Math.random() * 42) + 1);
   let privateKey = votersArray[i][0];
   let merkleTreeWitness = votersTree.getWitness(BigInt(i));
   let witness = new MerkleWitnessClass(merkleTreeWitness);
 
   let votePublicInputs = new VotePublicInputs({
-    votingId: votingId,
+    electionId: electionId,
     vote: Field.from(vote),
     votersRoot: votersRoot,
   });
-  const signedVoteId = Signature.create(privateKey, [votingId]);
-  const signedVote = Signature.create(privateKey, [votingId, Field.from(vote)]);
+  const signedVoteId = Signature.create(privateKey, electionId.toFields());
+  // const signedVote = Signature.create(privateKey, [
+  //   ...electionId.toFields(),
+  //   Field.from(vote),
+  // ]);
   let votePrivateInputs = new VotePrivateInputs({
     voterKey: privateKey.toPublicKey(),
     signedVoteId: signedVoteId,
-    signedVote: signedVote,
+    // signedVote: signedVote,
     votersMerkleWitness: witness,
   });
 

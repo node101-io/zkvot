@@ -6,11 +6,13 @@ import {
 } from './SegmentTree.js';
 import fs from 'fs';
 import { Vote, VoteProof } from './VoteProgram.js';
-import { Field, verify } from 'o1js';
+import { Field, PrivateKey, verify } from 'o1js';
 import {
   AggregateProof,
   RangeAggregationProgram,
 } from './RangeAggregationProgram.js';
+import dotenv from 'dotenv';
+dotenv.config();
 
 console.log('Compiling vote program');
 
@@ -33,7 +35,12 @@ const voteProofs = readJsonFile('voteProofs.json');
 const votersRootJson = readJsonFile('votersRoot.json');
 const votersRoot = Field.fromJSON(votersRootJson);
 
-const voteId = Field.from(123);
+const electionPrivateKey = PrivateKey.fromBase58(
+  // @ts-ignore
+  process.env.ELECTION_PRIVATE_KEY
+);
+
+const electionId = electionPrivateKey.toPublicKey();
 
 const leaves: LeafNode<bigint, VoteProof>[] = [];
 
@@ -82,7 +89,7 @@ for (let i = 0; i < aggregateOrder.length; i++) {
       aggregateProof = await RangeAggregationProgram.base_two(
         {
           votersRoot: votersRoot,
-          voteId: voteId,
+          electionId: electionId,
         },
         leftChild.voteProof,
         rightChild.voteProof
@@ -99,7 +106,7 @@ for (let i = 0; i < aggregateOrder.length; i++) {
       aggregateProof = await RangeAggregationProgram.append_left(
         {
           votersRoot: votersRoot,
-          voteId: voteId,
+          electionId: electionId,
         },
         rightChildAggregatorProof as AggregateProof,
         leftChild.voteProof
@@ -116,7 +123,7 @@ for (let i = 0; i < aggregateOrder.length; i++) {
       aggregateProof = await RangeAggregationProgram.append_right(
         {
           votersRoot: votersRoot,
-          voteId: voteId,
+          electionId: electionId,
         },
         leftChildAggregatorProof as AggregateProof,
         rightChild.voteProof
@@ -135,7 +142,7 @@ for (let i = 0; i < aggregateOrder.length; i++) {
       aggregateProof = await RangeAggregationProgram.merge(
         {
           votersRoot: votersRoot,
-          voteId: voteId,
+          electionId: electionId,
         },
         leftChildAggregatorProof as AggregateProof,
         rightChildAggregatorProof as AggregateProof
@@ -153,7 +160,7 @@ for (let i = 0; i < aggregateOrder.length; i++) {
       aggregateProof = await RangeAggregationProgram.base_one(
         {
           votersRoot: votersRoot,
-          voteId: voteId,
+          electionId: electionId,
         },
         leftChild.voteProof
       );
@@ -170,7 +177,7 @@ for (let i = 0; i < aggregateOrder.length; i++) {
       aggregateProof = await RangeAggregationProgram.base_one(
         {
           votersRoot: votersRoot,
-          voteId: voteId,
+          electionId: electionId,
         },
         rightChild.voteProof
       );

@@ -1,8 +1,8 @@
-import { Field, verify } from 'o1js';
+import { Field, PublicKey, PrivateKey, verify } from 'o1js';
 import {
   AggregateProof,
+  fieldToUInt32BigEndian,
   RangeAggregationProgram,
-  VoteOptions,
 } from '../RangeAggregationProgram.js';
 import { Vote, VoteProof } from '../VoteProgram.js';
 import fs from 'fs/promises';
@@ -16,19 +16,18 @@ dotenv.config();
 
 const addRandom = false;
 
-export const runAggregate = async (voteId: string) => {
-  console.log('Compiling vote program');
-
+export const runAggregate = async (electionId: PublicKey) => {
+  console.time('Compiling vote program');
   let { verificationKey } = await Vote.compile();
-  console.log('Vote program compiled');
+  console.timeEnd('Compiling vote program');
 
-  console.log('Compiling range aggregation program');
+  console.time('Compiling range aggregation program');
   await RangeAggregationProgram.compile();
-  console.log('Range aggregation program compiled');
+  console.timeEnd('Compiling range aggregation program');
 
   console.log('Reading vote proofs');
 
-  const voteProofsJson = await fs.readFile('voteProofs.json');
+  const voteProofsJson = await fs.readFile('voteProofsEcdsa256.json');
   const voteProofs = JSON.parse(voteProofsJson.toString());
   console.log('Vote proofs read, there are', voteProofs.length, 'proofs found');
 
@@ -41,12 +40,14 @@ export const runAggregate = async (voteId: string) => {
   );
 
   console.log('Reading voters root');
-  const votersRootJson = await fs.readFile('votersRoot.json');
+  const votersRootJson = await fs.readFile('votersRootEcdsa256.json');
   const votersRoot = Field.from(JSON.parse(votersRootJson.toString()));
   console.log('Voters root read, voters root:', votersRoot.toString());
 
   console.log('Checking votes');
   const leaves: LeafNode<bigint, VoteProof>[] = [];
+
+  let expectedResults = new Array(43).fill(0);
 
   for (let i = 0; i < voteProofs.length; i++) {
     const voteProof = await VoteProof.fromJSON(voteProofs[i]);
@@ -59,8 +60,11 @@ export const runAggregate = async (voteId: string) => {
 
     if (ok) {
       leaves.push(leaf);
+      expectedResults[Number(voteProof.publicOutput.vote.toString())]++;
       console.log(
-        'Vote proof is valid, vote for:',
+        'Vote proof',
+        leaf.voteProof.publicOutput.nullifier.toString(),
+        ' is valid, vote for:',
         leaf.voteProof.publicOutput.vote.toString()
       );
     } else {
@@ -68,6 +72,11 @@ export const runAggregate = async (voteId: string) => {
       continue;
     }
   }
+
+  console.log(
+    'Expected results:',
+    expectedResults.map((x, i) => [i, x])
+  );
 
   if (addRandom) {
     console.log('Adding random votes');
@@ -127,8 +136,7 @@ export const runAggregate = async (voteId: string) => {
   const aggregateOrder = segmentTree.traverse();
 
   for (let i = 0; i < aggregateOrder.length; i++) {
-    console.log(`Aggregating node ${i} of ${aggregateOrder.length}`);
-    const time = Date.now();
+    console.time(`Aggregating node ${i} of ${aggregateOrder.length}`);
     const node = aggregateOrder[i];
     const leftChild = node.leftChild;
     const rightChild = node.rightChild;
@@ -138,6 +146,32 @@ export const runAggregate = async (voteId: string) => {
 
     if (segmentTree.cachedAggregatorProofs.has(includedVotesHash)) {
       console.log('Cache hit!');
+      console.log(node.includedVotes);
+      const cachedProof = segmentTree.getCachedAggregatorProof(
+        includedVotesHash
+      ) as AggregateProof;
+      console.log(cachedProof.publicOutput.totalAggregatedCount.toString());
+      console.log(
+        fieldToUInt32BigEndian(cachedProof.publicOutput.voteOptions_1).map(
+          (f, i) => [i + 1, f.toBigint()]
+        ),
+        fieldToUInt32BigEndian(cachedProof.publicOutput.voteOptions_2).map(
+          (f, i) => [i + 8, f.toBigint()]
+        ),
+        fieldToUInt32BigEndian(cachedProof.publicOutput.voteOptions_3).map(
+          (f, i) => [i + 15, f.toBigint()]
+        ),
+        fieldToUInt32BigEndian(cachedProof.publicOutput.voteOptions_4).map(
+          (f, i) => [i + 22, f.toBigint()]
+        ),
+        fieldToUInt32BigEndian(cachedProof.publicOutput.voteOptions_5).map(
+          (f, i) => [i + 29, f.toBigint()]
+        ),
+        fieldToUInt32BigEndian(cachedProof.publicOutput.voteOptions_6).map(
+          (f, i) => [i + 36, f.toBigint()]
+        )
+      );
+
       continue;
     }
     if (leftChild && rightChild) {
@@ -145,7 +179,7 @@ export const runAggregate = async (voteId: string) => {
         aggregateProof = await RangeAggregationProgram.base_two(
           {
             votersRoot: votersRoot,
-            voteId: Field.from(voteId),
+            electionId,
           },
           leftChild.voteProof,
           rightChild.voteProof
@@ -162,7 +196,7 @@ export const runAggregate = async (voteId: string) => {
         aggregateProof = await RangeAggregationProgram.append_left(
           {
             votersRoot: votersRoot,
-            voteId: Field.from(voteId),
+            electionId,
           },
           rightChildAggregatorProof as AggregateProof,
           leftChild.voteProof
@@ -179,7 +213,7 @@ export const runAggregate = async (voteId: string) => {
         aggregateProof = await RangeAggregationProgram.append_right(
           {
             votersRoot: votersRoot,
-            voteId: Field.from(voteId),
+            electionId,
           },
           leftChildAggregatorProof as AggregateProof,
           rightChild.voteProof
@@ -198,7 +232,7 @@ export const runAggregate = async (voteId: string) => {
         aggregateProof = await RangeAggregationProgram.merge(
           {
             votersRoot: votersRoot,
-            voteId: Field.from(voteId),
+            electionId,
           },
           leftChildAggregatorProof as AggregateProof,
           rightChildAggregatorProof as AggregateProof
@@ -216,7 +250,7 @@ export const runAggregate = async (voteId: string) => {
         aggregateProof = await RangeAggregationProgram.base_one(
           {
             votersRoot: votersRoot,
-            voteId: Field.from(voteId),
+            electionId,
           },
           leftChild.voteProof
         );
@@ -233,7 +267,7 @@ export const runAggregate = async (voteId: string) => {
         aggregateProof = await RangeAggregationProgram.base_one(
           {
             votersRoot: votersRoot,
-            voteId: Field.from(voteId),
+            electionId,
           },
           rightChild.voteProof
         );
@@ -255,7 +289,7 @@ export const runAggregate = async (voteId: string) => {
     } catch (e) {
       console.log('Error saving cached proof to LevelDB', e);
     }
-    console.log('Aggregation time:', (Date.now() - time) / 1000, 'seconds');
+    console.timeEnd(`Aggregating node ${i} of ${aggregateOrder.length}`);
   }
 
   if (segmentTree.root instanceof InnerNode) {
@@ -275,23 +309,60 @@ export const runAggregate = async (voteId: string) => {
       'Range upper bound:',
       rootAggregatorProof.publicOutput.rangeUpperBound.toString()
     );
-    let arr = VoteOptions.decompress(
+    let arr = fieldToUInt32BigEndian(
       rootAggregatorProof.publicOutput.voteOptions_1
-    ).toUInt32();
+    );
 
     for (let i = 0; i < 7; i++) {
       console.log(`voteOptions_${i + 1}:`, arr[i].toString());
     }
 
-    arr = VoteOptions.decompress(
+    arr = fieldToUInt32BigEndian(
       rootAggregatorProof.publicOutput.voteOptions_2
-    ).toUInt32();
+    );
 
     for (let i = 0; i < 7; i++) {
       console.log(`voteOptions_${i + 8}:`, arr[i].toString());
+    }
+
+    arr = fieldToUInt32BigEndian(
+      rootAggregatorProof.publicOutput.voteOptions_3
+    );
+
+    for (let i = 0; i < 7; i++) {
+      console.log(`voteOptions_${i + 15}:`, arr[i].toString());
+    }
+
+    arr = fieldToUInt32BigEndian(
+      rootAggregatorProof.publicOutput.voteOptions_4
+    );
+
+    for (let i = 0; i < 7; i++) {
+      console.log(`voteOptions_${i + 22}:`, arr[i].toString());
+    }
+
+    arr = fieldToUInt32BigEndian(
+      rootAggregatorProof.publicOutput.voteOptions_5
+    );
+
+    for (let i = 0; i < 7; i++) {
+      console.log(`voteOptions_${i + 29}:`, arr[i].toString());
+    }
+
+    arr = fieldToUInt32BigEndian(
+      rootAggregatorProof.publicOutput.voteOptions_6
+    );
+
+    for (let i = 0; i < 7; i++) {
+      console.log(`voteOptions_${i + 36}:`, arr[i].toString());
     }
   }
   return;
 };
 
-await runAggregate('123');
+const electionPrivateKey = PrivateKey.fromBase58(
+  // @ts-ignore
+  process.env.ELECTION_PRIVATE_KEY
+);
+const electionId = electionPrivateKey.toPublicKey();
+await runAggregate(electionId);
