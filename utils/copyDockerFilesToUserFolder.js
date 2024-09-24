@@ -10,7 +10,7 @@ module.exports = (data, callback) => {
   if (!data.new_path || typeof data.new_path != 'string' || !data.new_path.trim().length)
     return callback('bad_request');
 
-  if (data.replacements && typeof data.replacements != 'object')
+  if (data.replacements && (typeof data.replacements != 'object' || !Object.keys(data.replacements).length))
     return callback('bad_request');
 
   fs.readFile(data.old_path, 'utf8', (err, fileData) => {

@@ -17,7 +17,6 @@ const availDockerfilePath = path.join(availDockerFolderPath, 'Dockerfile');
 
 const INSTALL_LIGHT_NODE_COMMAND = 'docker compose up --detach';
 const LIGHT_NODE_ALREADY_INSTALLED_REGEX = /Container (.*?) Running/;
-const WAIT_FOR_MNEMONIC_TIMEOUT_IN_MS = 100;
 
 /**
  * @callback installAvailCallback
@@ -71,19 +70,17 @@ module.exports = (data, callback) => {
             if (LIGHT_NODE_ALREADY_INSTALLED_REGEX.test(stderr))
               return callback('already_installed');
 
-            setTimeout(() => {
-              fetchMnemonicFromNode((err, mnemonic) => {
+            fetchMnemonicFromNode(0, (err, mnemonic) => {
+              if (err)
+                return callback(err);
+
+              SafeStore.keepAvailMnemonic(mnemonic, err => {
                 if (err)
                   return callback(err);
 
-                SafeStore.keepAvailMnemonic(mnemonic, err => {
-                  if (err)
-                    return callback(err);
-
-                  return callback(null);
-                });
+                return callback(null);
               });
-            }, WAIT_FOR_MNEMONIC_TIMEOUT_IN_MS);
+            });
           }
         );
       });

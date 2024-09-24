@@ -42,7 +42,7 @@ RUN mkdir -p ${DAEMON_HOME}/${CHAIN_ID}/data
 RUN mkdir -p ${DAEMON_HOME}/${CHAIN_ID}/identity
 
 RUN echo "bootstraps = ['/dns/bootnode.1.lightclient.turing.avail.so/tcp/37000/p2p/12D3KooWBkLsNGaD3SpMaRWtAmWVuiZg1afdNSPbtJ8M8r9ArGRT']" > ${CONFIG_FILE} && \
-    echo "full_node_ws = ['wss://turing-testnet.avail-rpc.com','wss://avail-turing.public.blastapi.io', 'wss://avail-turing-rpc.publicnode.com', 'wss://turing.public.curie.radiumblock.co/ws', 'wss://avail-turing.bountyblok.io']" >> ${CONFIG_FILE} && \
+    echo "full_node_ws = ['wss://turing-rpc.avail.so/ws','wss://avail-turing.public.blastapi.io','wss://turing-testnet.avail-rpc.com']" >> ${CONFIG_FILE} && \
     echo "confidence = 80.0" >> ${CONFIG_FILE} && \
     echo "avail_path = '$DAEMON_HOME/turing/data'" >> ${CONFIG_FILE} && \
     echo "kad_record_ttl = 43200" >> ${CONFIG_FILE} && \
