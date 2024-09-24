@@ -37,6 +37,9 @@ module.exports = (data, callback) => {
   if (!data.block_hash || typeof data.block_hash != 'string' || !data.block_hash.trim().length)
     return callback('bad_request');
 
+  if (!data.block_height || isNaN(data.block_height) || Number(data.block_height) < 0)
+    return callback('bad_request');
+
   createDockerFolderIfDoesntExist(celestiaDockerFolderPath, (err) => {
     if (err)
       return callback(err);
@@ -45,7 +48,8 @@ module.exports = (data, callback) => {
       old_path: templateComposeFilePath,
       new_path: celestiaComposeFilePath,
       replacements: {
-        trusted_block_hash_placeholder: data.block_hash
+        trusted_block_hash_placeholder: data.block_hash,
+        trusted_block_height_placeholder: data.block_height
       }
     }, err => {
       if (err)
