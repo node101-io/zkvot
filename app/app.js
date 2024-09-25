@@ -26,9 +26,6 @@ const localServer = http.createServer(expressApp);
 const daLayerRouteController = require('./routes/daLayersRoute');
 const dockerRouteController = require('./routes/dockerRoute');
 
-expressApp.set('view engine', 'pug');
-expressApp.set('views', path.join(__dirname, 'views'));
-
 expressApp.use(express.static(path.join(__dirname, 'public')));
 expressApp.use(favicon(path.join(__dirname, 'public', 'img/icons/favicon.ico')));
 expressApp.use(express.json());
