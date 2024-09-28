@@ -1,11 +1,14 @@
 import winston from 'winston';
 
 const logger = winston.createLogger({
-  transports: [new winston.transports.Console()],
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: 'debug.log', level: 'debug' }),
+  ],
   format: winston.format.combine(
-    winston.format.colorize({ all: true }),
+    winston.format.colorize(),
     winston.format.simple()
-  ),
+  )
 });
 
 // logger.log('info', 'info message');

@@ -7,26 +7,29 @@ import command from '../../utils/command.js';
 import logger from '../../utils/logger.js';
 
 const count = (election_id, options) => {
-  getAndSaveElectionDataByElectionIdIfNotExist(election_id, (err, election) => {
+  getAndSaveElectionDataByElectionIdIfNotExist({
+    election_id: election_id,
+    mina_rpc_url: options.minaRpc,
+  }, err => {
     if (err)
       return logger.log('error', err);
 
-    installRequiredLightNodeByElectionIdIfNotExist(election, err => {
-      if (err)
-        return logger.log('error', err);
+    // installRequiredLightNodeByElectionIdIfNotExist(election, err => {
+    //   if (err)
+    //     return logger.log('error', err);
 
-      saveAllVotesFromBlockHeightToCurrentViaLightNode(election, err => {
-        if (err)
-          return logger.log('error', err);
+    //   saveAllVotesFromBlockHeightToCurrentViaLightNode(election, err => {
+    //     if (err)
+    //       return logger.log('error', err);
 
-        aggregateSavedVotes(election_id, (err, result) => {
-          if (err)
-            return logger.log('error', err);
+    //     aggregateSavedVotes(election_id, (err, result) => {
+    //       if (err)
+    //         return logger.log('error', err);
 
-          return logger.log('info', result);
-        });
-      });
-    });
+          return logger.log('info', 'result');
+    //     });
+    //   });
+    // });
   });
 };
 
@@ -34,6 +37,7 @@ command
   .command('count')
   .description('count votes by id')
   .argument('<election-id>', 'public key of the vote')
+  .option('-r, --mina-rpc <url>', 'rpc url of the mina node to fetch the contract state')
   .action(count);
 
 // zkvot status
