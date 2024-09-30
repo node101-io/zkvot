@@ -10,7 +10,7 @@ const count = (election_id, options) => {
   getAndSaveElectionDataByElectionIdIfNotExist({
     election_id: election_id,
     mina_rpc_url: options.minaRpc,
-  }, err => {
+  }, (err, election) => {
     if (err)
       return logger.log('error', err);
 

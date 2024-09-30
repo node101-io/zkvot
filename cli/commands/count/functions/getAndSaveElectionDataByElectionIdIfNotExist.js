@@ -26,7 +26,7 @@ export default (data, callback) => {
         if (err)
           return callback(err);
 
-        return callback(null);
+        return callback(null, election_data);
       });
     });
   });
