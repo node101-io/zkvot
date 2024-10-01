@@ -24,3 +24,6 @@ env.json
 cachedProofsDb
 
 .env
+
+local
+local-mock
