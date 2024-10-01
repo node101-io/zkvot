@@ -9,10 +9,10 @@ This CLI is designed to facilitate the aggregation of zero-knowledge proofs (ZKP
   Ensures no votes are omitted by allowing anyone running a light node to participate in aggregation, maintaining decentralization and trustlessness.
 - **ZKP Verification**
 
-  Verifies ZKPs locally.
+  Verifies ZKPs locally. Therefore, only valid votes cast by eligible voters will be included in the final results.
 - **Aggregation of Votes**
 
-  Aggregates vote proofs into a single ZKP, ensuring all votes are counted once.
+  Aggregates vote proofs into a single ZKP, ensuring all valid votes are counted once.
 
 ## Installation
 
