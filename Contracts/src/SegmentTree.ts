@@ -39,14 +39,6 @@ export class SegmentTree<N extends bigint, AP, VP> {
     this.cachedAggregatorProofs = new Map<N, AP>();
   }
 
-  loadCachedAggregatorProofs(mappings: Array<[N, AP]>) {
-    this.cachedAggregatorProofs.clear();
-
-    mappings.forEach(([includedVotesHash, proof]) => {
-      this.cachedAggregatorProofs.set(includedVotesHash, proof);
-    });
-  }
-
   static build<N extends bigint, AP, VP>(
     votes: LeafNode<N, VP>[]
   ): SegmentTree<N, AP, VP> {
