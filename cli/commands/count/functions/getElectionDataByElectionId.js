@@ -1,4 +1,3 @@
-import fetch from 'node-fetch';
 import logger from '../../../utils/logger.js';
 
 const DEFAULT_MINA_RPC_URL = 'https://api.minascan.io/node/devnet/v1/graphql';

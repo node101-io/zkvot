@@ -3,44 +3,33 @@ import getAndSaveElectionDataByElectionIdIfNotExist from './functions/getAndSave
 import installRequiredLightNodeByElectionIdIfNotExist from './functions/installRequiredLightNodeByElectionIdIfNotExist.js';
 import saveAllVotesFromBlockHeightToCurrentViaLightNode from './functions/saveAllVotesFromBlockHeightToCurrentViaLightNode.js';
 
-import command from '../../utils/command.js';
 import logger from '../../utils/logger.js';
 
-const count = (election_id, options) => {
-  getAndSaveElectionDataByElectionIdIfNotExist({
-    election_id: election_id,
-    mina_rpc_url: options.minaRpc,
-  }, (err, election) => {
-    if (err)
-      return logger.log('error', err);
+const args = JSON.parse(process.argv[2]);
 
-    // installRequiredLightNodeByElectionIdIfNotExist(election, err => {
-    //   if (err)
-    //     return logger.log('error', err);
+await new Promise(resolve => setTimeout(resolve, 1000));
 
-    //   saveAllVotesFromBlockHeightToCurrentViaLightNode(election, err => {
-    //     if (err)
-    //       return logger.log('error', err);
+getAndSaveElectionDataByElectionIdIfNotExist({
+  election_id: args.election_id,
+  mina_rpc_url: args.minaRpc,
+}, (err, election) => {
+  if (err)
+    return logger.log('error', err);
 
-    //     aggregateSavedVotes(election_id, (err, result) => {
-    //       if (err)
-    //         return logger.log('error', err);
+  // installRequiredLightNodeByElectionIdIfNotExist(election, err => {
+  //   if (err)
+  //     return logger.log('error', err);
 
-          return logger.log('info', 'result');
-    //     });
-    //   });
-    // });
-  });
-};
+  //   saveAllVotesFromBlockHeightToCurrentViaLightNode(election, err => {
+  //     if (err)
+  //       return logger.log('error', err);
 
-command
-  .command('count')
-  .description('count votes by id')
-  .argument('<election-id>', 'public key of the vote')
-  .option('-r, --mina-rpc <url>', 'rpc url of the mina node to fetch the contract state')
-  .action(count);
+  //     aggregateSavedVotes(election_id, (err, result) => {
+  //       if (err)
+  //         return logger.log('error', err);
 
-// zkvot status
-// election 38512841049242: SETTLED
-// election 38512841049242: COUNTING
-// election 38512841049242: READING FROM DA
+        return logger.log('info', 'result');
+  //     });
+  //   });
+  // });
+});
