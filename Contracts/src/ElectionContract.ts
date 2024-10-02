@@ -10,6 +10,8 @@ import {
   Struct,
   UInt32,
   Poseidon,
+  Signature,
+  UInt64,
 } from 'o1js';
 import { AggregateProof } from './RangeAggregationProgram';
 
@@ -44,7 +46,7 @@ export class VoteOptions extends Struct({
 export class ElectionContract extends SmartContract {
   @state(ElectionData) electionData = State<ElectionData>();
 
-  @state(PublicKey) lastAggregatorPubKeyHash = State<Field>();
+  @state(Field) lastAggregatorPubKeyHash = State<Field>();
 
   @state(VoteOptions) voteOptions = State<VoteOptions>();
 
@@ -119,5 +121,37 @@ export class ElectionContract extends SmartContract {
       UInt32.MAXINT()
     );
     return this.voteOptions.getAndRequireEquals();
+  }
+
+  @method
+  async redeemSettlementReward(
+    aggregatorPubKey: PublicKey,
+    aggregatorSignature: Signature,
+    reedemerPubKey: PublicKey,
+    amount: UInt64
+  ) {
+    this.account.provedState.requireEquals(Bool(true));
+    this.network.blockchainLength.getAndRequireEquals();
+    this.network.blockchainLength.requireBetween(
+      UInt32.from(ELECTION_FINALIZE_HEIGHT),
+      UInt32.MAXINT()
+    );
+
+    const lastAggregatorPubKeyHash =
+      this.lastAggregatorPubKeyHash.getAndRequireEquals();
+
+    lastAggregatorPubKeyHash.assertEquals(
+      Poseidon.hash(aggregatorPubKey.toFields())
+    );
+
+    aggregatorSignature.verify(aggregatorPubKey, [
+      lastAggregatorPubKeyHash,
+      Poseidon.hash(reedemerPubKey.toFields()),
+    ]);
+
+    this.send({
+      to: reedemerPubKey,
+      amount: amount,
+    });
   }
 }
