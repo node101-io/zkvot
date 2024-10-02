@@ -11,7 +11,9 @@
   "description": "",
   "dependencies": {
     "commander": "^12.1.0",
+    "docker-cli-js": "^2.10.0",
     "level": "^8.0.1",
+    "validator": "^13.12.0",
     "winston": "^3.14.2"
   },
   "engines": {

@@ -7,6 +7,7 @@ import fetchAuthKeyFromNode from './fetchAuthKeyFromNode.js';
 import copyDockerFilesToUserFolder from '../../../utils/copyDockerFilesToUserFolder.js';
 import createDockerFolderIfDoesntExist from '../../../utils/createDockerFolderIfDoesntExist.js';
 import db from '../../../utils/db.js';
+import logger from '../../../utils/logger.js';
 
 const templateComposeFilePath = path.join(import.meta.dirname, '../light-node/docker-compose.yaml');
 const templateDockerfilePath = path.join(import.meta.dirname, '../light-node/Dockerfile');
@@ -57,7 +58,10 @@ export default (data, callback) => {
             if (err)
               return callback(err);
 
-            console.log(stdout, stderr);
+            logger.log('debug', JSON.stringify({
+              stderr,
+              stdout
+            }));
 
             if (LIGHT_NODE_ALREADY_INSTALLED_REGEX.test(stdout))
               return callback(null);

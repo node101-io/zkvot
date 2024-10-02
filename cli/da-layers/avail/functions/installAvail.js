@@ -5,6 +5,8 @@ import path from 'path';
 import copyDockerFilesToUserFolder from '../../../utils/copyDockerFilesToUserFolder.js';
 import createDockerFolderIfDoesntExist from '../../../utils/createDockerFolderIfDoesntExist.js';
 
+import logger from '../../../utils/logger.js';
+
 const templateComposeFilePath = path.join(import.meta.dirname, '../light-node/docker-compose.yaml');
 const templateDockerfilePath = path.join(import.meta.dirname, '../light-node/Dockerfile');
 
@@ -22,7 +24,7 @@ export default (data, callback) => {
   if (!data.app_id || isNaN(data.app_id) || Number(data.app_id) < 0)
     return callback('bad_request');
 
-  if (!data.block_height || isNaN(data.block_height) || Number(data.block_height) < 0)
+  if (!data.start_block_height || isNaN(data.start_block_height) || Number(data.start_block_height) < 0)
     return callback('bad_request');
 
   createDockerFolderIfDoesntExist(availDockerFolderPath, err => {
@@ -34,7 +36,7 @@ export default (data, callback) => {
       new_path: availComposeFilePath,
       replacements: {
         app_id_placeholder: data.app_id,
-        sync_start_block_placeholder: data.block_height
+        sync_start_block_placeholder: data.start_block_height
       }
     }, err => {
       if (err)
@@ -54,7 +56,10 @@ export default (data, callback) => {
             if (err)
               return callback(err);
 
-            console.log(stdout, stderr);
+            logger.log('debug', JSON.stringify({
+              stderr,
+              stdout
+            }));
 
             if (LIGHT_NODE_ALREADY_INSTALLED_REGEX.test(stderr))
               return callback('already_installed');
