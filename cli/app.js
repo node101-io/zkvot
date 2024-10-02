@@ -1,8 +1,8 @@
 import command from './utils/command.js'
 
 import './commands/index.js';
-import './commands/count/command.js';
-import './commands/logs/command.js';
+import './commands/count/index.js';
+import './commands/logs/index.js';
 
 command.parse();
 

@@ -1,22 +1,35 @@
-import { spawn } from 'child_process';
+import aggregateSavedVotes from './functions/aggregateSavedVotes.js';
+import getAndSaveElectionDataByElectionIdIfNotExist from './functions/getAndSaveElectionDataByElectionIdIfNotExist.js';
+import installRequiredLightNodeByElectionIdIfNotExist from './functions/installRequiredLightNodeByElectionIdIfNotExist.js';
+import saveAllVotesFromBlockHeightToCurrentViaLightNode from './functions/saveAllVotesFromBlockHeightToCurrentViaLightNode.js';
 
-import command from '../../utils/command.js';
+import logger from '../../utils/logger.js';
 
-command
-  .command('count')
-  .description('count votes by id')
-  .argument('<election-id>', 'public key of the vote')
-  .option('-r, --mina-rpc <url>', 'rpc url of the mina node to fetch the contract state')
-  .option('-f, --follow', 'follow the counting process')
-  .action((election_id, options) => {
-    const spawnedProcess = spawn(process.execPath, [`${import.meta.dirname}/index.js`, JSON.stringify({
-      election_id: election_id,
-      mina_rpc: options.minaRpc,
-    })], {
-      detached: !options.follow,
-      stdio: options.follow ? 'inherit' : 'ignore',
-    });
+const args = JSON.parse(process.argv[2]);
 
-    if (!options.follow)
-      spawnedProcess.unref();
-  });
+await new Promise(resolve => setTimeout(resolve, 1000));
+
+getAndSaveElectionDataByElectionIdIfNotExist({
+  election_id: args.election_id,
+  mina_rpc_url: args.minaRpc,
+}, (err, election) => {
+  if (err)
+    return logger.log('error', err);
+
+  // installRequiredLightNodeByElectionIdIfNotExist(election, err => {
+  //   if (err)
+  //     return logger.log('error', err);
+
+  //   saveAllVotesFromBlockHeightToCurrentViaLightNode(election, err => {
+  //     if (err)
+  //       return logger.log('error', err);
+
+  //     aggregateSavedVotes(election_id, (err, result) => {
+  //       if (err)
+  //         return logger.log('error', err);
+
+        return logger.log('info', 'result');
+  //     });
+  //   });
+  // });
+});
