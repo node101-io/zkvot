@@ -11,3 +11,4 @@ Even though some solutions presented here may seem specific to a voting applicat
 This repository includes these parts of ZKvot:
 - Application for voters and election creators
 - CLI for aggregators
+- Backend for UX purposes
