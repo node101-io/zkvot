@@ -1,0 +1,21 @@
+{
+  "name": "zkvot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "cluster": "^0.7.7",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "mongoose": "^6.10.4",
+    "nodemon": "^3.1.7",
+    "path": "^0.12.7"
+  }
+}

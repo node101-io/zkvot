@@ -1,7 +1,7 @@
-# ZKvot CLI
+# zkVot CLI
 
 ## Introduction
-This CLI is designed to facilitate the aggregation of zero-knowledge proofs (ZKPs) in the ZKvot Protocol, specifically for counting votes while maintaining privacy, scalability, and decentralization. The aggregation process ensures that all votes are accurately counted, prevents double voting, and provides a verifiable final result using zero-knowledge proof (ZKP) aggregation.
+This CLI is designed to facilitate the aggregation of zero-knowledge proofs (ZKPs) in the zkVot Protocol, specifically for counting votes while maintaining privacy, scalability, and decentralization. The aggregation process ensures that all votes are accurately counted, prevents double voting, and provides a verifiable final result using zero-knowledge proof (ZKP) aggregation.
 
 ## Features
 - **Censorship Resistance**
@@ -17,8 +17,8 @@ This CLI is designed to facilitate the aggregation of zero-knowledge proofs (ZKP
 ## Installation
 
 ```
-npm install --global zkvot
+npm install --global zkVot
 ```
 ```
-zkvot --help
+zkVot --help
 ```
