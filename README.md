@@ -6,7 +6,7 @@ ZKvot brings various distributed layers (e.g. blockchains), zero knowledge provi
 
 Even though some solutions presented here may seem specific to a voting application, actually it is possible to extend concepts across different domains and solve various problems by embracing the same approach. And with this consideration, maybe it is even more appropriate to describe ZKvot as a protocol more than a product: In an internet that is fully designed on top of censorship resistant layers and distributed computation, ZKvot is one of the first utilizers of a transfer protocol that we want to create with the hope of a better internet.
 
-[See here]() for the full draft article of ZKvot.
+[See here](https://zkvot.io/zkVotProtocol.pdf) for the full draft article of ZKvot.
 
 This repository includes these parts of ZKvot:
 - Application for voters and election creators
