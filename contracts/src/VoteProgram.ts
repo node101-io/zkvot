@@ -16,7 +16,6 @@ import { MerkleWitnessClass } from './utils.js';
 
 class Secp256k1 extends createForeignCurveV2(Crypto.CurveParams.Secp256k1) {}
 class Ecdsa extends createEcdsaV2(Secp256k1) {}
-// class Bytes96 extends Bytes(96) {}
 class Bytes64 extends Bytes(64) {}
 
 function bytesToFieldBigEndian(wordBytes: UInt8[]): Field {
@@ -57,15 +56,13 @@ export class VotePublicOutputs extends Struct({
 
 export class VotePrivateInputs extends Struct({
   voterKey: PublicKey,
-  signedVoteId: Signature,
-  // signedVote: Signature,
+  signedElectionId: Signature,
   votersMerkleWitness: MerkleWitnessClass,
 }) {}
 
 export class VoteWithSecp256k1PrivateInputs extends Struct({
   voterKey: Secp256k1,
-  signedVoteId: Ecdsa,
-  // signedVote: Ecdsa,
+  signedElectionId: Ecdsa,
   votersMerkleWitness: MerkleWitnessClass,
 }) {}
 
@@ -86,17 +83,12 @@ export const Vote = ZkProgram({
           .calculateRoot(Poseidon.hash(voterPublicKey.toFields()))
           .assertEquals(publicInput.votersRoot);
 
-        privateInput.signedVoteId.verify(
+        privateInput.signedElectionId.verify(
           voterPublicKey,
           publicInput.electionId.toFields()
         );
 
-        // privateInput.signedVote.verify(voterPublicKey, [
-        //   ...publicInput.electionId.toFields(),
-        //   publicInput.vote,
-        // ]);
-
-        let nullifier = Poseidon.hash(privateInput.signedVoteId.toFields());
+        let nullifier = Poseidon.hash(privateInput.signedElectionId.toFields());
 
         return {
           vote: publicInput.vote,
@@ -119,42 +111,31 @@ export const Vote = ZkProgram({
           .calculateRoot(Poseidon.hash(publicKeyFields))
           .assertEquals(publicInput.votersRoot);
 
-        // const signedVote = privateInput.signedVote;
-        const signedVoteId = privateInput.signedVoteId;
+        const signedElectionId = privateInput.signedElectionId;
 
-        const electionId_first_field = publicInput.electionId.toFields()[0];
-        const electionId_second_field = publicInput.electionId.toFields()[1];
-        // const vote = publicInput.vote;
+        const electionIdFirstField = publicInput.electionId.toFields()[0];
+        const electionIdSecondField = publicInput.electionId.toFields()[1];
 
-        let voteIdFirstFieldBytes = fieldToBytesBigEndian(
-          electionId_first_field
+        let electionIdFirstFieldBytes =
+          fieldToBytesBigEndian(electionIdFirstField);
+        let electionIdSecondFieldBytes = fieldToBytesBigEndian(
+          electionIdSecondField
         );
-        let voteIdSecondFieldBytes = fieldToBytesBigEndian(
-          electionId_second_field
-        );
-        // let voteBytes = fieldToBytesBigEndian(vote);
 
-        const signedVoteIdMessage = Bytes64.from([
-          ...voteIdFirstFieldBytes,
-          ...voteIdSecondFieldBytes,
+        const signedElectionIdMessage = Bytes64.from([
+          ...electionIdFirstFieldBytes,
+          ...electionIdSecondFieldBytes,
         ]);
-        // const signedVoteMessage = Bytes96.from([
-        //   ...voteIdFirstFieldBytes,
-        //   ...voteIdSecondFieldBytes,
-        //   ...voteBytes,
-        // ]);
 
-        signedVoteId
-          .verifyEthers(signedVoteIdMessage, voterPublicKey)
+        signedElectionId
+          .verifyEthers(signedElectionIdMessage, voterPublicKey)
           .assertTrue();
-
-        // signedVote.verifyEthers(signedVoteMessage, voterPublicKey).assertTrue();
 
         return {
           vote: publicInput.vote,
           nullifier: Poseidon.hash([
-            ...privateInput.signedVoteId.r.value,
-            ...privateInput.signedVoteId.s.value,
+            ...privateInput.signedElectionId.r.value,
+            ...privateInput.signedElectionId.s.value,
           ]),
         };
       },
