@@ -4,4 +4,4 @@ This app implements the first layer of the ZKvot Protocol, the Voting Layer, whe
 
 To fully utilize the computer's resources without the limitations of a browser while generating ZKP, a desktop app is preferred over a web app. However, to maintain the web app experience and allow the use of wallet extensions, the desktop app runs on a local port and can be interacted with via a browser.
 
-See _Voting Layer_ and _Communication Layer_ sections in [full draft article of ZKvot]().
+See _Voting Layer_ and _Communication Layer_ sections in [full draft article of ZKvot](https://zkvot.io/zkVotProtocol.pdf).
