@@ -1,0 +1,29 @@
+# NodeJS
+build
+node_modules
+coverage
+
+# Editor
+.vscode
+
+# System
+.DS_Store
+
+# Never commit keys to Git!
+keys
+
+voteproofs.json
+votersRoot.json
+voteAggregatorVerificationKey.json
+voteProofsRandom.json
+voteproofsEcdsa256.json
+votersRootEcdsa256.json
+voteAggregatorVerificationKeyEcdsa256.json
+voteProofsRandomEcdsa256.json
+env.json
+cachedProofsDb
+
+.env
+
+local
+local-mock
