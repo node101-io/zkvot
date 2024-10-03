@@ -1,8 +1,8 @@
 {
-  "name": "zkvote",
+  "name": "zkvot",
   "version": "0.1.0",
-  "description": "",
-  "author": "",
+  "description": "World's first fully live anonymous voting application!",
+  "author": "node101",
   "license": "Apache-2.0",
   "keywords": [
     "mina-zkapp",
