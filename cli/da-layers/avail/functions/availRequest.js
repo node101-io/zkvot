@@ -31,7 +31,10 @@ export default (url, options, callback) => {
     })
     .catch(err => {
       if (BLOCK_DATA_NOT_AVAILABLE_ERROR_MESSAGE_REGEX.test(err))
-        return callback('block_data_not_available');
+        return callback(null, {
+          block_number: null,
+          data_transactions: []
+        });
 
       if (INTERNAL_SERVER_ERROR_MESSAGE_REGEX.test(err))
         return callback('internal_server_error');

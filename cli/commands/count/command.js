@@ -17,35 +17,45 @@ await new Promise(resolve => setTimeout(resolve, 1000));
 //     return logger.log('error', err);
 
 const election = {
+  election_id: 'B62qk5sunym3zRih83JroVF3X8AoNnCJJ3yKfsxyj5VCcitZphqmQ5p',
   da_layers: [
-    {
-      name: 'celestia',
-      start_block_height: 2832930,
-      start_block_hash: '2D8F3DE4C429F4BD09333C9D291A4612484E929B9D2C60B4F3E42BB27D71FED6',
-      namespace: 'kksafopasoğ-=2141-',
-    },
     // {
-    //   name: 'avail',
-    //   start_block_height: 796700,
-    //   app_id: 101,
-    // }
+    //   name: 'celestia',
+    //   start_block_height: 2808650,
+    //   start_block_hash: '821CE8B3BFFFD76FEA4666C32495896E26C92271B264D8E490989CBC3227A94C',
+    //   namespace: 'AAAAAAAAAAAAAAAAAAAAAAAAAL89vfs7io/SsSQ=',
+    // },
+    {
+      name: 'avail',
+      start_block_height: 823500,
+      app_id: 101,
+    }
   ]
 };
 
-  installRequiredLightNodeByElectionIdIfNotExist(election, err => {
-    if (err)
-      return logger.log('error', err);
+saveAllVotesFromBlockHeightToCurrentViaLightNode(election, err => {
+  if (err)
+    return logger.log('error', err);
 
-  //   saveAllVotesFromBlockHeightToCurrentViaLightNode(election, err => {
-  //     if (err)
-  //       return logger.log('error', err);
+  logger.log('count finished')
 
-  //     aggregateSavedVotes(election_id, (err, result) => {
-  //       if (err)
-  //         return logger.log('error', err);
+  return callback(null);
+});
 
-        return logger.log('info', 'result');
-  //     });
-  //   });
-  });
+  // installRequiredLightNodeByElectionIdIfNotExist(election, err => {
+  //   if (err)
+  //     return logger.log('error', err);
+
+  // //   saveAllVotesFromBlockHeightToCurrentViaLightNode(election, err => {
+  // //     if (err)
+  // //       return logger.log('error', err);
+
+  // //     aggregateSavedVotes(election_id, (err, result) => {
+  // //       if (err)
+  // //         return logger.log('error', err);
+
+  //       return logger.log('info', 'result');
+  // //     });
+  // //   });
+  // });
 // });

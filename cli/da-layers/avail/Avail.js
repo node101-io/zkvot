@@ -42,10 +42,10 @@ const Avail = {
     if (!data || typeof data != 'object')
       return callback('bad_request');
 
-    if (!data.start_block_height || isNaN(data.start_block_height) || Number(data.start_block_height) < 0)
+    if (!data.block_height || isNaN(data.block_height) || Number(data.block_height) < 0)
       return callback('bad_request');
 
-    availRequest(`${DEFAULT_RPC_URL}/v2/blocks/${data.start_block_height}/data?fields=data`, {
+    availRequest(`${DEFAULT_RPC_URL}/v2/blocks/${data.block_height}/data?fields=data`, {
       method: 'GET'
     }, (err, res) => {
       if (err)
