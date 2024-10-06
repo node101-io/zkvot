@@ -1,18 +1,19 @@
 import async from 'async';
 import { verify } from 'o1js';
 
-import { Vote, VoteProof } from '../../../../contracts/src/VoteProgram.js';
+import { Vote, VoteProof } from '../../../../contracts/build/src/VoteProgram.js';
 
 import Avail from '../../../da-layers/avail/Avail.js';
 // import Celestia from '../../../da-layers/celestia/Celestia.js';
 
+import db from '../../../utils/db.js';
 import decodeFromBase64String from '../../../utils/decodeFromBase64String.js';
 import isBase64String from '../../../utils/isBase64String.js';
 import logger from '../../../utils/logger.js';
 
 const DA_LAYERS = [ 'avail', 'celestia' ];
 
-// 823552, 823559, 823568
+// 824323, 824324
 
 const compileVoteProgramAndGetVerificationKey = callback => {
   Vote.compile()
@@ -24,14 +25,20 @@ const compileVoteProgramAndGetVerificationKey = callback => {
     });
 };
 
-const verifyVoteProofAndGetNullifier = (verificationKey, voteProof, callback) => {
-  if (!verificationKey || typeof verificationKey != 'string' || !verificationKey.trim().length)
-    return callback('bad_request');
-
+const verifyVoteProofAndGetNullifier = (voteProof, verificationKey, callback) => {
   if (!voteProof || typeof voteProof != 'object')
     return callback('bad_request');
 
+  if (!verificationKey || typeof verificationKey != 'object')
+    return callback('bad_request');
+
   VoteProof.fromJSON(voteProof)
+    // .then(voteProof => callback(null, voteProof.publicOutput.nullifier.toString()))
+    // .catch(err => {
+    //   logger.log('error', err);
+
+    //   return callback('invalid_vote_proof');
+    // });
     .then(voteProof => verify(voteProof, verificationKey))
     .then(isVerified => {
       if (!isVerified)
@@ -56,32 +63,29 @@ const getAndVerifyVotesFromAvailByBlockHeight = (data, callback) => {
   if (!data.blockHeight || isNaN(data.blockHeight) || Number(data.blockHeight) < 0)
     return callback('bad_request');
 
-  if (!data.verificationKey || typeof data.verificationKey != 'string' || !data.verificationKey.trim().length)
+  if (!data.verificationKey || typeof data.verificationKey != 'object')
     return callback('bad_request');
 
   Avail.getData({
     block_height: data.blockHeight
   }, (err, blockData) => {
-    if (err && err === 'block_not_found')
+    if (err && err === 'not_found')
       return callback(null);
 
     if (err)
       return callback(err);
 
-    async.filter(
+    async.map(
       blockData.data_transactions,
       (dataTransaction, next) => {
         if (!dataTransaction || typeof dataTransaction != 'object')
-          return next(null);
-
-        if (!isBase64String(dataTransaction.data))
           return next(null);
 
         decodeFromBase64String(dataTransaction.data, (err, decodedData) => {
           if (err)
             return next(null);
 
-          verifyVoteProofAndGetNullifier(data.verificationKey, decodedData, (err, nullifier) => {
+          verifyVoteProofAndGetNullifier(decodedData, data.verificationKey, (err, nullifier) => {
             if (err)
               return next(null);
 
@@ -96,41 +100,114 @@ const getAndVerifyVotesFromAvailByBlockHeight = (data, callback) => {
         if (err)
           return callback(err);
 
-        db.put(`${electionId}:avail_last_read_block_height`, data.blockHeight, err => {
-          if (err) {
-            logger.log('error', err);
+        async.each(
+          votes,
+          (vote, next) => {
+            if (!vote || typeof vote != 'object')
+              return next(null);
 
-            return callback(err);
-          };
+            db.put(`${data.electionId}:${vote.nullifier}`, vote.vote_proof, err => {
+              if (err)
+                return next(err);
 
-          async.each(
-            votes,
-            (vote, next) => {
-              if (!vote || typeof vote != 'object')
-                return next(null);
+              logger.log('info', `${data.electionId}:${vote.nullifier}`);
 
-              db.put(`${electionId}:${vote.nullifier}`, vote.vote_proof, err => {
-                if (err) {
-                  logger.log('error', err);
-
-                  return next(err);
-                };
-
-                return next(null);
-              });
-            }, err => {
-              if (err) {
-                logger.log('error', err);
-
-                return callback(err);
-              };
-
-              return getAndVerifyVotesFromAvailByBlockHeight(data.blockHeight + 1, data.verificationKey, callback);
+              return next(null);
             });
+          },
+          err => {
+            if (err)
+              return callback(err);
+
+            return getAndVerifyVotesFromAvailByBlockHeight({
+              electionId: data.electionId,
+              blockHeight: Number(data.blockHeight) + 1,
+              verificationKey: data.verificationKey
+            }, callback);
           }
         );
       }
     );
+
+    // async.filter(
+    //   blockData.data_transactions,
+    //   (dataTransaction, next) => {
+    //     if (!dataTransaction || typeof dataTransaction != 'object')
+    //       return next(null, false);
+
+    //     decodeFromBase64String(dataTransaction.data, (err, decodedData) => {
+    //       if (err)
+    //         return next(null, false);
+
+    //       getVoteProofFromDecodedData(decodedData, (err, voteProof) => {
+    //         if (err)
+    //           return next(null, false);
+
+    //         return next(null, true);
+
+    //         // isVoteProofVerified(data.verificationKey, voteProof, (err, isVerified) => {
+    //         //   if (err)
+    //         //     return next(null, false);
+
+    //         //   return next(null, isVerified);
+    //         // });
+    //       });
+    //     });
+    //   },
+    //   (err, votes) => {
+    //     if (err)
+    //       return callback(err);
+
+    //     async.each(
+    //       votes,
+    //       (vote, next) => {
+    //         if (!vote || typeof vote != 'object')
+    //           return next(null);
+
+    //         decodeFromBase64String(vote.data, (err, decodedData) => {
+    //           if (err)
+    //             return next(null);
+
+    //           getVoteProofFromDecodedData(decodedData, (err, voteProof) => {
+    //             if (err)
+    //               return next(null);
+
+    //             fetchVoteProofNullifier(voteProof, (err, nullifier) => {
+    //               if (err)
+    //                 return next(null);
+
+    //               db.put(`${data.electionId}:${nullifier}`, decodedData, err => {
+    //                 if (err)
+    //                   return next(err);
+
+    //                 console.log(1, `${data.electionId}:${nullifier}`);
+
+    //                 db.get(`${data.electionId}:${nullifier}`, (err, value) => {
+    //                   if (err)
+    //                     return next(err);
+
+    //                   logger.log('info', value);
+
+    //                   return next(null);
+    //                 });
+    //               });
+    //             });
+    //           });
+    //         });
+    //       },
+    //       err => {
+    //         if (err)
+    //           return callback(err);
+
+    //         return getAndVerifyVotesFromAvailByBlockHeight({
+    //           electionId: data.electionId,
+    //           blockHeight: Number(data.blockHeight) + 1,
+    //           verificationKey: data.verificationKey
+    //         }, callback);
+    //       }
+    //     );
+    //   }
+    // );
   });
 };
 
@@ -144,7 +221,7 @@ const readAvailBlocksFromStartBlockHeightToCurrent = (election, verificationKey,
   if (!election.da_layers || !Array.isArray(election.da_layers))
     return callback('bad_request');
 
-  if (!verificationKey || typeof verificationKey != 'string' || !verificationKey.trim().length)
+  if (!verificationKey || typeof verificationKey != 'object')
     return callback('bad_request');
 
   const availInfo = election.da_layers.find(item => typeof item === 'object' && item.name === 'avail');
@@ -178,6 +255,8 @@ export default (election, callback) => {
     if (!layer || typeof layer != 'object' || !DA_LAYERS.includes(layer.name))
       return callback('bad_request');
 
+  logger.log('info', 'Starting to save all votes from block height to current via light node...');
+
   compileVoteProgramAndGetVerificationKey((err, verificationKey) => {
     if (err)
       return callback(err);
@@ -186,7 +265,14 @@ export default (election, callback) => {
       if (err)
         return callback(err);
 
-      return callback(null);
+      db.get(`${election.election_id}:avail_last_read_block_height`, (err, blockHeight) => {
+        if (err && err.code !== 'LEVEL_NOT_FOUND')
+          return callback(err);
+
+        logger.log('info', `Last read block height: ${blockHeight}`);
+
+        return callback(null);
+      });
     });
   });
 };

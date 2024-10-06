@@ -27,19 +27,24 @@ const election = {
     // },
     {
       name: 'avail',
-      start_block_height: 823500,
+      start_block_height: 824285,
       app_id: 101,
     }
   ]
 };
 
+// installRequiredLightNodeByElectionIdIfNotExist(election, err => {
+//   if (err)
+//     return logger.log('error', err);
+
+//   return logger.log('info', 'result');
+// });
+
 saveAllVotesFromBlockHeightToCurrentViaLightNode(election, err => {
   if (err)
     return logger.log('error', err);
 
-  logger.log('count finished')
-
-  return callback(null);
+  return logger.log('info', 'result');
 });
 
   // installRequiredLightNodeByElectionIdIfNotExist(election, err => {
