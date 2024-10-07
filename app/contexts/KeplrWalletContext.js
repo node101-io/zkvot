@@ -74,9 +74,11 @@ export const KeplrWalletProvider = ({ children }) => {
       setSigner(offlineSigner);
       setKeplrWalletAddress(address);
       toast.success("Keplr Wallet Connected.");
+      return true;
     } catch (error) {
       console.error("Failed to connect to Keplr wallet", error);
       toast.error("Failed to connect to Keplr wallet.");
+      return false;
     }
   };
 
