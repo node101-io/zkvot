@@ -228,28 +228,3 @@ export function collectLeaves<N extends bigint, AP, VP>(
 
   return leaves;
 }
-
-export function printTree<N extends bigint, AP, VP>(
-  node: InnerNode<N, VP> | LeafNode<N, VP> | null,
-  level: number = 0
-): void {
-  if (!node) return;
-
-  const indent = ' '.repeat(level * 4);
-
-  if (node instanceof LeafNode) {
-    console.log(
-      `${indent}LeafNode - nullifier: ${node.nullifier.toString()}, voteProof: ${
-        node.voteProof
-      }`
-    );
-  } else if (node instanceof InnerNode) {
-    console.log(
-      `${indent}InnerNode - range: [${node.range[0].toString()}, ${node.range[1].toString()}], includedVotes: [${node.includedVotes
-        .map((v) => v.toString())
-        .join(', ')}],`
-    );
-    printTree(node.leftChild, level + 1);
-    printTree(node.rightChild, level + 1);
-  }
-}
