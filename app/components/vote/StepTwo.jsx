@@ -22,6 +22,8 @@ const StepTwo = ({
   setSelectedDA,
   goToNextStep,
   zkProofData,
+  loading,
+  setLoading,
 }) => {
   const {
     keplrWalletAddress,
@@ -35,6 +37,7 @@ const StepTwo = ({
     connectWallet: connectSubwallet,
     disconnectWallet: disconnectSubwallet,
     sendTransactionSubwallet,
+    isSubmitting,
   } = useContext(SubwalletContext);
 
   const [selectedWallet, setSelectedWallet] = useState("");
@@ -97,21 +100,31 @@ const StepTwo = ({
       return;
     }
 
-    const jsonData = zkProofData;
-
     try {
-      if (selectedDA === 1) {
-        console.log("Sending transaction via Keplr with data:", jsonData);
-        await sendTransactionKeplr(jsonData);
-      } else if (selectedDA === 0) {
-        console.log("Sending transaction via Subwallet with data:", jsonData);
-        await sendTransactionSubwallet(jsonData);
+      if (isSubmitting) {
+        toast.info("Transaction is currently being submitted. Please wait...");
+        return;
       }
 
-      goToNextStep();
+      setLoading(true);
+
+      let transactionSuccess = false;
+
+      if (selectedDA === 1) {
+        transactionSuccess = await sendTransactionKeplr(zkProofData);
+      } else if (selectedDA === 0) {
+        transactionSuccess = await sendTransactionSubwallet(zkProofData);
+      }
+
+      if (transactionSuccess) {
+        goToNextStep();
+        setLoading(false);
+      } else {
+        setLoading(false);
+        throw new Error("Failed to send transaction.");
+      }
     } catch (error) {
       console.error("Error sending transaction:", error);
-      toast.error("Error sending transaction.");
     }
   };
 
@@ -143,6 +156,7 @@ const StepTwo = ({
     Avail: <AvailLogo className="w-12 h-12" />,
     Celestia: <CelestiaLogo className="w-12 h-12" />,
   };
+
   return (
     <div className="flex flex-col items-center px-8 sm:px-12 md:px-24 flex-grow py-12">
       <div className="flex flex-col items-start w-full h-fit text-white mb-6 bg-[#222222] p-5 rounded-[30px] ">
@@ -247,16 +261,22 @@ const StepTwo = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+      <div
+        className={`grid grid-cols-1 sm:grid-cols-2 gap-4 w-full ${
+          isSubmitting
+            ? "opacity-50 cursor-not-allowed pointer-events-none"
+            : ""
+        }`}
+      >
         {electionData.DAChoicesName.map((DA, index) => (
           <div
             key={index}
-            className={`p-4 cursor-pointer bg-[#222222] rounded-2xl flex items-center transition duration-200 ${
+            className={`p-4 bg-[#222222] rounded-2xl flex items-center transition duration-200 ${
               selectedDA === index
                 ? "border-[1px] border-primary shadow-lg"
                 : "hover:bg-[#333333]"
             }`}
-            onClick={() => setSelectedDA(index)}
+            onClick={() => !isSubmitting && setSelectedDA(index)}
           >
             <div className="flex-shrink-0 mr-4">
               {daLogos[DA] || (
@@ -283,7 +303,8 @@ const StepTwo = ({
         {walletAddress ? (
           <Button
             onClick={handleNext}
-            disabled={!walletAddress || selectedDA === null}
+            disabled={!walletAddress || selectedDA === null || isSubmitting} // Disable the button while submitting
+            loading={isSubmitting} // Show loading spinner while submitting
           >
             Submit Vote
           </Button>
