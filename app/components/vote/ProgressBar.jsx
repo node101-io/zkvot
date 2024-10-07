@@ -33,15 +33,21 @@ const ProgressBar = ({ currentStep, totalSteps, stepErrors, loading }) => {
   const getStepIcon = (step) => {
     if (stepErrors && stepErrors[step]) {
       return ErrorIcon;
-    } else if (currentStep > totalSteps && step === totalSteps) {
-      return Completed;
-    } else if (step < currentStep) {
-      return StepDone;
-    } else if (step === currentStep) {
-      return currentIcons[step - 1];
-    } else {
-      return defaultIcons[step - 1];
     }
+
+    if (step === totalSteps && currentStep === totalSteps) {
+      return Completed;
+    }
+
+    if (step < currentStep) {
+      return StepDone;
+    }
+
+    if (step === currentStep) {
+      return currentIcons[step - 1];
+    }
+
+    return defaultIcons[step - 1];
   };
 
   const getProgressBarWidth = (step) => {

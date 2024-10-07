@@ -13,6 +13,8 @@ import CopyIcon from "@/assets/ElectionCard/CopyIcon";
 import DownloadIcon from "@/assets/ElectionCard/DownloadIcon";
 
 import { MinaWalletContext } from "@/contexts/MinaWalletContext";
+import { MetamaskWalletContext } from "@/contexts/MetamaskWalletContext";
+import WalletSelectionModal from "../common/WalletSelectionModal";
 
 const StepOne = ({
   electionData,
@@ -22,6 +24,8 @@ const StepOne = ({
   loading,
   submitZkProof,
   goToNextStep,
+  selectedWallet,
+  setSelectedWallet,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,16 +33,40 @@ const StepOne = ({
   const { minaWalletAddress, connectMinaWallet, disconnectMinaWallet } =
     useContext(MinaWalletContext);
 
-  const handleVoteClick = async () => {
-    if (!minaWalletAddress) {
-      toast.error("Please connect your Mina wallet to proceed.");
-      return;
+  const {
+    metamaskWalletAddress,
+    connectMetamaskWallet,
+    disconnectMetamaskWallet,
+  } = useContext(MetamaskWalletContext);
+
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+
+  const handleWalletSelection = async (wallet) => {
+    setSelectedWallet(wallet);
+    setIsWalletModalOpen(false);
+
+    let connectionSuccess = false;
+
+    if (wallet === "Mina") {
+      connectionSuccess = await connectMinaWallet();
+    } else if (wallet === "Metamask") {
+      connectionSuccess = await connectMetamaskWallet();
     }
+
+    if (connectionSuccess) {
+      setIsModalOpen(true);
+    } else {
+      setSelectedWallet(null);
+      toast.error("Wallet connection was not successful.");
+    }
+  };
+
+  const handleVoteClick = () => {
     if (selectedChoice === null) {
       toast.error("Please select a choice to proceed.");
       return;
     }
-    setIsModalOpen(true);
+    setIsWalletModalOpen(true);
   };
 
   const handleCloseModal = () => {
@@ -49,9 +77,26 @@ const StepOne = ({
     try {
       setLoading(true);
       setIsModalOpen(false);
+
+      let walletConnected = false;
+      if (selectedWallet === "Mina" && minaWalletAddress) {
+        walletConnected = true;
+      } else if (selectedWallet === "Metamask" && metamaskWalletAddress) {
+        walletConnected = true;
+      }
+
+      if (!walletConnected) {
+        toast.error("Wallet is not connected.");
+        return;
+      }
+
       await submitZkProof();
 
-      disconnectMinaWallet();
+      if (selectedWallet === "Mina") {
+        disconnectMinaWallet();
+      } else if (selectedWallet === "metamask") {
+        disconnectMetamaskWallet();
+      }
 
       goToNextStep();
     } catch (error) {
@@ -59,7 +104,6 @@ const StepOne = ({
       toast.error("Error submitting zkProof.");
     } finally {
       setLoading(false);
-      setIsModalOpen(false);
     }
   };
 
@@ -223,16 +267,19 @@ const StepOne = ({
       </div>
 
       <div className="w-full pt-8 flex justify-end">
-        {minaWalletAddress ? (
-          <Button
-            onClick={handleVoteClick}
-            disabled={!minaWalletAddress || selectedChoice === null}
-            loading={loading}
-          >
-            Vote
-          </Button>
-        ) : (
-          <Button onClick={connectMinaWallet}>Connect Mina Wallet</Button>
+        <Button
+          onClick={handleVoteClick}
+          disabled={selectedChoice === null || loading}
+          loading={loading}
+        >
+          Vote
+        </Button>
+        {isWalletModalOpen && (
+          <WalletSelectionModal
+            availableWallets={["Mina", "Metamask"]}
+            onClose={() => setIsWalletModalOpen(false)}
+            onSelectWallet={handleWalletSelection}
+          />
         )}
 
         {isModalOpen && (
