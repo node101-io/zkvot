@@ -7,8 +7,6 @@ export const MinaWalletContext = createContext();
 export const MinaWalletProvider = ({ children }) => {
   const [minaWalletAddress, setMinaWalletAddress] = useState(null);
 
-  // MinaWalletContext.js
-
   const connectMinaWallet = async () => {
     try {
       if (!window.mina) {

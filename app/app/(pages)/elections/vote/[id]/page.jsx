@@ -79,7 +79,7 @@ const VotePage = () => {
           currentStep={currentStep}
           totalSteps={3}
           stepErrors={stepErrors}
-          loading={loading} // Pass loading state to ProgressBar
+          loading={loading}
         />
 
         {currentStep === 1 && (
@@ -90,7 +90,7 @@ const VotePage = () => {
             goToNextStep={goToNextStep}
             loading={loading}
             errorStep={stepErrors[currentStep]}
-            setLoading={setLoading} // Pass setLoading to StepOne
+            setLoading={setLoading}
             submitZkProof={submitZkProof}
             selectedWallet={selectedWallet}
             setSelectedWallet={setSelectedWallet}
@@ -104,8 +104,8 @@ const VotePage = () => {
             setSelectedDA={setSelectedDA}
             goToNextStep={goToNextStep}
             zkProofData={zkProofData}
-            loading={loading} // Pass loading state to StepTwo
-            setLoading={setLoading} // Pass setLoading to StepTwo for controlling loading state
+            loading={loading}
+            setLoading={setLoading}
           />
         )}
       </div>

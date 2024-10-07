@@ -303,8 +303,8 @@ const StepTwo = ({
         {walletAddress ? (
           <Button
             onClick={handleNext}
-            disabled={!walletAddress || selectedDA === null || isSubmitting} // Disable the button while submitting
-            loading={isSubmitting} // Show loading spinner while submitting
+            disabled={!walletAddress || selectedDA === null || isSubmitting}
+            loading={isSubmitting}
           >
             Submit Vote
           </Button>
