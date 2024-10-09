@@ -113,19 +113,23 @@ export const SubwalletProvider = ({ children }) => {
       const tx = api.tx.dataAvailability.submitData(encodedData);
 
       const result = await new Promise((resolve) => {
+        let alreadyHandled = false;
+
         tx.signAndSend(
           selectedAccount.address,
           { signer: injector.signer },
           ({ status, events, dispatchError }) => {
+            if (alreadyHandled) return;
+
             if (dispatchError) {
               handleDispatchError(dispatchError);
               setIsSubmitting(false);
-
+              alreadyHandled = true;
               resolve(false);
               return;
             }
 
-            if (status.isInBlock || status.isFinalized) {
+            if (status.isFinalized) {
               const successEvent = events.find(
                 ({ event }) =>
                   event.section === "dataAvailability" &&
@@ -139,11 +143,11 @@ export const SubwalletProvider = ({ children }) => {
                 );
                 toast.success("Data submitted successfully!");
                 setIsSubmitting(false);
-
+                alreadyHandled = true;
                 resolve(true);
               } else {
                 setIsSubmitting(false);
-
+                alreadyHandled = true;
                 resolve(false);
               }
             }
@@ -151,7 +155,6 @@ export const SubwalletProvider = ({ children }) => {
         ).catch((error) => {
           console.error("Transaction error:", error);
           setIsSubmitting(false);
-
           resolve(false);
         });
       });
