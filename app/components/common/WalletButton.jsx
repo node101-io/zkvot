@@ -41,7 +41,6 @@ const WalletButton = () => {
   }, []);
 
   useEffect(() => {
-    // Update the connected wallet and address based on the context values
     if (minaWalletAddress) {
       setWalletConnected("Mina");
       setWalletAddress(minaWalletAddress);
@@ -66,14 +65,12 @@ const WalletButton = () => {
   ]);
 
   const handleConnect = () => {
-    // Open the wallet selection modal
     setIsWalletModalOpen(true);
   };
 
   const handleWalletSelection = async (wallet) => {
     setIsWalletModalOpen(false);
 
-    // Connect to the selected wallet
     if (wallet === "Mina") {
       await connectMinaWallet();
     } else if (wallet === "Metamask") {
@@ -86,7 +83,6 @@ const WalletButton = () => {
   };
 
   const handleDisconnect = () => {
-    // Disconnect the connected wallet
     if (walletConnected === "Mina") {
       disconnectMinaWallet();
     } else if (walletConnected === "Keplr") {
@@ -99,7 +95,6 @@ const WalletButton = () => {
   };
 
   const formatWalletAddress = (address) => {
-    // Format the wallet address to show first 6 and last 4 characters
     if (!address) return "";
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };

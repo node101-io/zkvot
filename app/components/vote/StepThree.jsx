@@ -1,133 +1,27 @@
-"use client";
-import React, { useContext, useEffect, useState } from "react";
 import Image from "next/image";
+import React from "react";
 import copy from "copy-to-clipboard";
-import { FaImage } from "react-icons/fa";
 import { toast } from "react-toastify";
-import Button from "@/components/common/Button";
-import LearnMoreIcon from "@/assets/ElectionCard/LearnMoreIcon";
-import CopyIcon from "@/assets/ElectionCard/CopyIcon";
+import { FaImage } from "react-icons/fa";
+import { motion } from "framer-motion";
+
 import Clock from "@/assets/ElectionCard/Clock";
+import CopyIcon from "@/assets/ElectionCard/CopyIcon";
+import LearnMoreIcon from "@/assets/ElectionCard/LearnMoreIcon";
 import DownloadIcon from "@/assets/ElectionCard/DownloadIcon";
 import AvailLogo from "@/assets/DaLogos/Avail";
 import CelestiaLogo from "@/assets/DaLogos/Celestia";
+import MinaLogo from "@/assets/StepsProgress/MinaLastStep.svg";
 
-import { KeplrWalletContext } from "@/contexts/KeplrWalletContext";
-import { SubwalletContext } from "@/contexts/SubwalletContext";
+const results = [
+  { name: "Trump", percentage: 70 },
+  { name: "Harris", percentage: 20 },
+  { name: "thrid", percentage: 30 },
+  { name: "fourth choice", percentage: 100 },
+  { name: "lol", percentage: 55 },
+];
 
-const StepTwo = ({
-  electionData,
-  selectedChoice,
-  selectedDA,
-  setSelectedDA,
-  goToNextStep,
-  zkProofData,
-  setLoading,
-}) => {
-  const {
-    keplrWalletAddress,
-    connectKeplrWallet,
-    sendTransactionKeplr,
-    disconnectKeplrWallet,
-    isSubmitting: isSubmittingKeplr,
-  } = useContext(KeplrWalletContext);
-
-  const {
-    selectedAccount,
-    connectWallet: connectSubwallet,
-    disconnectWallet: disconnectSubwallet,
-    sendTransactionSubwallet,
-    isSubmitting,
-  } = useContext(SubwalletContext);
-
-  const [selectedWallet, setSelectedWallet] = useState("");
-  const [walletAddress, setWalletAddress] = useState(null);
-
-  const handleConnectWallet = async () => {
-    if (selectedDA === 0) {
-      await connectSubwallet();
-    } else if (selectedDA === 1) {
-      await connectKeplrWallet();
-    }
-  };
-
-  useEffect(() => {
-    if (selectedDA === 0 && selectedAccount) {
-      setWalletAddress(selectedAccount.address);
-    } else if (selectedDA === 1 && keplrWalletAddress) {
-      setWalletAddress(keplrWalletAddress);
-    }
-  }, [selectedAccount, keplrWalletAddress, selectedDA]);
-
-  useEffect(() => {
-    setWalletAddress(null);
-    if (selectedDA === 0) {
-      if (keplrWalletAddress) {
-        disconnectKeplrWallet();
-      }
-      setSelectedWallet("Subwallet");
-    } else if (selectedDA === 1) {
-      if (selectedAccount) {
-        disconnectSubwallet();
-      }
-      setSelectedWallet("Keplr");
-    } else {
-      setSelectedWallet("");
-    }
-  }, [selectedDA]);
-
-  useEffect(() => {
-    if (selectedDA === 0 && selectedAccount) {
-      setWalletAddress(selectedAccount.address);
-    } else if (selectedDA === 1 && keplrWalletAddress) {
-      setWalletAddress(keplrWalletAddress);
-    }
-  }, [selectedAccount, keplrWalletAddress, selectedDA]);
-
-  const handleNext = async () => {
-    if (selectedDA === null) {
-      alert("Please select a DA Layer to proceed.");
-      return;
-    }
-
-    if (!walletAddress) {
-      alert("Please connect your wallet to proceed.");
-      return;
-    }
-
-    if (!zkProofData) {
-      alert("ZK proof data is missing. Please go back and generate it.");
-      return;
-    }
-
-    try {
-      if (isSubmitting || isSubmittingKeplr) {
-        toast.info("Transaction is currently being submitted. Please wait...");
-        return;
-      }
-
-      setLoading(true);
-
-      let transactionSuccess = false;
-
-      if (selectedDA === 1) {
-        transactionSuccess = await sendTransactionKeplr(zkProofData);
-      } else if (selectedDA === 0) {
-        transactionSuccess = await sendTransactionSubwallet(zkProofData);
-      }
-
-      if (transactionSuccess) {
-        goToNextStep();
-        setLoading(false);
-      } else {
-        setLoading(false);
-        throw new Error("Failed to send transaction.");
-      }
-    } catch (error) {
-      console.error("Error sending transaction:", error);
-    }
-  };
-
+const StepThree = ({ electionData, selectedChoice }) => {
   const handleCopyElectionId = () => {
     const successful = copy(electionData.electionId);
     if (successful) {
@@ -158,7 +52,8 @@ const StepTwo = ({
   };
 
   return (
-    <div className="flex flex-col items-center px-8 sm:px-12 md:px-24 flex-grow py-12">
+    <div className="flex flex-col items-center px-4 sm:px-6 md:px-8 h-full">
+      <div className="pb-4 pt-8 w-full text-start">Result</div>
       <div className="flex flex-col items-start w-full h-fit text-white mb-6 bg-[#222222] p-5 rounded-[30px] ">
         <div className="flex flex-col md:flex-row w-full h-fit ">
           <div className="w-full md:w-1/4 flex">
@@ -253,6 +148,7 @@ const StepTwo = ({
             </div>
           </div>
         </div>
+
         <div className="pt-4 pb-2 w-full">
           <h3 className="text-[16px] text-[#B7B7B7] mb-4">Your Choice</h3>
           <div className="pl-4 rounded text-[20px]">
@@ -260,64 +156,55 @@ const StepTwo = ({
           </div>
         </div>
       </div>
-
-      <div
-        className={`grid grid-cols-1 sm:grid-cols-2 gap-4 w-full ${
-          isSubmitting || isSubmittingKeplr
-            ? "opacity-50 cursor-not-allowed pointer-events-none"
-            : ""
-        }`}
-      >
-        {electionData.DAChoicesName.map((DA, index) => (
-          <div
-            key={index}
-            className={`p-4 bg-[#222222] rounded-2xl flex items-center transition duration-200 ${
-              selectedDA === index
-                ? "border-[1px] border-primary shadow-lg"
-                : "hover:bg-[#333333]"
-            }`}
-            onClick={() => !isSubmitting && setSelectedDA(index)}
-          >
-            <div className="flex-shrink-0 mr-4">
-              {daLogos[DA] || (
-                <div className="w-12 h-12 bg-gray-500 rounded-full" />
-              )}
-            </div>
-            <div className="flex flex-col h-full justify-between">
-              <h3 className="text-white text-[24px] mb-2">{DA}</h3>
-              <p className="text-[16px] mb-2">
-                {electionData.DAChoicesDescription[index]}
-              </p>
-              <div className="flex items-center justify-between">
-                <span className="text-[16px]">
-                  Fee: {electionData.DAChoicesFee[index]}{" "}
-                  {electionData.DAChoicesCurrency[index]}
+      <div className="w-full items-start pl-8 flex text-[16px] flex-col text-[#BABABA]">
+        <p className="italic">Do you think the settlement is going too slow?</p>
+        <p className="underline cursor-pointer">Become a sequencer</p>
+      </div>
+      <div className="flex flex-col max-w-[945px] w-full space-y-[32px] items-start mt-20 h-full">
+        <div className="w-full flex flex-row items-start space-x-4 max-h-[108px]">
+          <div>
+            <Image
+              src={MinaLogo}
+              alt="afsadasd"
+              width={108}
+              height={108}
+            />
+          </div>
+          <div className="flex flex-col text-white">
+            <p className="text-[32px] -translate-y-1">Settled Results</p>
+            <p className="w-[407px] text-[16px] leading-6 tracking-[-0.16px] font-light">
+              The final results come from Mina, the settlement layer. There
+              might be a small difference between the settled...
+            </p>
+          </div>
+        </div>
+        <div className="w-full h-full pb-44 space-y-4">
+          {results.map((result, index) => (
+            <div
+              key={index}
+              className="w-full flex flex-col items-start space-y-2"
+            >
+              <div className="flex items-center justify-start w-full">
+                <span className="text-white text-[14px]">{result.name}</span>
+                <span className="text-white text-[14px] pl-2">
+                  %{result.percentage}
                 </span>
               </div>
-            </div>
-          </div>
-        ))}
-      </div>
 
-      <div className="w-full pt-8 flex justify-end">
-        {walletAddress ? (
-          <Button
-            onClick={handleNext}
-            disabled={!walletAddress || selectedDA === null || isSubmitting}
-            loading={isSubmitting}
-          >
-            Submit Vote
-          </Button>
-        ) : (
-          <div className={`${selectedDA === null ? "hidden" : "flex"}`}>
-            <Button onClick={handleConnectWallet}>
-              Connect {selectedWallet} Wallet
-            </Button>
-          </div>
-        )}
+              <div className="w-full bg-[#434446] rounded-full overflow-hidden h-[30px]">
+                <motion.div
+                  className="bg-green h-full rounded-r-full"
+                  initial={{ width: "0%" }}
+                  animate={{ width: `${result.percentage}%` }}
+                  transition={{ delay: index * 0.2 + 0.4, duration: 0.8 }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
 };
 
-export default StepTwo;
+export default StepThree;

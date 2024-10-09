@@ -5,6 +5,7 @@ import StepOne from "@/components/vote/StepOne";
 import StepTwo from "@/components/vote/StepTwo";
 import { MinaWalletContext } from "@/contexts/MinaWalletContext";
 import { MetamaskWalletContext } from "@/contexts/MetamaskWalletContext";
+import StepThree from "@/components/vote/StepThree";
 
 const electionData = {
   zkvoteBy: "Cosmos12sf123412y346781234781234asdasflj",
@@ -74,7 +75,7 @@ const VotePage = () => {
 
   return (
     <div className="flex w-full justify-center h-full">
-      <div className="min-h-[90vh] max-w-[1216px] flex flex-col">
+      <div className="h-full max-w-[1216px] flex flex-col w-full">
         <ProgressBar
           currentStep={currentStep}
           totalSteps={3}
@@ -106,6 +107,12 @@ const VotePage = () => {
             zkProofData={zkProofData}
             loading={loading}
             setLoading={setLoading}
+          />
+        )}
+        {currentStep === 3 && (
+          <StepThree
+            electionData={electionData}
+            selectedChoice={selectedChoice}
           />
         )}
       </div>
