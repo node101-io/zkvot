@@ -13,14 +13,6 @@ import AvailLogo from "@/assets/DaLogos/Avail";
 import CelestiaLogo from "@/assets/DaLogos/Celestia";
 import MinaLogo from "@/assets/StepsProgress/MinaLastStep.svg";
 
-const results = [
-  { name: "Trump", percentage: 70 },
-  { name: "Harris", percentage: 20 },
-  { name: "thrid", percentage: 30 },
-  { name: "fourth choice", percentage: 100 },
-  { name: "lol", percentage: 55 },
-];
-
 const StepThree = ({ electionData, selectedChoice }) => {
   const handleCopyElectionId = () => {
     const successful = copy(electionData.electionId);
@@ -46,10 +38,10 @@ const StepThree = ({ electionData, selectedChoice }) => {
     </div>
   );
 
-  const daLogos = {
-    Avail: <AvailLogo className="w-12 h-12" />,
-    Celestia: <CelestiaLogo className="w-12 h-12" />,
-  };
+  const results = electionData.choices.map((choice, index) => ({
+    name: choice,
+    percentage: Math.floor(Math.random() * 101),
+  }));
 
   return (
     <div className="flex flex-col items-center px-4 sm:px-6 md:px-8 h-full">
@@ -133,12 +125,12 @@ const StepThree = ({ electionData, selectedChoice }) => {
                   </span>
                 </span>
                 <span className="flex flex-row items-center">
-                  <span className="text-primary mr-1 italic text-sm">
+                  <span className="text-primary mr-2 italic text-sm">
                     zkVote by
                   </span>
                   {electionData.zkvoteBy.slice(0, 12) + "..."}
                   <span
-                    className="ml-1 cursor-pointer w-fit"
+                    className="ml-2 cursor-pointer w-fit"
                     onClick={handleCopyZkvoteBy}
                   >
                     <CopyIcon Color="#F6F6F6" />
