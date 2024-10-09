@@ -1,5 +1,5 @@
 import async from "async";
-import { Cache, JsonProof, VerificationKey, verify } from "o1js";
+import { JsonProof, VerificationKey, verify } from "o1js";
 import { Vote, VoteProof } from "../../../../../contracts/build/src/VoteProgram.js";
 
 // import Avail from "../../../da-layers/avail/Avail.js";
@@ -15,7 +15,7 @@ const DA_LAYERS = ["avail", "celestia"];
 import { promises as fs } from "fs";
 
 const compileVoteProgramAndGetVerificationKey = (callback: any) => {
-    Vote.compile({ cache: Cache.None })
+    Vote.compile({ forceRecompile: true })
         .then((program) => callback(null, program.verificationKey))
         .catch((err) => {
             logger.log("error", err);
@@ -84,12 +84,12 @@ const getAndVerifyVotesFromAvailByBlockHeight = (data: any, callback: any) => {
             decodeFromBase64String(dataTransaction.data, (err: any, decodedData: any) => {
                 if (err) return next(null);
 
-                console.log("DecodedData", decodedData);
+                console.log("DecodedData");
                 fs.readFile("json.json").then((voteProofJson) => {
                     if (err) return next(err);
 
                     const jsonProof = JSON.parse(voteProofJson.toString());
-                    console.log("jsonProof", jsonProof[0]);
+                    console.log("jsonProof", jsonProof);
 
                     verifyVoteProofAndGetNullifier(
                         jsonProof[0],
