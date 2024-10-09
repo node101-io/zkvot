@@ -53,6 +53,7 @@ export const KeplrWalletContext = createContext();
 export const KeplrWalletProvider = ({ children }) => {
   const [keplrWalletAddress, setKeplrWalletAddress] = useState(null);
   const [signer, setSigner] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const connectKeplrWallet = async () => {
     try {
@@ -82,6 +83,16 @@ export const KeplrWalletProvider = ({ children }) => {
     }
   };
 
+  const sendTransactionKeplr = async (zkProofData) => {
+    // simulate a success with 1 second wait
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        resolve("success");
+      }, 1000);
+    });
+    return true;
+  };
+
   const disconnectKeplrWallet = () => {
     setKeplrWalletAddress(null);
     setSigner(null);
@@ -91,10 +102,12 @@ export const KeplrWalletProvider = ({ children }) => {
   return (
     <KeplrWalletContext.Provider
       value={{
-        keplrWalletAddress,
         signer,
+        keplrWalletAddress,
         connectKeplrWallet,
+        sendTransactionKeplr,
         disconnectKeplrWallet,
+        isSubmitting,
       }}
     >
       {children}
