@@ -1,8 +1,8 @@
-import isURL from "../../../utils/isURL.js";
+import isURL from '../../../utils/isURL.js';
 
-const BLOCK_DATA_NOT_AVAILABLE_ERROR_MESSAGE_REGEX: RegExp = /Block data not found/;
+const BLOCK_DATA_NOT_FOUND_ERROR_MESSAGE_REGEX: RegExp = /Block data not found/;
 const INTERNAL_SERVER_ERROR_MESSAGE_REGEX: RegExp = /Internal Server Error/;
-const NOT_FOUND_ERROR_MESSAGE_REGEX: RegExp= /Not Found/;
+const BLOCK_NOT_FOUND_ERROR_MESSAGE_REGEX: RegExp= /Not Found/;
 
 export default (
   url: string,
@@ -10,7 +10,7 @@ export default (
     method: 'GET' | 'POST',
     submit_data?: any
   },
-  callback: (err: string | null, result?: any) => void
+  callback: (err: string | null, availResponse?: any) => void
 ) => {
   if (!isURL(url))
     return callback('bad_request');
@@ -25,7 +25,7 @@ export default (
     })
   })
     .then(res => {
-      if (BLOCK_DATA_NOT_AVAILABLE_ERROR_MESSAGE_REGEX.test(res.statusText))
+      if (BLOCK_DATA_NOT_FOUND_ERROR_MESSAGE_REGEX.test(res.statusText))
         return callback(null, {
           block_number: null,
           data_transactions: []
@@ -34,7 +34,7 @@ export default (
       if (INTERNAL_SERVER_ERROR_MESSAGE_REGEX.test(res.statusText))
         return callback('internal_server_error');
 
-      if (NOT_FOUND_ERROR_MESSAGE_REGEX.test(res.statusText))
+      if (BLOCK_NOT_FOUND_ERROR_MESSAGE_REGEX.test(res.statusText))
         return callback('block_not_found');
 
       return res.json().then(data => callback(null, data));

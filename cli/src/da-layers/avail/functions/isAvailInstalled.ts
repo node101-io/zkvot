@@ -11,7 +11,7 @@ export default (
 
   availRequest(`${rpc_url}/v2/status`, {
     method: 'GET'
-  }, (err, res) => {
+  }, (err, availResponse) => {
     if (err)
       return callback(null, false);
 

@@ -3,18 +3,17 @@ import os from 'os';
 import path from 'path';
 
 import copyDockerFilesToUserFolder from '../../../utils/copyDockerFilesToUserFolder.js';
-import createDockerFolderIfDoesntExist from '../../../utils/createDockerFolderIfDoesntExist.js';
+import createDockerFolderIfDoesntExist from '../../../utils/createDockerFolderIfNotExists.js';
+import logger from '../../../utils/logger.js';
 
-const templateAvailComposeFilePath: string = path.join(import.meta.dirname, "../../../../src/da-layers/avail/light-node/docker-compose.yaml");
-const templateAvailDockerfileFilePath : string = path.join(import.meta.dirname, "../../../../src/da-layers/avail/light-node/Dockerfile");
+const templateAvailComposeFilePath: string = path.join(import.meta.dirname, '../../../../src/da-layers/avail/light-node/docker-compose.yaml');
+const templateAvailDockerfileFilePath : string = path.join(import.meta.dirname, '../../../../src/da-layers/avail/light-node/Dockerfile');
 
-const availDockerFolderPath: string = path.join(os.homedir(), ".zkvot/avail");
-const availComposeFilePath: string= path.join(availDockerFolderPath, "docker-compose.yaml");
-const availDockerfileFilePath: string = path.join(availDockerFolderPath, "Dockerfile");
+const availDockerFolderPath: string = path.join(os.homedir(), '.zkvot/avail');
+const availComposeFilePath: string= path.join(availDockerFolderPath, 'docker-compose.yaml');
+const availDockerfileFilePath: string = path.join(availDockerFolderPath, 'Dockerfile');
 
 const INSTALL_LIGHT_NODE_COMMAND: string = 'docker compose up --detach';
-
-const LIGHT_NODE_ALREADY_INSTALLED_ERROR_MESSAGE_REGEX: RegExp = /Container (.*?) Running/;
 
 export default (
   data: {
@@ -50,10 +49,12 @@ export default (
           { cwd: availDockerFolderPath },
           (err, stdout, stderr) => {
             if (err)
-              return callback('install_error');
+              return callback('terminal_error');
 
-            if (LIGHT_NODE_ALREADY_INSTALLED_ERROR_MESSAGE_REGEX.test(stderr))
-              return callback('already_installed');
+            logger.log('debug', JSON.stringify({
+              stderr,
+              stdout
+            }));
 
             return callback(null);
           }

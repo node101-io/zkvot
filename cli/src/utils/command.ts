@@ -1,5 +1,5 @@
 import { Command } from 'commander';
 
-const command = new Command();
+const command: Command = new Command();
 
 export default command;

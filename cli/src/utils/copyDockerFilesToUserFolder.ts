@@ -6,7 +6,7 @@ export default (
     new_path: string,
     replacements?: {[placeholder: string]: string}
   },
-  callback: (error: string | null) => void
+  callback: (err: string | null) => void
 ) => {
   fs.readFile(data.old_path, 'utf8', (err, fileData) => {
     if (err)

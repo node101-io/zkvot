@@ -9,7 +9,7 @@ services:
         CHAIN_ID: mocha
         DAEMON_NAME: celestia
         DAEMON_HOME: /root/.celestia-light-mocha-4
-        DAEMON_VERSION: v0.16.0
+        DAEMON_VERSION: v0.16.2-mocha
         DEFAULT_KEY_NAME: my_celes_key
         DEFAULT_RPC_PORT: 10102
         NODE_TYPE: light

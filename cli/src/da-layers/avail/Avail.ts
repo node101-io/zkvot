@@ -1,12 +1,12 @@
-import isPortInUse from "../../utils/isPortInUse.js";
+import isPortInUse from '../../utils/isPortInUse.js';
 
-import availRequest from "./functions/availRequest.js";
-import installAvail from "./functions/installAvail.js";
-import isAvailInstalled from "./functions/isAvailInstalled.js";
-import uninstallAvail from "./functions/uninstallAvail.js";
+import availRequest from './functions/availRequest.js';
+import installAvail from './functions/installAvail.js';
+import isAvailInstalled from './functions/isAvailInstalled.js';
+import uninstallAvail from './functions/uninstallAvail.js';
 
 const DEFAULT_RPC_PORT: number = 10103;
-const DEFAULT_RPC_URL: string = "http://127.0.0.1:10103";
+const DEFAULT_RPC_URL: string = 'http://127.0.0.1:10103';
 
 const Avail = {
   init: (
@@ -14,7 +14,7 @@ const Avail = {
       app_id: number,
       start_block_height: number
     },
-    callback: (error: string | null) => void
+    callback: (err: string | null) => void
   ) => {
     isPortInUse(DEFAULT_RPC_PORT, (err, inUse) => {
       if (err)
@@ -43,18 +43,18 @@ const Avail = {
   },
   getData: (
     data: { block_height: number },
-    callback: (error: string | null, blockData?: any) => void
+    callback: (err: string | null, blockData?: any) => void
   ) => {
     availRequest(`${DEFAULT_RPC_URL}/v2/blocks/${data.block_height}/data?fields=data`, {
       method: 'GET'
-    }, (err, blockData) => {
+    }, (err, availResponse) => {
       if (err)
         return callback(err);
 
-      return callback(null, blockData);
+      return callback(null, availResponse.data_transactions);
     });
   },
-  uninstall: (callback: (error: string | null) => void) => {
+  uninstall: (callback: (err: string | null) => void) => {
     uninstallAvail(err => {
       if (err)
         return callback(err);
@@ -64,12 +64,4 @@ const Avail = {
   }
 };
 
-Avail.init({
-  app_id: 101,
-  start_block_height: 824285
-}, err => {
-  if (err)
-    console.log(err);
-  else
-    console.log('Avail initialized');
-});
+export default Avail;
