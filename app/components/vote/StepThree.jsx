@@ -9,29 +9,10 @@ import Clock from "@/assets/ElectionCard/Clock";
 import CopyIcon from "@/assets/ElectionCard/CopyIcon";
 import LearnMoreIcon from "@/assets/ElectionCard/LearnMoreIcon";
 import DownloadIcon from "@/assets/ElectionCard/DownloadIcon";
-import AvailLogo from "@/assets/DaLogos/Avail";
-import CelestiaLogo from "@/assets/DaLogos/Celestia";
 import MinaLogo from "@/assets/StepsProgress/MinaLastStep.svg";
+import CopyButton from "../common/CopyButton";
 
 const StepThree = ({ electionData, selectedChoice }) => {
-  const handleCopyElectionId = () => {
-    const successful = copy(electionData.electionId);
-    if (successful) {
-      toast.success("Election ID Copied");
-    } else {
-      toast.error("Failed to copy!");
-    }
-  };
-
-  const handleCopyZkvoteBy = () => {
-    const successful = copy(electionData.zkvoteBy);
-    if (successful) {
-      toast.success("zkVoter Copied");
-    } else {
-      toast.error("Failed to copy!");
-    }
-  };
-
   const Placeholder = ({ className }) => (
     <div className={`${className} flex items-center justify-center h-full`}>
       <FaImage className="text-gray-500 text-6xl" />
@@ -70,28 +51,27 @@ const StepThree = ({ electionData, selectedChoice }) => {
           <div className="px-4 w-full h-fit flex flex-col justify-start">
             <div className="flex flex-row w-full justify-between ">
               <div className="text-[#B7B7B7] text-sm mb-2 flex flex-row items-center ">
-                <span className="mr-2 group relative">
+                <span className="mr-2 group relative scale-125">
                   <LearnMoreIcon Color="#B7B7B7" />
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-4  mb-2 hidden group-hover:flex flex-col items-start z-50">
-                    <div className="bg-[#222222]  text-gray-200 text-sm rounded-md px-3 py-4 shadow-lg w-64 text-start">
-                      <p className="underline">What happens if I vote twice?</p>
-                      <p className="text-gray-300 mt-[6px] mb-3 ">
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2  mb-2 hidden group-hover:flex flex-col items-start z-50">
+                    <div className="bg-[#383838]  text-[#EBF0FF] text-sm rounded-3xl px-3 py-4 shadow-lg w-[370px] text-center">
+                      <p>
                         It is a long established fact that a reader will be
                         distracted by the readable content of a page when
                         looking at its layout.
                       </p>
-                      <p>How could I learn if I have voted?</p>
                     </div>
-                    <div className="w-3 h-3 bg-[#222222] rotate-45 transform translate-x-3 -translate-y-2"></div>
+                    <div className="w-3 h-3 bg-[#383838] rotate-45 transform translate-x-[180px] -translate-y-2"></div>
                   </div>
                 </span>
                 Election id:{" "}
                 {String(electionData.electionId).slice(0, 12) + "..."}
-                <span
-                  onClick={handleCopyElectionId}
-                  className="ml-1 cursor-pointer w-fit"
-                >
-                  <CopyIcon Color="#B7B7B7" />
+                <span className="ml-1 cursor-pointer w-fit">
+                  <CopyButton
+                    textToCopy={electionData.electionId}
+                    iconColor="#F6F6F6"
+                    position={{ top: -26, left: -38 }}
+                  />
                 </span>
               </div>
               <span className="flex flex-row justify-center items-center ">
@@ -129,11 +109,12 @@ const StepThree = ({ electionData, selectedChoice }) => {
                     zkVote by
                   </span>
                   {electionData.zkvoteBy.slice(0, 12) + "..."}
-                  <span
-                    className="ml-2 cursor-pointer w-fit"
-                    onClick={handleCopyZkvoteBy}
-                  >
-                    <CopyIcon Color="#F6F6F6" />
+                  <span className="ml-2 cursor-pointer w-fit">
+                    <CopyButton
+                      textToCopy={electionData.zkvoteBy}
+                      iconColor="#F6F6F6"
+                      position={{ top: -26, left: -38 }}
+                    />
                   </span>
                 </span>
               </div>
