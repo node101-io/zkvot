@@ -133,47 +133,49 @@ const StepThree = ({ electionData, selectedChoice }) => {
         <p className="italic">Do you think the settlement is going too slow?</p>
         <p className="underline cursor-pointer">Become a sequencer</p>
       </div>
-      <div className="flex flex-col max-w-[945px] w-full space-y-[32px] items-start mt-20 h-full">
-        <div className="w-full flex flex-row items-start space-x-4 max-h-[108px]">
-          <div>
-            <Image
-              src={MinaLogo}
-              alt="afsadasd"
-              width={108}
-              height={108}
-            />
-          </div>
-          <div className="flex flex-col text-white">
-            <p className="text-[32px] -translate-y-1">Settled Results</p>
-            <p className="w-[407px] text-[16px] leading-6 tracking-[-0.16px] font-light">
-              The final results come from Mina, the settlement layer. There
-              might be a small difference between the settled...
-            </p>
-          </div>
-        </div>
-        <div className="w-full h-full pb-44 space-y-4">
-          {results.map((result, index) => (
-            <div
-              key={index}
-              className="w-full flex flex-col items-start space-y-2"
-            >
-              <div className="flex items-center justify-start w-full">
-                <span className="text-white text-[14px]">{result.name}</span>
-                <span className="text-white text-[14px] pl-2">
-                  %{result.percentage}
-                </span>
-              </div>
-
-              <div className="w-full bg-[#434446] rounded-full overflow-hidden h-[30px]">
-                <motion.div
-                  className="bg-green h-full rounded-r-full"
-                  initial={{ width: "0%" }}
-                  animate={{ width: `${result.percentage}%` }}
-                  transition={{ delay: index * 0.2 + 0.4, duration: 0.8 }}
-                />
-              </div>
+      <div className="w-full items-start">
+        <div className="flex flex-col max-w-[945px] w-full space-y-[32px] items-start mt-20 h-full">
+          <div className="w-full flex flex-row items-start space-x-4 max-h-[108px]">
+            <div>
+              <Image
+                src={MinaLogo}
+                alt="afsadasd"
+                width={108}
+                height={108}
+              />
             </div>
-          ))}
+            <div className="flex flex-col text-white">
+              <p className="text-[32px] -translate-y-1">Settled Results</p>
+              <p className="w-[407px] text-[16px] leading-6 tracking-[-0.16px] font-light">
+                The final results come from Mina, the settlement layer. There
+                might be a small difference between the settled...
+              </p>
+            </div>
+          </div>
+          <div className="w-full h-full pb-44 space-y-7">
+            {results.map((result, index) => (
+              <div
+                key={index}
+                className="w-full flex flex-col items-start space-y-2"
+              >
+                <div className="flex items-center justify-start w-full">
+                  <span className="text-white text-[14px]">{result.name}</span>
+                  <span className="text-white text-[14px] pl-2">
+                    %{result.percentage}
+                  </span>
+                </div>
+
+                <div className="w-full bg-[#434446] rounded-full overflow-hidden h-[30px]">
+                  <motion.div
+                    className="bg-green h-full rounded-r-full"
+                    initial={{ width: "0%" }}
+                    animate={{ width: `${result.percentage}%` }}
+                    transition={{ delay: index * 0.2 + 0.4, duration: 0.8 }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
