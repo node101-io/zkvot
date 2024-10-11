@@ -6,8 +6,8 @@ import {
   web3FromSource,
 } from "@polkadot/extension-dapp";
 import { initialize, signedExtensions, types } from "avail-js-sdk";
-import { toast } from "react-toastify";
 import { Buffer } from "buffer";
+import { useToast } from "@/components/ToastProvider";
 
 export const SubwalletContext = createContext();
 
@@ -16,7 +16,7 @@ export const SubwalletProvider = ({ children }) => {
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [api, setApi] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const showToast = useToast();
   const getInjectorMetadata = (api) => {
     return {
       chain: api.runtimeChain.toString(),
@@ -57,7 +57,7 @@ export const SubwalletProvider = ({ children }) => {
       const extensions = await web3Enable("Your App Name");
       if (extensions.length === 0) {
         console.warn("No extensions installed.");
-        toast.error("No extensions installed.");
+        showToast("No extensions installed.", "error");
         return;
       }
       const injectedAccounts = await web3Accounts();
@@ -71,10 +71,10 @@ export const SubwalletProvider = ({ children }) => {
         setSelectedAccount(accountsWithProvenance[0]);
       }
 
-      toast.success("Subwallet connected.");
+      showToast("Subwallet connected.", "success");
     } catch (error) {
       console.error("Failed to connect wallet:", error);
-      toast.error("Failed to connect wallet.");
+      showToast("Failed to connect wallet.", "error");
     }
   };
 
@@ -87,7 +87,7 @@ export const SubwalletProvider = ({ children }) => {
         await injector.metadata.provide(metadata);
       }
     }
-    toast.success("Account selected.");
+    showToast("Account selected.", "success");
   };
 
   const disconnectWallet = () => {
@@ -97,7 +97,7 @@ export const SubwalletProvider = ({ children }) => {
 
   const sendTransactionSubwallet = async (zkProofData) => {
     if (!api || !selectedAccount) {
-      toast.error("Please connect your wallet and select an account.");
+      showToast("Please connect a wallet first.", "error");
       return false;
     }
 
@@ -141,7 +141,7 @@ export const SubwalletProvider = ({ children }) => {
                   "Data submitted:",
                   successEvent.event.data.toHuman()
                 );
-                toast.success("Data submitted successfully!");
+                showToast("Transaction successful.", "success");
                 setIsSubmitting(false);
                 alreadyHandled = true;
                 resolve(true);
@@ -162,7 +162,7 @@ export const SubwalletProvider = ({ children }) => {
       return result;
     } catch (error) {
       console.error("Error sending transaction:", error);
-      toast.error(`Failed to send transaction: ${error.message || error}`);
+      showToast("Error sending transaction.", "error");
       setIsSubmitting(false);
       return false;
     }
@@ -185,12 +185,12 @@ export const SubwalletProvider = ({ children }) => {
 
       const userMessage =
         errorMessages[name] || `${section}.${name}: ${docs.join(" ")}`;
-      toast.error(`Transaction failed: ${userMessage}`);
+      showToast(`Transaction failed:`, "error");
       console.error(`${section}.${name}: ${docs.join(" ")}`);
     } else {
       const errorString = dispatchError.toString();
       console.error(errorString);
-      toast.error(`Transaction failed: ${errorString}`);
+      showToast(`Transaction failed:`, "error");
     }
   };
 

@@ -1,7 +1,5 @@
 import Image from "next/image";
 import React from "react";
-import copy from "copy-to-clipboard";
-import { toast } from "react-toastify";
 import { FaImage } from "react-icons/fa";
 import { motion } from "framer-motion";
 

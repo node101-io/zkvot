@@ -1,6 +1,6 @@
 "use client";
+import { useToast } from "@/components/ToastProvider";
 import React, { createContext, useState } from "react";
-import { toast } from "react-toastify";
 
 const CELESTIA_CHAIN_PARAMS = {
   chainId: "mocha-4",
@@ -54,11 +54,15 @@ export const KeplrWalletProvider = ({ children }) => {
   const [keplrWalletAddress, setKeplrWalletAddress] = useState(null);
   const [signer, setSigner] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const showToast = useToast();
 
   const connectKeplrWallet = async () => {
     try {
       if (!window.keplr) {
-        toast.error("Keplr wallet extension not found. Please install it.");
+        showToast(
+          "Keplr wallet extension not found. Please install it.",
+          "error"
+        );
         return;
       }
       const chainId = CELESTIA_CHAIN_PARAMS.chainId;
@@ -68,17 +72,18 @@ export const KeplrWalletProvider = ({ children }) => {
       const offlineSigner = window.getOfflineSigner(chainId);
       const accounts = await offlineSigner.getAccounts();
       if (accounts.length === 0) {
-        toast.error("No accounts found in Keplr wallet.");
+        showToast("No accounts found in Keplr wallet.", "error");
         return;
       }
       const address = accounts[0].address;
       setSigner(offlineSigner);
       setKeplrWalletAddress(address);
-      toast.success("Keplr Wallet Connected.");
+      showToast("Keplr wallet connected.", "success");
       return true;
     } catch (error) {
       console.error("Failed to connect to Keplr wallet", error);
-      toast.error("Failed to connect to Keplr wallet.");
+
+      showToast("Failed to connect to Keplr wallet.", "error");
       return false;
     }
   };
@@ -96,7 +101,7 @@ export const KeplrWalletProvider = ({ children }) => {
   const disconnectKeplrWallet = () => {
     setKeplrWalletAddress(null);
     setSigner(null);
-    toast.success("Keplr Wallet Disconnected.");
+    showToast("Keplr wallet disconnected.", "success");
   };
 
   return (

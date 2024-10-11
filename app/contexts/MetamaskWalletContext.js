@@ -1,32 +1,33 @@
 "use client";
+import { useToast } from "@/components/ToastProvider";
 import React, { createContext, useState } from "react";
-import { toast } from "react-toastify";
 
 export const MetamaskWalletContext = createContext();
 
 export const MetamaskWalletProvider = ({ children }) => {
   const [metamaskWalletAddress, setMetamaskWalletAddress] = useState(null);
+  const showToast = useToast();
 
   const connectMetamaskWallet = async () => {
     try {
       if (!window.ethereum) {
-        toast.error("Metamask not found. Please install it.");
+        showToast("Metamask not found. Please install it.", "error");
         return;
       }
       const accounts = await window.ethereum.request({
         method: "eth_requestAccounts",
       });
       if (accounts.length === 0) {
-        toast.error("No accounts found in Metamask.");
+        showToast("No accounts found in Metamask.", "error");
         return;
       }
       const address = accounts[0];
       setMetamaskWalletAddress(address);
-      toast.success("Metamask Connected.");
+      showToast("Metamask connected.", "success");
       return true;
     } catch (error) {
       console.error("Failed to connect to Metamask", error);
-      toast.error("Failed to connect to Metamask.");
+      showToast("Failed to connect to Metamask.", "error");
       return false;
     }
   };
@@ -45,7 +46,7 @@ export const MetamaskWalletProvider = ({ children }) => {
 
   const disconnectMetamaskWallet = () => {
     setMetamaskWalletAddress(null);
-    toast.success("Metamask Disconnected.");
+    showToast("Metamask disconnected.", "success");
   };
 
   return (

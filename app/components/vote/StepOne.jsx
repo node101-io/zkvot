@@ -2,7 +2,6 @@
 import React, { useContext, useState } from "react";
 import Image from "next/image";
 import { FaImage } from "react-icons/fa";
-import { toast } from "react-toastify";
 import { IoClose } from "react-icons/io5";
 
 import Button from "@/components/common/Button";
@@ -14,6 +13,7 @@ import { MinaWalletContext } from "@/contexts/MinaWalletContext";
 import { MetamaskWalletContext } from "@/contexts/MetamaskWalletContext";
 import WalletSelectionModal from "../common/WalletSelectionModal";
 import CopyButton from "../common/CopyButton";
+import { useToast } from "../ToastProvider";
 
 const StepOne = ({
   electionData,
@@ -26,6 +26,8 @@ const StepOne = ({
   selectedWallet,
   setSelectedWallet,
 }) => {
+  const showToast = useToast();
+
   const [isExpanded, setIsExpanded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -56,13 +58,13 @@ const StepOne = ({
       setIsModalOpen(true);
     } else {
       setSelectedWallet(null);
-      toast.error("Wallet connection was not successful.");
+      showToast("Wallet connection was not successful.", "error");
     }
   };
 
   const handleVoteClick = () => {
     if (selectedChoice === null) {
-      toast.error("Please select a choice to proceed.");
+      showToast("Please select a choice to proceed.", "error");
       return;
     }
     setIsWalletModalOpen(true);
@@ -85,7 +87,7 @@ const StepOne = ({
       }
 
       if (!walletConnected) {
-        toast.error("Wallet is not connected.");
+        showToast("Wallet not connected.", "error");
         return;
       }
 
@@ -100,7 +102,7 @@ const StepOne = ({
       goToNextStep();
     } catch (error) {
       console.error("Error submitting zkProof:", error.message || error);
-      toast.error("Error submitting zkProof.");
+      showToast("Error submitting zkProof.", "error");
     } finally {
       setLoading(false);
     }
@@ -125,6 +127,7 @@ const StepOne = ({
           See Results
         </button>
       </div>
+
       <div className="flex flex-col md:flex-row items-start w-full h-full text-white mb-6 flex-grow">
         <div className="w-full md:w-1/2 flex">
           <div className="flex w-full h-64 rounded-3xl overflow-hidden">

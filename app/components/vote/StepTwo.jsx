@@ -2,7 +2,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import Image from "next/image";
 import { FaImage } from "react-icons/fa";
-import { toast } from "react-toastify";
 
 import Button from "@/components/common/Button";
 import LearnMoreIcon from "@/assets/ElectionCard/LearnMoreIcon";
@@ -100,11 +99,6 @@ const StepTwo = ({
     }
 
     try {
-      if (isSubmitting || isSubmittingKeplr) {
-        toast.info("Transaction is currently being submitted. Please wait...");
-        return;
-      }
-
       setLoading(true);
 
       let transactionSuccess = false;

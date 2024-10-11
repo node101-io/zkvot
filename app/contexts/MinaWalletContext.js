@@ -1,30 +1,37 @@
 "use client";
+import { useToast } from "@/components/ToastProvider";
 import React, { createContext, useState } from "react";
-import { toast } from "react-toastify";
 
 export const MinaWalletContext = createContext();
 
 export const MinaWalletProvider = ({ children }) => {
   const [minaWalletAddress, setMinaWalletAddress] = useState(null);
+  const showToast = useToast();
 
   const connectMinaWallet = async () => {
     try {
       if (!window.mina) {
-        toast.error("Mina wallet extension not found. Please install it.");
+        showToast(
+          "Mina wallet extension not found. Please install it.",
+          "error"
+        );
         return false;
       }
       const accounts = await window.mina.requestAccounts();
       if (accounts.length === 0) {
-        toast.error("No accounts found in Mina wallet.");
+        showToast("No accounts found in Mina wallet.", "error");
         return false;
       }
       const address = accounts[0];
       setMinaWalletAddress(address);
-      toast.success("Mina Wallet Connected.");
+
+      showToast("Mina Wallet Connected.", "success");
+
       return true;
     } catch (error) {
       console.error("Failed to connect to Mina wallet", error);
-      toast.error("Failed to connect to Mina wallet.");
+
+      showToast("Failed to connect to Mina wallet.", "error");
       return false;
     }
   };
@@ -39,7 +46,8 @@ export const MinaWalletProvider = ({ children }) => {
 
   const disconnectMinaWallet = () => {
     setMinaWalletAddress(null);
-    toast.success("Mina Wallet Disconnected.");
+
+    showToast("Mina Wallet Disconnected.", "success");
   };
 
   return (
