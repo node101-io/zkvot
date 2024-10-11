@@ -6,8 +6,8 @@ const DOCKER_INSTALLATION_URL_WIN32_ARM64: string = 'https://desktop.docker.com/
 
 export default (
   data: {
-    platform: string,
-    arch: string
+    arch: string,
+    platform: string
   },
   callback: (err: string | null, installationUrl?: string) => void
 ) => {

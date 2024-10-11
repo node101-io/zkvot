@@ -1,4 +1,4 @@
-import command from "../../src/utils/command.js";
+import command from "../utils/command.js";
 
 // import packageJson from "../package.json" assert { type: "json" };
 
