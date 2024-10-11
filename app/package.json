@@ -1,11 +1,13 @@
 {
-  "name": "zkvotenode",
+  "name": "zkvot-app",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
+  "repository": "github:node101/zkvot",
   "scripts": {
     "dev": "node server.js",
     "build": "next build",
-    "start": "node server.js"
+    "start": "electron server.js"
   },
   "dependencies": {
     "@cosmjs/proto-signing": "^0.32.4",
@@ -19,13 +21,15 @@
     "axios": "^1.7.7",
     "buffer": "^6.0.3",
     "copy-to-clipboard": "^3.3.3",
+    "electron": "^32.2.0",
     "express": "^4.19.2",
     "framer-motion": "^11.8.0",
-    "next": "14.2.7",
+    "next": "^14.2.15",
     "react": "^18",
     "react-dom": "^18",
     "react-icons": "^5.3.0",
-    "react-toastify": "^10.0.5"
+    "react-toastify": "^10.0.5",
+    "update-electron-app": "^3.0.0"
   },
   "devDependencies": {
     "@types/react": "18.3.8",
