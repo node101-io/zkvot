@@ -54,6 +54,15 @@ if (cluster.isMaster) {
 
   app.use('/election', electionRouter);
 
+  const write = require('./utils/da-layers/avail/write');
+  
+  if(cluster.worker.id === 1) {
+    write('test', (error, result) => {
+      if (error) console.error(error);
+      else console.log(result);
+    });
+  }
+
   server.listen(PORT, () => {
     console.log(`Server is on port ${PORT} as Worker ${cluster.worker.id} running @ process ${cluster.worker.process.pid}`);    
   });
