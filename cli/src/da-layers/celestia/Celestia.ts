@@ -1,3 +1,5 @@
+import { CelestiaDataTx } from '../../types/daLayers.js';
+
 import isBase64String from '../../utils/isBase64String.js';
 import isPortInUse from '../../utils/isPortInUse.js';
 
@@ -47,7 +49,7 @@ const Celestia = {
       block_height: number,
       namespace: string
     },
-    callback: (err: Error | string | null, blockData?: any[]) => void
+    callback: (err: Error | string | null, blockData?: CelestiaDataTx[]) => void
   ) => {
     if (!isBase64String(data.namespace))
       return callback('bad_request');

@@ -1,3 +1,5 @@
+import { AvailDataTx } from '../../types/daLayers.js';
+
 import isPortInUse from '../../utils/isPortInUse.js';
 
 import availRequest from './functions/availRequest.js';
@@ -43,7 +45,7 @@ const Avail = {
   },
   getData: (
     data: { block_height: number },
-    callback: (err: string | null, blockData?: any) => void
+    callback: (err: string | null, blockData?: AvailDataTx[]) => void
   ) => {
     availRequest(`${DEFAULT_RPC_URL}/v2/blocks/${data.block_height}/data?fields=data`, {
       method: 'GET'

@@ -17,41 +17,41 @@ await new Promise((resolve) => setTimeout(resolve, 1000));
 //     return logger.log('error', err);
 
 const election = {
-    mina_contract_id: 'B62qk5sunym3zRih83JroVF3X8AoNnCJJ3yKfsxyj5VCcitZphqmQ5p',
-    end_block: 0,
-    question: 'What is your favorite color?',
-    options: ['Red', 'Green', 'Blue'],
-    description: 'This is a test election.',
-    image_url: 'https://www.google.com',
-    image_raw: 'https://www.google.com',
-    voters_list: [],
-    da_layers: [
-			// {
-			//   name: 'celestia',
-			//   start_block_height: 2808650,
-			//   start_block_hash: '821CE8B3BFFFD76FEA4666C32495896E26C92271B264D8E490989CBC3227A94C',
-			//   namespace: 'AAAAAAAAAAAAAAAAAAAAAAAAAL89vfs7io/SsSQ=',
-			// },
-			{
-        name: 'avail' as const,
-        start_block_height: 824285,
-        app_id: 101,
-			}
-    ]
+  mina_contract_id: 'B62qk5sunym3zRih83JroVF3X8AoNnCJJ3yKfsxyj5VCcitZphqmQ5p',
+  end_block: 0,
+  question: 'What is your favorite color?',
+  options: ['Red', 'Green', 'Blue'],
+  description: 'This is a test election.',
+  image_url: 'https://www.google.com',
+  image_raw: 'https://www.google.com',
+  voters_list: [],
+  da_layers: [
+    {
+      name: 'celestia' as const,
+      start_block_height: 2903935,
+      start_block_hash: '821CE8B3BFFFD76FEA4666C32495896E26C92271B264D8E490989CBC3227A94C',
+      namespace: 'AAAAAAAAAAAAAAAAAAAAAAAAAK0xKC+NMFwlyBM=',
+    },
+    // {
+    //   name: 'avail' as const,
+    //   start_block_height: 824285,
+    //   app_id: 101,
+    // }
+  ]
 };
 
-installRequiredLightNodeByElectionIdIfNotExists(election, err => {
-  if (err)
-    return logger.log('error', err);
+// installRequiredLightNodeByElectionIdIfNotExists(election, err => {
+//   if (err)
+//     return logger.log('error', err);
 
-  return logger.log('info', 'result');
-});
-
-// saveAllVotesFromBlockHeightToCurrentViaLightNode(election, (err: any) => {
-//     if (err) return logger.log("error", err);
-
-//     return logger.log("info", "result");
+//   return logger.log('info', 'result');
 // });
+
+saveAllVotesFromBlockHeightToCurrentViaLightNode(election, (err: any) => {
+    if (err) return logger.log("error", err);
+
+    return logger.log("info", "result");
+});
 
 // installRequiredLightNodeByElectionIdIfNotExists(election, err => {
 //   if (err)

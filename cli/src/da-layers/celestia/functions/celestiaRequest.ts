@@ -2,8 +2,9 @@ import db from '../../../utils/db.js';
 import isURL from '../../../utils/isURL.js';
 
 const BLOCK_DATA_NOT_FOUND_ERROR_MESSAGE_REGEX: RegExp = /header: given height is from the future: networkHeight: (.*?), requestedHeight: (.*?)/;
-const DATA_NOT_FOUND_ERROR_MESSAGE_REGEX: RegExp = /blob: not found/;
 const SYNCING_IN_PROGRESS_ERROR_MESSAGE_REGEX: RegExp = /header: syncing in progress: localHeadHeight: (.*?), requestedHeight: (.*?)/;
+
+const CEL_AUTH_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJwdWJsaWMiLCJyZWFkIiwid3JpdGUiLCJhZG1pbiJdfQ.nC-rmjFCQOZkXVaug_Btozp0A1Kta4idiKd7UebCHA8';
 
 export default (
   url: string,
@@ -27,7 +28,7 @@ export default (
       method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + celestiaKuthKey
+          Authorization: 'Bearer ' + CEL_AUTH_KEY
         },
         body: JSON.stringify({
           id: 1,
@@ -44,16 +45,15 @@ export default (
         if (SYNCING_IN_PROGRESS_ERROR_MESSAGE_REGEX.test(res.error?.message))
           return callback('syncing_in_progress');
 
-        return callback(null, res)})
-      .catch(err => {
-        if (DATA_NOT_FOUND_ERROR_MESSAGE_REGEX.test(err))
+        if (!res.result)
           return callback(null, {
             id: 1,
             jsonrpc: '2.0',
             result: []
           });
-
-        return callback('fetch_error');
-      });
+        else
+          return callback(null, res);
+      })
+      .catch(_ => callback('fetch_error'));
   });
 };
