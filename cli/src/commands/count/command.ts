@@ -48,9 +48,9 @@ const election = {
 // });
 
 saveAllVotesFromBlockHeightToCurrentViaLightNode(election, (err: any) => {
-    if (err) return logger.log("error", err);
+  if (err) return logger.log("error", err);
 
-    return logger.log("info", "result");
+  return logger.log("info", "result");
 });
 
 // installRequiredLightNodeByElectionIdIfNotExists(election, err => {

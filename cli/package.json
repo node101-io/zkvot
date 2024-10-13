@@ -1,38 +1,38 @@
 {
-    "name": "zkvot-cli",
-    "version": "1.0.0",
-    "main": "app.js",
-    "type": "module",
-    "scripts": {
-        "build": "tsc",
-        "start": "node --disable-warning=ExperimentalWarning build/app.js"
-    },
-    "author": "",
-    "license": "ISC",
-    "description": "",
-    "dependencies": {
-        "@babel/preset-env": "^7.16.4",
-        "@babel/preset-typescript": "^7.16.0",
-        "@types/jest": "^27.0.3",
-        "@typescript-eslint/eslint-plugin": "^5.5.0",
-        "@typescript-eslint/parser": "^5.5.0",
-        "commander": "^12.1.0",
-        "docker-cli-js": "^2.10.0",
-        "eslint": "^8.7.0",
-        "eslint-plugin-o1js": "^0.4.0",
-        "level": "^8.0.1",
-        "o1js": "^1.8.0",
-        "typescript": "^5.1",
-        "validator": "^13.12.0",
-        "winston": "^3.14.2"
-    },
-    "devDependencies": {
-        "@babel/preset-env": "^7.16.4",
-        "@babel/preset-typescript": "^7.16.0",
-        "@types/async": "^3.2.24"
-    },
-    "engines": {
-        "node": ">=18.14.0"
-    },
-    "engineStrict": true
+  "name": "zkvot-cli",
+  "version": "1.0.0",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node --disable-warning=ExperimentalWarning build/app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "contracts": "*",
+    "@babel/preset-env": "^7.16.4",
+    "@babel/preset-typescript": "^7.16.0",
+    "@types/jest": "^27.0.3",
+    "@typescript-eslint/eslint-plugin": "^5.5.0",
+    "@typescript-eslint/parser": "^5.5.0",
+    "commander": "^12.1.0",
+    "docker-cli-js": "^2.10.0",
+    "eslint": "^8.7.0",
+    "eslint-plugin-o1js": "^0.4.0",
+    "level": "^8.0.1",
+    "o1js": "^1.8.0",
+    "typescript": "^5.1",
+    "winston": "^3.14.2"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.16.4",
+    "@babel/preset-typescript": "^7.16.0",
+    "@types/async": "^3.2.24"
+  },
+  "engines": {
+    "node": ">=18.14.0"
+  },
+  "engineStrict": true
 }

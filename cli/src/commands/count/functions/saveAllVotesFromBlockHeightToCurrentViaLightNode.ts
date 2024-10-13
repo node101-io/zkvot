@@ -1,10 +1,10 @@
 import async from 'async';
 import { JsonProof, VerificationKey, verify } from 'o1js';
 
+import { Vote, VoteProof } from 'contracts';
+
 import { AvailDaLayerInfo, AvailDataTx, CelestiaDaLayerInfo, CelestiaDataTx } from '../../../types/daLayers.js';
 import { Election } from '../../../types/election.js';
-
-import { Vote, VoteProof } from '../VoteProgram.js';
 
 import Avail from '../../../da-layers/avail/Avail.js';
 import Celestia from '../../../da-layers/celestia/Celestia.js';
