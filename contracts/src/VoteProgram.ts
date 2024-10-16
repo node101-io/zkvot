@@ -11,6 +11,7 @@ import {
   UInt8,
   ZkProgram,
   createEcdsaV2,
+  Keccak,
 } from 'o1js';
 import { MerkleWitnessClass } from './utils.js';
 
@@ -18,10 +19,10 @@ class Secp256k1 extends createForeignCurveV2(Crypto.CurveParams.Secp256k1) {}
 class Ecdsa extends createEcdsaV2(Secp256k1) {}
 class Bytes64 extends Bytes(64) {}
 
-function bytesToFieldBigEndian(wordBytes: UInt8[]): Field {
+function bytesToFieldBigEndian(wordBytes: UInt8[], toManyBytes: number): Field {
   let acc = Field.from(0);
   let shift = Field.from(1);
-  for (let i = 31; i >= 0; i--) {
+  for (let i = toManyBytes - 1; i >= 0; i--) {
     const byte = wordBytes[i];
     byte.value.assertLessThanOrEqual(255);
     acc = acc.add(byte.value.mul(shift));
@@ -30,15 +31,15 @@ function bytesToFieldBigEndian(wordBytes: UInt8[]): Field {
   return acc;
 }
 
-function fieldToBytesBigEndian(word: Field): UInt8[] {
-  let bytes = Provable.witness(Provable.Array(UInt8, 32), () => {
+function fieldToBytesBigEndian(word: Field, toManyBytes: number): UInt8[] {
+  let bytes = Provable.witness(Provable.Array(UInt8, toManyBytes), () => {
     let w = word.toBigInt();
-    return Array.from({ length: 32 }, (_, k) => {
-      return UInt8.from((w >> BigInt(8 * (31 - k))) & 0xffn);
+    return Array.from({ length: toManyBytes }, (_, k) => {
+      return UInt8.from((w >> BigInt(8 * (toManyBytes - 1 - k))) & 0xffn);
     });
   });
 
-  bytesToFieldBigEndian(bytes).assertEquals(word);
+  bytesToFieldBigEndian(bytes, toManyBytes).assertEquals(word);
 
   return bytes;
 }
@@ -61,7 +62,8 @@ export class VotePrivateInputs extends Struct({
 }) {}
 
 export class VoteWithSecp256k1PrivateInputs extends Struct({
-  voterKey: Secp256k1,
+  voterAddress: Field,
+  voterPubKey: Secp256k1,
   signedElectionId: Ecdsa,
   votersMerkleWitness: MerkleWitnessClass,
 }) {}
@@ -102,24 +104,63 @@ export const Vote = ZkProgram({
         publicInput: VotePublicInputs,
         privateInput: VoteWithSecp256k1PrivateInputs
       ) {
-        const voterPublicKey = privateInput.voterKey;
-        const publicKeyFields = [
-          ...voterPublicKey.x.value,
-          ...voterPublicKey.y.value,
-        ];
+        const voterAddress = privateInput.voterAddress;
+        const voterPublicKey = privateInput.voterPubKey;
+
+        // Ensure voterAddress is in the list
         privateInput.votersMerkleWitness
-          .calculateRoot(Poseidon.hash(publicKeyFields))
+          .calculateRoot(voterAddress)
           .assertEquals(publicInput.votersRoot);
 
+        // Ensure Address is derived from the public key
+        const voterPubKeyUI8Arr = [
+          ...fieldToBytesBigEndian(voterPublicKey.x.value[2], 10),
+          ...fieldToBytesBigEndian(voterPublicKey.x.value[1], 11),
+          ...fieldToBytesBigEndian(voterPublicKey.x.value[0], 11),
+          ...fieldToBytesBigEndian(voterPublicKey.y.value[2], 10),
+          ...fieldToBytesBigEndian(voterPublicKey.y.value[1], 11),
+          ...fieldToBytesBigEndian(voterPublicKey.y.value[0], 11),
+        ];
+
+        const calculatedAddressBytes = Keccak.ethereum(voterPubKeyUI8Arr).bytes;
+        const calculatedAddress = [
+          calculatedAddressBytes[12],
+          calculatedAddressBytes[13],
+          calculatedAddressBytes[14],
+          calculatedAddressBytes[15],
+          calculatedAddressBytes[16],
+          calculatedAddressBytes[17],
+          calculatedAddressBytes[18],
+          calculatedAddressBytes[19],
+          calculatedAddressBytes[20],
+          calculatedAddressBytes[21],
+          calculatedAddressBytes[22],
+          calculatedAddressBytes[23],
+          calculatedAddressBytes[24],
+          calculatedAddressBytes[25],
+          calculatedAddressBytes[26],
+          calculatedAddressBytes[27],
+          calculatedAddressBytes[28],
+          calculatedAddressBytes[29],
+          calculatedAddressBytes[30],
+          calculatedAddressBytes[31],
+        ];
+
+        bytesToFieldBigEndian(calculatedAddress, 20).assertEquals(voterAddress);
+
+        // Verify the signature with the public key
         const signedElectionId = privateInput.signedElectionId;
 
         const electionIdFirstField = publicInput.electionId.toFields()[0];
         const electionIdSecondField = publicInput.electionId.toFields()[1];
 
-        let electionIdFirstFieldBytes =
-          fieldToBytesBigEndian(electionIdFirstField);
+        let electionIdFirstFieldBytes = fieldToBytesBigEndian(
+          electionIdFirstField,
+          32
+        );
         let electionIdSecondFieldBytes = fieldToBytesBigEndian(
-          electionIdSecondField
+          electionIdSecondField,
+          32
         );
 
         const signedElectionIdMessage = Bytes64.from([
