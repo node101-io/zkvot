@@ -6,12 +6,12 @@ import ElectionList from "./stepOneComponent/ElectionList";
 const StepOne = ({ onNext, initialData }) => {
   const [picture, setPicture] = useState(initialData?.picture || null);
   const [question, setQuestion] = useState(initialData?.question || "");
-  const [elections, setElections] = useState(initialData?.elections || []);
+  const [elections, setElections] = useState(initialData?.options || []);
   const [description, setDescription] = useState(
     initialData?.description || ""
   );
-  const [startDate, setStartDate] = useState(initialData?.startDate || "");
-  const [endDate, setEndDate] = useState(initialData?.endDate || "");
+  const [startDate, setStartDate] = useState(initialData?.start_date || "");
+  const [endDate, setEndDate] = useState(initialData?.end_date || "");
   const [isNextEnabled, setIsNextEnabled] = useState(false);
 
   const handlePictureChange = (e) => {
@@ -39,10 +39,10 @@ const StepOne = ({ onNext, initialData }) => {
       const data = {
         picture,
         question,
-        elections,
+        options: elections,
         description,
-        startDate,
-        endDate,
+        start_date: parseInt(startDate),
+        end_date: parseInt(endDate),
       };
       onNext(data);
     }
@@ -50,8 +50,16 @@ const StepOne = ({ onNext, initialData }) => {
 
   return (
     <div className="flex flex-col space-y-6 p-6 bg-[#121315] rounded-lg w-full max-w-4xl">
-      <div className="flex space-x-6">
-        <label className="flex justify-center items-center w-64 h-40 bg-gray-700 rounded-lg cursor-pointer relative">
+      <div className="flex space-x-[48px]">
+        <label
+          className="flex justify-center items-center w-64 h-40 cursor-pointer relative"
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='40' ry='40' stroke='%23D4A6C4FF' stroke-width='5' stroke-dasharray='2%2c 24' stroke-dashoffset='56' stroke-linecap='round'/%3e%3c/svg%3e\")",
+            borderRadius: "40px",
+            backgroundColor: "#222222",
+          }}
+        >
           <input
             type="file"
             accept="image/*"
@@ -70,13 +78,16 @@ const StepOne = ({ onNext, initialData }) => {
         </label>
 
         <div className="flex flex-col space-y-4 flex-grow">
-          <input
-            type="text"
-            placeholder="Please write down your title"
-            className="p-2 bg-[#222] text-white rounded-[73px] border border-[#1E1E1E] w-full"
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-          />
+          <div className="flex flex-col space-y-2">
+            <p className="text-[14px]">Question</p>
+            <input
+              type="text"
+              placeholder="Please write down your title"
+              className="p-2 bg-[#222] text-white rounded-[73px] border border-[#1E1E1E] w-full"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+            />
+          </div>
           <div className="flex space-x-4">
             <input
               type="date"
@@ -95,8 +106,8 @@ const StepOne = ({ onNext, initialData }) => {
         </div>
       </div>
 
-      <div className="flex flex-col space-y-4 w-full">
-        <h3 className="text-white">Add Choices</h3>
+      <div className="flex flex-col text-[14px] space-y-4 w-full pt-[50px]">
+        <h3 className="text-white">Add Options</h3>
         <ElectionInput
           elections={elections}
           setElections={setElections}
@@ -106,23 +117,27 @@ const StepOne = ({ onNext, initialData }) => {
           setElections={setElections}
         />
       </div>
+      <div className="flex flex-col space-y-2 text-[14px]">
+        <p>Description</p>
+        <textarea
+          placeholder="Please write down your description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="p-4 bg-[#222] text-white rounded-[40px] border border-[#1E1E1E] w-full"
+        />
+      </div>
 
-      <textarea
-        placeholder="Please write down your description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        className="p-2 bg-[#222] text-white rounded border border-[#1E1E1E] w-full"
-      />
-
-      <Button
-        onClick={handleSubmit}
-        className={`mt-4 ${
-          !isNextEnabled ? "opacity-50 cursor-not-allowed" : ""
-        }`}
-        disabled={!isNextEnabled}
-      >
-        Next
-      </Button>
+      <div className="w-full flex justify-end items-center pt-6">
+        <Button
+          onClick={handleSubmit}
+          className={`mt-4 ${
+            !isNextEnabled ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+          disabled={!isNextEnabled}
+        >
+          Next
+        </Button>
+      </div>
     </div>
   );
 };

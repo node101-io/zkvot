@@ -11,6 +11,7 @@
     "@cosmjs/proto-signing": "^0.32.4",
     "@cosmjs/stargate": "^0.32.4",
     "@cosmos-kit/core": "^2.13.1",
+    "@heroicons/react": "^1.0.6",
     "@polkadot/api": "^13.2.1",
     "@polkadot/extension-dapp": "^0.53.1",
     "@polkadot/types": "^13.2.1",

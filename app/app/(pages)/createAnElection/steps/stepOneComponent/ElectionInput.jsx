@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import PlusIcon from "@/assets/CreateElection/PlusIcon.svg";
+import Image from "next/image";
 
 const ElectionInput = ({ elections, setElections }) => {
   const [newElection, setNewElection] = useState("");
@@ -29,9 +31,14 @@ const ElectionInput = ({ elections, setElections }) => {
       />
       <button
         onClick={addElection}
-        className="w-12 h-12 bg-green-600 text-white rounded-[73px] flex items-center justify-center"
+        className="w-12 h-12 bg-[#222] text-white rounded-[23px] border border-[#1E1E1E] flex items-center justify-center"
       >
-        +
+        <Image
+          width={20}
+          height={20}
+          src={PlusIcon}
+          alt="Plus Icon"
+        />
       </button>
     </div>
   );

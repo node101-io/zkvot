@@ -89,7 +89,6 @@ export const KeplrWalletProvider = ({ children }) => {
   };
 
   const sendTransactionKeplr = async (zkProofData) => {
-    // simulate a success with 1 second wait
     await new Promise((resolve) => {
       setTimeout(() => {
         resolve("success");
