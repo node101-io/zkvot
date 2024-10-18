@@ -5,11 +5,12 @@
   "type": "module",
   "repository": "github:node101/zkvot",
   "scripts": {
-    "dev": "node server.js",
+    "dev": "node electron/server.js",
     "build": "next build",
-    "start": "electron server.js"
+    "start": "electron electron/server.js"
   },
   "dependencies": {
+    "contracts": "*",
     "@polkadot/api": "^13.2.1",
     "@polkadot/extension-dapp": "^0.53.1",
     "@polkadot/types": "^13.2.1",

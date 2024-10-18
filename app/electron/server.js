@@ -10,18 +10,18 @@ const {
   shell,
   Tray
 } = electron;
+import indexRouteController from './routes/indexRouteController.js';
 
 const DEV = process.env.NODE_ENV !== 'production';
 const PORT = process.env.PORT || 10102;
 
-const nextApp = next({});
+const nextApp = next({ dev: DEV });
 const handle = nextApp.getRequestHandler();
 
 const server = express();
 
-server.all('*', (req, res) => {
-  return handle(req, res);
-});
+server.use('/', indexRouteController);
+server.all('*', (req, res) => handle(req, res));
 
 const setupTrayMenu = _ => {
   // const image = nativeImage.createFromPath(path.join(import.meta.dirname, 'build/icon.png'));
@@ -57,7 +57,9 @@ if (!app.requestSingleInstanceLock())
 
 app.dock.hide();
 
-autoUpdater.updateElectronApp();
+autoUpdater.updateElectronApp({
+  repo: 'node101-io/zkvot',
+});
 
 app
   .on('ready', _ => {
@@ -75,7 +77,7 @@ app
     dialog.showMessageBoxSync({
       type: 'error',
       message: err && err.code == 'EADDRINUSE' ?
-        `Port ${APP_PORT} is already in use by another application. System restart is recommended.` :
+        `Port ${PORT} is already in use by another application. System restart is recommended.` :
         `Server could not be started: ${err}`
     });
 
