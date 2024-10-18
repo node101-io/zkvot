@@ -47,17 +47,12 @@ const HomePage = () => {
     setElectionData((prevData) => {
       const updatedData = { ...prevData };
 
-      // If Avail is selected, add app_id to the communication layer
       if (
         updatedData.communication_layers &&
         updatedData.communication_layers[0].type === "avail"
       ) {
         updatedData.communication_layers[0].app_id = additionalInput;
       }
-
-      // You can remove additional_input if not needed elsewhere
-      // updatedData.additional_input = additionalInput;
-
       return updatedData;
     });
 

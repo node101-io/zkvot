@@ -1,4 +1,3 @@
-// StepThree.jsx
 import React, { useState } from "react";
 import AvailLogo from "@/assets/DaLogos/Avail";
 import CelestiaLogo from "@/assets/DaLogos/Celestia";
@@ -39,7 +38,6 @@ const StepThree = ({ onPrevious, onSubmit }) => {
       communicationLayer.namespace = "namespace_value";
     }
 
-    // For Avail, we'll obtain app_id in Step Four
     onSubmit([communicationLayer]);
   };
 
