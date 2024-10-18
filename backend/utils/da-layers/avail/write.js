@@ -16,14 +16,15 @@ module.exports = async (data, callback) => {
       userAccount, 
       { app_id: appID })
       .then(result => { 
-        return callback(null, {
-          success: true,
-          blockHash: result.blockHash.toString(),
-          txHash: result.txHash.toString()
-        });
+        if (!result.isErr) {
+          return callback(null, {
+            blockHash: result.blockHash.toString(),
+            txHash: result.txHash.toString()
+          });
+        }
       })
       .catch(err => {
-        return callback('tx_failed');
+        return callback('da_layer_error');
       });
     });
 }

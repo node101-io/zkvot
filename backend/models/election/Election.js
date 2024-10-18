@@ -17,6 +17,14 @@ const ElectionSchema = new mongoose.Schema({
     minlength: 1,
     maxlength: MAX_DATABASE_TEXT_FIELD_LENGTH,
   },
+  storage_id: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    minlength: 1,
+    maxlength: MAX_DATABASE_TEXT_FIELD_LENGTH,
+  },
   end_block: {
     type: Number,
     required: true,
@@ -96,6 +104,8 @@ const ElectionSchema = new mongoose.Schema({
   }],
 }); 
 
+ElectionSchema.index({ mina_contract_id: 1 });
+
 ElectionSchema.statics.createElection = function (data, callback) {
   const Election = this;
   
@@ -108,6 +118,7 @@ ElectionSchema.statics.createElection = function (data, callback) {
     ) return callback('bad_request');
 
   const mina_contract_id = data.mina_contract_id;
+  const storage_id = data.storage_id;
 
   // TODO: Check if the contract is valid or fetch the storage id from the contract.
 
@@ -128,6 +139,7 @@ ElectionSchema.statics.createElection = function (data, callback) {
 
     const electionData = {
       mina_contract_id: mina_contract_id,
+      storage_id: storage_id,
       end_block: data.end_block,
       question: data.question,
       options: data.options,
@@ -149,6 +161,16 @@ ElectionSchema.statics.createElection = function (data, callback) {
   });
 };
 
-ElectionSchema.index({ mina_contract_id: 1 });
+ElectionSchema.statics.checkIfElectionExists = function (mina_contract_id, callback) {
+  const Election = this;
+
+  if (!validator(id, { required: true, type: 'string' })) return callback('bad_request');
+
+  Election.exists({ mina_contract_id }, (error, exists) => {
+    if (error) return callback('database_error');
+
+    return callback(null, exists);
+  });
+}
 
 module.exports = mongoose.model('Election', ElectionSchema);
