@@ -4,12 +4,11 @@ import StepOne from "./steps/StepOne";
 import StepTwo from "./steps/StepTwo";
 import StepThree from "./steps/StepThree";
 import StepFour from "./steps/StepFour";
+import StepFive from "./steps/StepFive.jsx";
 import Button from "@/components/common/Button";
 import { MinaWalletContext } from "@/contexts/MinaWalletContext";
 
 const HomePage = () => {
-  const { minaWalletAddress, connectMinaWallet } =
-    useContext(MinaWalletContext);
   const [step, setStep] = useState(1);
 
   const [electionData, setElectionData] = useState({
@@ -45,16 +44,41 @@ const HomePage = () => {
   };
 
   const handleStepFourSubmit = (additionalInput) => {
+    setElectionData((prevData) => {
+      const updatedData = { ...prevData };
+
+      // If Avail is selected, add app_id to the communication layer
+      if (
+        updatedData.communication_layers &&
+        updatedData.communication_layers[0].type === "avail"
+      ) {
+        updatedData.communication_layers[0].app_id = additionalInput;
+      }
+
+      // You can remove additional_input if not needed elsewhere
+      // updatedData.additional_input = additionalInput;
+
+      return updatedData;
+    });
+
+    setStep(5);
+  };
+
+  const handleStepFiveSubmit = (transactionId) => {
     setElectionData((prevData) => ({
       ...prevData,
-      additional_input: additionalInput,
+      transactionId: transactionId.trim(),
     }));
 
     generateAndDownloadJSON();
+    setStep(6);
   };
 
   const generateAndDownloadJSON = () => {
     const finalElectionData = { ...electionData };
+
+    delete finalElectionData.someComponent;
+    delete finalElectionData.someEventObject;
 
     if (finalElectionData.picture) {
       const reader = new FileReader();
@@ -62,24 +86,32 @@ const HomePage = () => {
         finalElectionData.image_raw = reader.result;
         delete finalElectionData.picture;
 
+        console.log("Final Election Data:", finalElectionData);
+
         downloadJSON(finalElectionData);
 
-        setStep(1);
         setElectionData({ voters_list: [], communication_layers: [] });
         setWallets([]);
       };
       reader.readAsDataURL(finalElectionData.picture);
     } else {
+      console.log("Final Election Data:", finalElectionData);
+
       downloadJSON(finalElectionData);
 
-      setStep(1);
       setElectionData({ voters_list: [], communication_layers: [] });
       setWallets([]);
     }
   };
 
-  const downloadJSON = (data) => {
-    const dataStr = JSON.stringify(data, null, 2);
+  const downloadJSON = () => {
+    const finalElectionData = { ...electionData };
+
+    delete finalElectionData.picture;
+    delete finalElectionData.someComponent;
+
+    console.log("Data to be serialized:", finalElectionData);
+    const dataStr = JSON.stringify(finalElectionData, null, 2);
     const blob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(blob);
 
@@ -89,24 +121,8 @@ const HomePage = () => {
     link.click();
     URL.revokeObjectURL(url);
 
-    console.log("Data ready to be submitted:", data);
+    console.log("Data ready to be submiƒtted:", finalElectionData);
   };
-
-  if (!minaWalletAddress) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-center text-white space-y-4">
-          <p>Please connect your wallet to continue.</p>
-          <Button
-            onClick={connectMinaWallet}
-            className="px-4 py-2 bg-blue-500 rounded text-white"
-          >
-            Connect Mina Wallet
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex justify-center items-center h-full py-12">
@@ -135,8 +151,16 @@ const HomePage = () => {
         )}
         {step === 4 && (
           <StepFour
+            electionData={electionData}
             onPrevious={() => setStep(3)}
             onSubmit={handleStepFourSubmit}
+          />
+        )}
+        {step === 5 && (
+          <StepFive
+            downloadJSON={downloadJSON}
+            onPrevious={() => setStep(4)}
+            onSubmit={handleStepFiveSubmit}
           />
         )}
       </div>
