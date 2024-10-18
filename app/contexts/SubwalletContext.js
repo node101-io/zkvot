@@ -96,77 +96,76 @@ export const SubwalletProvider = ({ children }) => {
   };
 
   const sendTransactionSubwallet = async (zkProofData) => {
-    // if (!api || !selectedAccount) {
-    //   showToast("Please connect a wallet first.", "error");
-    //   return false;
-    // }
+    if (!api || !selectedAccount) {
+      showToast("Please connect a wallet first.", "error");
+      return false;
+    }
 
-    // try {
-    //   setIsSubmitting(true);
+    try {
+      setIsSubmitting(true);
 
-    //   const injector = await web3FromSource(selectedAccount.source);
-    //   api.setSigner(injector.signer);
+      const injector = await web3FromSource(selectedAccount.source);
+      api.setSigner(injector.signer);
 
-    //   const encodedData = Buffer.from(JSON.stringify(zkProofData)).toString(
-    //     "base64"
-    //   );
-    //   const tx = api.tx.dataAvailability.submitData(encodedData);
+      const encodedData = Buffer.from(JSON.stringify(zkProofData)).toString(
+        "base64"
+      );
+      const tx = api.tx.dataAvailability.submitData(encodedData);
 
-    //   const result = await new Promise((resolve) => {
-    //     let alreadyHandled = false;
+      const result = await new Promise((resolve) => {
+        let alreadyHandled = false;
 
-    //     tx.signAndSend(
-    //       selectedAccount.address,
-    //       { signer: injector.signer },
-    //       ({ status, events, dispatchError }) => {
-    //         if (alreadyHandled) return;
+        tx.signAndSend(
+          selectedAccount.address,
+          { signer: injector.signer },
+          ({ status, events, dispatchError }) => {
+            if (alreadyHandled) return;
 
-    //         if (dispatchError) {
-    //           handleDispatchError(dispatchError);
-    //           setIsSubmitting(false);
-    //           alreadyHandled = true;
-    //           resolve(false);
-    //           return;
-    //         }
+            if (dispatchError) {
+              handleDispatchError(dispatchError);
+              setIsSubmitting(false);
+              alreadyHandled = true;
+              resolve(false);
+              return;
+            }
 
-    //         if (status.isFinalized) {
-    //           const successEvent = events.find(
-    //             ({ event }) =>
-    //               event.section === "dataAvailability" &&
-    //               event.method === "DataSubmitted"
-    //           );
+            if (status.isFinalized) {
+              const successEvent = events.find(
+                ({ event }) =>
+                  event.section === "dataAvailability" &&
+                  event.method === "DataSubmitted"
+              );
 
-    //           if (successEvent) {
-    //             console.log(
-    //               "Data submitted:",
-    //               successEvent.event.data.toHuman()
-    //             );
-    //             showToast("Transaction successful.", "success");
-    //             setIsSubmitting(false);
-    //             alreadyHandled = true;
-    //             resolve(true);
-    //           } else {
-    //             setIsSubmitting(false);
-    //             alreadyHandled = true;
-    //             resolve(false);
-    //           }
-    //         }
-    //       }
-    //     ).catch((error) => {
-    //       console.error("Transaction error:", error);
-    //       setIsSubmitting(false);
-    //       resolve(false);
-    //     });
-    //   });
+              if (successEvent) {
+                console.log(
+                  "Data submitted:",
+                  successEvent.event.data.toHuman()
+                );
+                showToast("Transaction successful.", "success");
+                setIsSubmitting(false);
+                alreadyHandled = true;
+                resolve(true);
+              } else {
+                setIsSubmitting(false);
+                alreadyHandled = true;
+                resolve(false);
+              }
+            }
+          }
+        ).catch((error) => {
+          console.error("Transaction error:", error);
+          setIsSubmitting(false);
+          resolve(false);
+        });
+      });
 
-    //   return result;
-    // } catch (error) {
-    //   console.error("Error sending transaction:", error);
-    //   showToast("Error sending transaction.", "error");
-    //   setIsSubmitting(false);
-    //   return false;
-    // }
-    return true;
+      return result;
+    } catch (error) {
+      console.error("Error sending transaction:", error);
+      showToast("Error sending transaction.", "error");
+      setIsSubmitting(false);
+      return false;
+    }
   };
 
   const handleDispatchError = (dispatchError) => {
