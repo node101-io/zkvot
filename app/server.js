@@ -14,7 +14,7 @@ const {
 const DEV = process.env.NODE_ENV !== 'production';
 const PORT = process.env.PORT || 10102;
 
-const nextApp = next({  });
+const nextApp = next({});
 const handle = nextApp.getRequestHandler();
 
 const server = express();
