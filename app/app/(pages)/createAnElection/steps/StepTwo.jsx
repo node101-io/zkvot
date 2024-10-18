@@ -3,19 +3,12 @@ import Button from "@/components/common/Button";
 import WalletInput from "./stepTwoComponent/WalletInput";
 import WalletList from "./stepTwoComponent/WalletList";
 
-const StepTwo = ({
-  onPrevious,
-  onSubmit,
-  wallets,
-  setWallets,
-  isTwitterRequired,
-  setIsTwitterRequired,
-}) => {
-  const [isSubmitEnabled, setIsSubmitEnabled] = useState(false);
+const StepTwo = ({ onPrevious, onSubmit }) => {
+  const [wallets, setWallets] = useState([]);
+  const [requiredFields, setRequiredFields] = useState([]);
+  const [customOptionNames, setCustomOptionNames] = useState({});
 
-  useEffect(() => {
-    setIsSubmitEnabled(wallets.length > 0);
-  }, [wallets]);
+  const isSubmitEnabled = wallets.length > 0;
 
   const handleSubmit = () => {
     if (isSubmitEnabled) {
@@ -29,14 +22,16 @@ const StepTwo = ({
       <WalletInput
         wallets={wallets}
         setWallets={setWallets}
-        isTwitterRequired={isTwitterRequired}
-        setIsTwitterRequired={setIsTwitterRequired}
+        requiredFields={requiredFields}
+        setRequiredFields={setRequiredFields}
+        customOptionNames={customOptionNames}
+        setCustomOptionNamesInParent={setCustomOptionNames}
       />
       <WalletList
         wallets={wallets}
         setWallets={setWallets}
-        isTwitterRequired={isTwitterRequired}
-        setIsTwitterRequired={setIsTwitterRequired}
+        requiredFields={requiredFields}
+        customOptionNames={customOptionNames}
       />
       <div className="w-full flex justify-between">
         <Button
@@ -52,7 +47,7 @@ const StepTwo = ({
           }`}
           disabled={!isSubmitEnabled}
         >
-          Submit
+          next
         </Button>
       </div>
     </div>

@@ -2,19 +2,18 @@
 import React, { useContext, useState } from "react";
 import Image from "next/image";
 import { FaImage } from "react-icons/fa";
-import { toast } from "react-toastify";
-import copy from "copy-to-clipboard";
 import { IoClose } from "react-icons/io5";
 
 import Button from "@/components/common/Button";
 import LearnMoreIcon from "@/assets/ElectionCard/LearnMoreIcon";
 import Clock from "@/assets/ElectionCard/Clock";
-import CopyIcon from "@/assets/ElectionCard/CopyIcon";
-import DownloadIcon from "@/assets/ElectionCard/DownloadIcon";
 
+import DownloadIcon from "@/assets/ElectionCard/DownloadIcon";
 import { MinaWalletContext } from "@/contexts/MinaWalletContext";
 import { MetamaskWalletContext } from "@/contexts/MetamaskWalletContext";
 import WalletSelectionModal from "../common/WalletSelectionModal";
+import CopyButton from "../common/CopyButton";
+import { useToast } from "../ToastProvider";
 
 const StepOne = ({
   electionData,
@@ -27,6 +26,8 @@ const StepOne = ({
   selectedWallet,
   setSelectedWallet,
 }) => {
+  const showToast = useToast();
+
   const [isExpanded, setIsExpanded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -57,13 +58,13 @@ const StepOne = ({
       setIsModalOpen(true);
     } else {
       setSelectedWallet(null);
-      toast.error("Wallet connection was not successful.");
+      showToast("Wallet connection was not successful.", "error");
     }
   };
 
   const handleVoteClick = () => {
     if (selectedChoice === null) {
-      toast.error("Please select a choice to proceed.");
+      showToast("Please select a choice to proceed.", "error");
       return;
     }
     setIsWalletModalOpen(true);
@@ -86,7 +87,7 @@ const StepOne = ({
       }
 
       if (!walletConnected) {
-        toast.error("Wallet is not connected.");
+        showToast("Wallet not connected.", "error");
         return;
       }
 
@@ -101,27 +102,9 @@ const StepOne = ({
       goToNextStep();
     } catch (error) {
       console.error("Error submitting zkProof:", error.message || error);
-      toast.error("Error submitting zkProof.");
+      showToast("Error submitting zkProof.", "error");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleCopyElectionId = () => {
-    const successful = copy(electionData.electionId);
-    if (successful) {
-      toast.success("Election ID Copied");
-    } else {
-      toast.error("Failed to copy!");
-    }
-  };
-
-  const handleCopyZkvoteBy = () => {
-    const successful = copy(electionData.zkvoteBy);
-    if (successful) {
-      toast.success("zkVoter Copied");
-    } else {
-      toast.error("Failed to copy!");
     }
   };
 
@@ -144,6 +127,7 @@ const StepOne = ({
           See Results
         </button>
       </div>
+
       <div className="flex flex-col md:flex-row items-start w-full h-full text-white mb-6 flex-grow">
         <div className="w-full md:w-1/2 flex">
           <div className="flex w-full h-64 rounded-3xl overflow-hidden">
@@ -167,29 +151,18 @@ const StepOne = ({
         <div className="p-4  w-full h-full flex flex-col justify-between ">
           <div className="flex flex-row w-full justify-between">
             <div className="text-[#B7B7B7] text-sm mb-2 flex flex-row items-center">
-              <span className="mr-2 group relative scale-125">
+              <span className="mr-2 group relative">
                 <LearnMoreIcon Color="#B7B7B7" />
-                <div className="absolute bottom-full left-1/2 transform -translate-x-4  mb-2 hidden group-hover:flex flex-col items-start z-50">
-                  <div className="bg-[#222222]  text-gray-200 text-sm rounded-md px-3 py-4 shadow-lg w-64 text-start">
-                    <p className="underline">What happens if I vote twice?</p>
-                    <p className="text-gray-300 mt-[6px] mb-3 ">
-                      It is a long established fact that a reader will be
-                      distracted by the readable content of a page when looking
-                      at its layout.
-                    </p>
-                    <p>How could I learn if I have voted?</p>
-                  </div>
-                  <div className="w-3 h-3 bg-[#222222] rotate-45 transform translate-x-3 -translate-y-2"></div>
-                </div>
               </span>
               Election id:{" "}
               {String(electionData.electionId).slice(0, 12) + "..."}
-              <span
-                onClick={handleCopyElectionId}
-                className="ml-1 cursor-pointer w-fit"
-              >
-                <CopyIcon Color="#B7B7B7" />
-              </span>
+              <div className="ml-2">
+                <CopyButton
+                  textToCopy={electionData.electionId}
+                  iconColor="#B7B7B7"
+                  position={{ top: -20, left: -38 }}
+                />
+              </div>
             </div>
             <span className="flex flex-row justify-center items-center">
               <span>
@@ -230,15 +203,16 @@ const StepOne = ({
               </span>
             </span>
             <span className="flex flex-row items-center">
-              <span className="text-primary mr-1 italic text-sm">
+              <span className="text-primary mr-2 italic text-sm">
                 zkVote by
               </span>
               {electionData.zkvoteBy.slice(0, 12) + "..."}
-              <span
-                className="ml-1 cursor-pointer w-fit"
-                onClick={handleCopyZkvoteBy}
-              >
-                <CopyIcon Color="#F6F6F6" />
+              <span className="ml-2 cursor-pointer w-fit relative">
+                <CopyButton
+                  textToCopy={electionData.zkvoteBy}
+                  iconColor="#F6F6F6"
+                  position={{ top: -26, left: -38 }}
+                />
               </span>
             </span>
           </div>

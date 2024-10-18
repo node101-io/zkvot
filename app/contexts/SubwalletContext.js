@@ -6,8 +6,8 @@ import {
   web3FromSource,
 } from "@polkadot/extension-dapp";
 import { initialize, signedExtensions, types } from "avail-js-sdk";
-import { toast } from "react-toastify";
 import { Buffer } from "buffer";
+import { useToast } from "@/components/ToastProvider";
 
 export const SubwalletContext = createContext();
 
@@ -16,7 +16,7 @@ export const SubwalletProvider = ({ children }) => {
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [api, setApi] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const showToast = useToast();
   const getInjectorMetadata = (api) => {
     return {
       chain: api.runtimeChain.toString(),
@@ -57,7 +57,7 @@ export const SubwalletProvider = ({ children }) => {
       const extensions = await web3Enable("Your App Name");
       if (extensions.length === 0) {
         console.warn("No extensions installed.");
-        toast.error("No extensions installed.");
+        showToast("No extensions installed.", "error");
         return;
       }
       const injectedAccounts = await web3Accounts();
@@ -71,10 +71,10 @@ export const SubwalletProvider = ({ children }) => {
         setSelectedAccount(accountsWithProvenance[0]);
       }
 
-      toast.success("Subwallet connected.");
+      showToast("Subwallet connected.", "success");
     } catch (error) {
       console.error("Failed to connect wallet:", error);
-      toast.error("Failed to connect wallet.");
+      showToast("Failed to connect wallet.", "error");
     }
   };
 
@@ -87,7 +87,7 @@ export const SubwalletProvider = ({ children }) => {
         await injector.metadata.provide(metadata);
       }
     }
-    toast.success("Account selected.");
+    showToast("Account selected.", "success");
   };
 
   const disconnectWallet = () => {
@@ -96,76 +96,77 @@ export const SubwalletProvider = ({ children }) => {
   };
 
   const sendTransactionSubwallet = async (zkProofData) => {
-    if (!api || !selectedAccount) {
-      toast.error("Please connect your wallet and select an account.");
-      return false;
-    }
+    // if (!api || !selectedAccount) {
+    //   showToast("Please connect a wallet first.", "error");
+    //   return false;
+    // }
 
-    try {
-      setIsSubmitting(true);
+    // try {
+    //   setIsSubmitting(true);
 
-      const injector = await web3FromSource(selectedAccount.source);
-      api.setSigner(injector.signer);
+    //   const injector = await web3FromSource(selectedAccount.source);
+    //   api.setSigner(injector.signer);
 
-      const encodedData = Buffer.from(JSON.stringify(zkProofData)).toString(
-        "base64"
-      );
-      const tx = api.tx.dataAvailability.submitData(encodedData);
+    //   const encodedData = Buffer.from(JSON.stringify(zkProofData)).toString(
+    //     "base64"
+    //   );
+    //   const tx = api.tx.dataAvailability.submitData(encodedData);
 
-      const result = await new Promise((resolve) => {
-        let alreadyHandled = false;
+    //   const result = await new Promise((resolve) => {
+    //     let alreadyHandled = false;
 
-        tx.signAndSend(
-          selectedAccount.address,
-          { signer: injector.signer },
-          ({ status, events, dispatchError }) => {
-            if (alreadyHandled) return;
+    //     tx.signAndSend(
+    //       selectedAccount.address,
+    //       { signer: injector.signer },
+    //       ({ status, events, dispatchError }) => {
+    //         if (alreadyHandled) return;
 
-            if (dispatchError) {
-              handleDispatchError(dispatchError);
-              setIsSubmitting(false);
-              alreadyHandled = true;
-              resolve(false);
-              return;
-            }
+    //         if (dispatchError) {
+    //           handleDispatchError(dispatchError);
+    //           setIsSubmitting(false);
+    //           alreadyHandled = true;
+    //           resolve(false);
+    //           return;
+    //         }
 
-            if (status.isFinalized) {
-              const successEvent = events.find(
-                ({ event }) =>
-                  event.section === "dataAvailability" &&
-                  event.method === "DataSubmitted"
-              );
+    //         if (status.isFinalized) {
+    //           const successEvent = events.find(
+    //             ({ event }) =>
+    //               event.section === "dataAvailability" &&
+    //               event.method === "DataSubmitted"
+    //           );
 
-              if (successEvent) {
-                console.log(
-                  "Data submitted:",
-                  successEvent.event.data.toHuman()
-                );
-                toast.success("Data submitted successfully!");
-                setIsSubmitting(false);
-                alreadyHandled = true;
-                resolve(true);
-              } else {
-                setIsSubmitting(false);
-                alreadyHandled = true;
-                resolve(false);
-              }
-            }
-          }
-        ).catch((error) => {
-          console.error("Transaction error:", error);
-          setIsSubmitting(false);
-          resolve(false);
-        });
-      });
+    //           if (successEvent) {
+    //             console.log(
+    //               "Data submitted:",
+    //               successEvent.event.data.toHuman()
+    //             );
+    //             showToast("Transaction successful.", "success");
+    //             setIsSubmitting(false);
+    //             alreadyHandled = true;
+    //             resolve(true);
+    //           } else {
+    //             setIsSubmitting(false);
+    //             alreadyHandled = true;
+    //             resolve(false);
+    //           }
+    //         }
+    //       }
+    //     ).catch((error) => {
+    //       console.error("Transaction error:", error);
+    //       setIsSubmitting(false);
+    //       resolve(false);
+    //     });
+    //   });
 
-      return result;
-    } catch (error) {
-      console.error("Error sending transaction:", error);
-      toast.error(`Failed to send transaction: ${error.message || error}`);
-      setIsSubmitting(false);
-      return false;
-    }
+    //   return result;
+    // } catch (error) {
+    //   console.error("Error sending transaction:", error);
+    //   showToast("Error sending transaction.", "error");
+    //   setIsSubmitting(false);
+    //   return false;
+    // }
+    return true;
   };
 
   const handleDispatchError = (dispatchError) => {
@@ -185,12 +186,12 @@ export const SubwalletProvider = ({ children }) => {
 
       const userMessage =
         errorMessages[name] || `${section}.${name}: ${docs.join(" ")}`;
-      toast.error(`Transaction failed: ${userMessage}`);
+      showToast(`Transaction failed:`, "error");
       console.error(`${section}.${name}: ${docs.join(" ")}`);
     } else {
       const errorString = dispatchError.toString();
       console.error(errorString);
-      toast.error(`Transaction failed: ${errorString}`);
+      showToast(`Transaction failed:`, "error");
     }
   };
 
