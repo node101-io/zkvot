@@ -17,7 +17,7 @@ const Button = ({
     <button
       disabled={disabled || loading}
       onClick={onClick}
-      className={`z-[2] group relative inline-flex items-center px-4 py-2 rounded-full font-medium overflow-hidden transition-all duration-300 ease-in-out ${
+      className={` max-w-fit z-[2] group relative inline-flex items-center px-4 py-2 rounded-full font-medium overflow-hidden transition-all duration-300 ease-in-out ${
         disabled || loading ? "cursor-not-allowed" : "cursor-pointer"
       }`}
     >
