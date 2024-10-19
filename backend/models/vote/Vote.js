@@ -1,12 +1,14 @@
 const mongoose = require('mongoose');
 
 const verifyVote = require('./functions/verifyVote');
-const writeToAvail = require('./functions/writeToAvail');
+const writeZKProofToAvailIfChosen = require('./functions/writeZKProofToAvailIfChosen');
+const writeZKProofToCelestiaIfChosen = require('./functions/writeZKProofToCelestiaIfChosen');
 
 const Election = require('../election/Election');
 
 const validator = require('../../utils/validator');
 
+const DA_LAYERS = [ 'avail', 'celestia' ];
 const DUPLICATED_UNIQUE_FIELD_ERROR_CODE = 11000;
 const MAX_DATABASE_TEXT_FIELD_LENGTH = 1e4;
 
@@ -22,16 +24,12 @@ const VoteSchema = new mongoose.Schema({
     minlength: 1,
     maxlength: MAX_DATABASE_TEXT_FIELD_LENGTH,
   },
-  block_hash: {
-    type: String,
+  block_height: {
+    type: Number,
     required: true,
-    trim: true,
-    minlength: 1,
-    maxlength: MAX_DATABASE_TEXT_FIELD_LENGTH,
   },
   tx_hash: {
     type: Object,
-    required: true,
   },
   nullifier: {
     type: String,
@@ -41,7 +39,7 @@ const VoteSchema = new mongoose.Schema({
     minlength: 1,
     maxlength: MAX_DATABASE_TEXT_FIELD_LENGTH,
   },
-}); 
+});
 
 VoteSchema.index({ nullifier: 1 }, { unique: true });
 
@@ -50,14 +48,17 @@ VoteSchema.statics.createVote = function (data, callback) {
 
   if (!validator(data, { required: true, type: "object" })) return callback('bad_request');
 
-  if (!validator(data.election_contract_id, { required: true, type: "string" }) ||
+  if (!validator(data.da_layer, { required: true, type: "string" }) ||
+      !validator(data.election_contract_id, { required: true, type: "string" }) ||
       !validator(data.nullifier, { required: true, type: "string" }) ||
-      !validator(data.proof, { required: true, type: "string" })
+      !validator(data.proof, { required: true, type: "object" })
   ) return callback('bad_request');
+
+  if (!DA_LAYERS.includes(data.da_layer)) return callback('bad_request');
 
   Vote._checkIfVoteExists(data.nullifier, (error, exists) => {
     if (error) return callback(error);
-    if (exists) return callback('document_already_exists');
+    if (exists) return callback('duplicated_unique_field');
 
     Election.checkIfElectionExists(data.election_contract_id, (error, exists) => {
       if (error) return callback(error);
@@ -66,28 +67,28 @@ VoteSchema.statics.createVote = function (data, callback) {
       verifyVote({ proof: data.proof, nullifier: data.nullifier }, (error, verified) => {
         if (error) return callback(error);
         if (!verified) return callback('bad_request');
-  
-        writeToAvail(data, (error, tx_results) => {
-          if (error) return callback("da_layer_error");
-  
-          if (!validator(tx_results, { required: true, type: "object" })) return callback('da_layer_error');
 
-          // da layer will be dynamic after celestia integration
-          const vote = new Vote({
-            election_contract_id: data.election_contract_id,
-            da_layer: "avail",
-            block_hash: tx_results.blockHash,
-            tx_hash: tx_results.txHash,
-            nullifier: data.nullifier
-          });
-    
-          vote.save((error, vote) => {
-            if (error) {
-              if (error.code === DUPLICATED_UNIQUE_FIELD_ERROR_CODE) return callback('document_already_exists');
-              return callback('bad_request');
-            }
-        
-            return callback(null, vote);
+        writeZKProofToAvailIfChosen(data, (error, availResult) => {
+          if(error) return callback(error);
+
+          writeZKProofToCelestiaIfChosen(data, (error, celestiaResult) => {
+            if (error) return callback(error);
+
+            const vote = new Vote({
+              election_contract_id: data.election_contract_id,
+              da_layer: data.da_layer,
+              nullifier: data.nullifier,
+              block_height: availResult ? availResult.blockHeight : celestiaResult.blockHeight,
+              tx_hash: availResult ? availResult.txHash : null,
+            });
+
+            vote.save((error, vote) => {
+              if (error && error.code === DUPLICATED_UNIQUE_FIELD_ERROR_CODE) return callback('duplicated_unique_field');
+
+              if (error) return callback('bad_request');
+
+              return callback(null, vote);
+            });
           });
         });
       });
