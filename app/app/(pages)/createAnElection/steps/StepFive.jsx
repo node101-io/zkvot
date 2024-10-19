@@ -12,7 +12,7 @@ import DownloadFileImage from "@/assets/StepFiveTutroial/AkordDownloadUploadFile
 import FileContentImage from "@/assets/StepFiveTutroial/AkordFileContent.svg";
 import CopyFromFileImage from "@/assets/StepFiveTutroial/AkordCopyFromFile.svg";
 
-const StepFive = ({ onPrevious, onSubmit, downloadJSON }) => {
+const StepFive = ({ onPrevious, onSubmit, downloadJSON, electionData }) => {
   const [transactionId, setTransactionId] = useState("");
   const [isSubmitEnabled, setIsSubmitEnabled] = useState(false);
 
@@ -58,7 +58,7 @@ const StepFive = ({ onPrevious, onSubmit, downloadJSON }) => {
             <button
               onClick={(e) => {
                 e.preventDefault();
-                downloadJSON();
+                downloadJSON(electionData);
               }}
               className="hover:text-white/70 underline"
             >

@@ -58,50 +58,44 @@ const HomePage = () => {
   };
 
   const handleStepFiveSubmit = (transactionId) => {
-    setElectionData((prevData) => ({
-      ...prevData,
+    const updatedData = {
+      ...electionData,
       transactionId: transactionId.trim(),
-    }));
+    };
 
-    generateAndDownloadJSON();
+    setElectionData(updatedData);
+
+    generateAndDownloadJSON(updatedData);
     setStep(6);
   };
 
-  const generateAndDownloadJSON = () => {
-    const finalElectionData = { ...electionData };
+  const generateAndDownloadJSON = (currentElectionData) => {
+    const finalElectionData = { ...currentElectionData };
 
     delete finalElectionData.someComponent;
     delete finalElectionData.someEventObject;
 
-    if (finalElectionData.picture) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        finalElectionData.image_raw = reader.result;
-        delete finalElectionData.picture;
+    console.log("Final Election Data:", finalElectionData);
 
-        console.log("Final Election Data:", finalElectionData);
+    downloadJSON(finalElectionData);
 
-        downloadJSON(finalElectionData);
-
-        setElectionData({ voters_list: [], communication_layers: [] });
-        setWallets([]);
-      };
-      reader.readAsDataURL(finalElectionData.picture);
-    } else {
-      console.log("Final Election Data:", finalElectionData);
-
-      downloadJSON(finalElectionData);
-
-      setElectionData({ voters_list: [], communication_layers: [] });
-      setWallets([]);
-    }
+    setElectionData({ voters_list: [], communication_layers: [] });
+    setWallets([]);
   };
 
-  const downloadJSON = () => {
-    const finalElectionData = { ...electionData };
+  const downloadJSON = (finalElectionData) => {
+    if (!finalElectionData) {
+      console.error("finalElectionData is undefined or null");
+      return;
+    }
 
-    delete finalElectionData.picture;
+    if (finalElectionData.picture) {
+      finalElectionData.image_raw = finalElectionData.picture;
+      delete finalElectionData.picture;
+    }
+
     delete finalElectionData.someComponent;
+    delete finalElectionData.someEventObject;
 
     console.log("Data to be serialized:", finalElectionData);
     const dataStr = JSON.stringify(finalElectionData, null, 2);
@@ -113,8 +107,6 @@ const HomePage = () => {
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
-
-    console.log("Data ready to be submiƒtted:", finalElectionData);
   };
 
   return (
@@ -151,6 +143,7 @@ const HomePage = () => {
         )}
         {step === 5 && (
           <StepFive
+            electionData={electionData}
             downloadJSON={downloadJSON}
             onPrevious={() => setStep(4)}
             onSubmit={handleStepFiveSubmit}
