@@ -1,22 +1,25 @@
 "use client";
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import StepOne from "./steps/StepOne";
 import StepTwo from "./steps/StepTwo";
 import StepThree from "./steps/StepThree";
 import StepFour from "./steps/StepFour";
 import StepFive from "./steps/StepFive.jsx";
-
+import {
+  fetchAvailBlockHeight,
+  fetchCelestiaBlockInfo,
+} from "@/contexts/FetchLatestBlock";
 const HomePage = () => {
   const [step, setStep] = useState(1);
-
   const [electionData, setElectionData] = useState({
     voters_list: [],
     communication_layers: [],
   });
-
   const [wallets, setWallets] = useState([]);
   const [isTwitterRequired, setIsTwitterRequired] = useState(false);
-
+  const [blockHeight, setBlockHeight] = useState("");
+  const [blockHash, setBlockHash] = useState("");
+  const [loading, setLoading] = useState(false);
   const handleStepOneNext = (data) => {
     setElectionData((prevData) => ({
       ...prevData,
@@ -33,23 +36,112 @@ const HomePage = () => {
     setStep(3);
   };
 
-  const handleStepThreeSubmit = (communicationLayersData) => {
-    setElectionData((prevData) => ({
-      ...prevData,
-      communication_layers: communicationLayersData,
-    }));
-    setStep(4);
+  const handleStepThreeSubmit = async (communicationLayersData) => {
+    const selectedLayer = communicationLayersData[0];
+
+    if (selectedLayer.type === "celestia") {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `/celestia-generate-namespace?election_id=${encodeURIComponent(
+            electionData.question
+          )}`
+        );
+        const result = await response.json();
+
+        if (result.success) {
+          const namespaceIdentifier = result.data;
+
+          const updatedCommunicationLayer = {
+            ...selectedLayer,
+            namespace: namespaceIdentifier,
+          };
+
+          setElectionData((prevData) => ({
+            ...prevData,
+            communication_layers: [updatedCommunicationLayer],
+          }));
+
+          try {
+            const data = await fetchCelestiaBlockInfo();
+            setBlockHeight(data.blockHeight);
+            setBlockHash(data.blockHash);
+
+            setElectionData((prevData) => {
+              const updatedData = { ...prevData };
+              updatedData.communication_layers[0].block_height =
+                data.blockHeight;
+              updatedData.communication_layers[0].block_hash = data.blockHash;
+              return updatedData;
+            });
+
+            setLoading(false);
+            setStep(4);
+          } catch (error) {
+            console.error("Error fetching Celestia block data:", error);
+            setLoading(false);
+            setTimeout(() => {
+              setStep(4);
+            }, 3000);
+          }
+        } else {
+          setLoading(false);
+          console.error("Error generating namespace:", result.error);
+        }
+      } catch (error) {
+        setLoading(false);
+        console.error("Error fetching namespace:", error);
+      }
+    } else if (selectedLayer.type === "avail") {
+      setElectionData((prevData) => ({
+        ...prevData,
+        communication_layers: communicationLayersData,
+      }));
+      setLoading(true);
+
+      try {
+        const height = await fetchAvailBlockHeight();
+        setBlockHeight(height);
+
+        setElectionData((prevData) => {
+          const updatedData = { ...prevData };
+          updatedData.communication_layers[0].block_height = height;
+          return updatedData;
+        });
+
+        setLoading(false);
+        setStep(4);
+      } catch (error) {
+        console.error("Error fetching Avail block height:", error);
+        setLoading(false);
+        setTimeout(() => {
+          setStep(4);
+        }, 3000);
+      }
+    } else {
+      setElectionData((prevData) => ({
+        ...prevData,
+        communication_layers: communicationLayersData,
+      }));
+      setStep(4);
+    }
   };
 
-  const handleStepFourSubmit = (additionalInput) => {
+  const handleUpdateElectionData = (updatedData) => {
+    setElectionData(updatedData);
+  };
+
+  const handleStepFourSubmit = (additionalData) => {
     setElectionData((prevData) => {
       const updatedData = { ...prevData };
+      const communicationLayer = updatedData.communication_layers[0];
 
-      if (
-        updatedData.communication_layers &&
-        updatedData.communication_layers[0].type === "avail"
-      ) {
-        updatedData.communication_layers[0].app_id = additionalInput;
+      if (communicationLayer.type === "avail") {
+        communicationLayer.app_id = additionalData.app_id;
+        communicationLayer.block_height = additionalData.block_height;
+      } else if (communicationLayer.type === "celestia") {
+        communicationLayer.block_height = additionalData.block_height;
+        communicationLayer.block_hash = additionalData.block_hash;
       }
       return updatedData;
     });
@@ -132,13 +224,17 @@ const HomePage = () => {
           <StepThree
             onPrevious={() => setStep(2)}
             onSubmit={handleStepThreeSubmit}
+            loading={loading}
           />
         )}
         {step === 4 && (
           <StepFour
             electionData={electionData}
+            blockHeight={blockHeight}
+            blockHash={blockHash}
             onPrevious={() => setStep(3)}
             onSubmit={handleStepFourSubmit}
+            onUpdateElectionData={handleUpdateElectionData}
           />
         )}
         {step === 5 && (

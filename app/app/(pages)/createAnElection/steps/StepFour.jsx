@@ -1,33 +1,112 @@
 "use client";
 
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "@/components/common/Button";
 import CreateAppId from "@/components/CreateAppId";
-import { SubwalletContext } from "@/contexts/SubwalletContext";
+import {
+  fetchAvailBlockHeight,
+  fetchCelestiaBlockInfo,
+} from "@/contexts/FetchLatestBlock";
 
-const StepFour = ({ electionData, onPrevious, onSubmit }) => {
-  const [additionalInput, setAdditionalInput] = useState("");
+const StepFour = ({
+  electionData,
+  blockHeight,
+  blockHash,
+  onPrevious,
+  onSubmit,
+  onUpdateElectionData,
+}) => {
   const [isSubmitEnabled, setIsSubmitEnabled] = useState(false);
   const [appId, setAppId] = useState("");
   const [showCreateAppId, setShowCreateAppId] = useState(false);
-
-  const { selectedAccount } = useContext(SubwalletContext);
+  const [showFetchButton, setShowFetchButton] = useState(false);
+  const [localBlockHeight, setLocalBlockHeight] = useState(blockHeight);
+  const [localBlockHash, setLocalBlockHash] = useState(blockHash);
 
   useEffect(() => {
     const communicationLayer = electionData.communication_layers[0];
-    if (communicationLayer && communicationLayer.type === "avail") {
-      setShowCreateAppId(true);
-    }
-  }, [electionData]);
+    if (communicationLayer) {
+      if (communicationLayer.type === "avail") {
+        setShowCreateAppId(true);
 
-  const handleInputChange = (e) => {
-    setAdditionalInput(e.target.value);
-    setIsSubmitEnabled(e.target.value.trim() !== "");
+        if (localBlockHeight) {
+          setIsSubmitEnabled(!!appId);
+        } else {
+          const timer = setTimeout(() => {
+            if (!localBlockHeight) {
+              setShowFetchButton(true);
+            }
+          }, 3000);
+
+          return () => clearTimeout(timer);
+        }
+      } else if (communicationLayer.type === "celestia") {
+        if (localBlockHeight && localBlockHash) {
+          setIsSubmitEnabled(true);
+        } else {
+          const timer = setTimeout(() => {
+            if (!localBlockHeight || !localBlockHash) {
+              setShowFetchButton(true);
+            }
+          }, 3000);
+
+          return () => clearTimeout(timer);
+        }
+      }
+    }
+  }, [electionData, localBlockHeight, localBlockHash, appId]);
+
+  const fetchCelestiaBlockDataInStepFour = async () => {
+    try {
+      const data = await fetchCelestiaBlockInfo();
+      setLocalBlockHeight(data.blockHeight);
+      setLocalBlockHash(data.blockHash);
+      setIsSubmitEnabled(true);
+      setShowFetchButton(false);
+
+      onUpdateElectionData((prevData) => {
+        const updatedData = { ...prevData };
+        updatedData.communication_layers[0].block_height = data.blockHeight;
+        updatedData.communication_layers[0].block_hash = data.blockHash;
+        return updatedData;
+      });
+    } catch (error) {
+      console.error("Error fetching Celestia block data in StepFour:", error);
+    }
+  };
+
+  const fetchAvailBlockHeightInStepFour = async () => {
+    try {
+      const height = await fetchAvailBlockHeight();
+      setLocalBlockHeight(height);
+      setIsSubmitEnabled(!!appId);
+      setShowFetchButton(false);
+
+      onUpdateElectionData((prevData) => {
+        const updatedData = { ...prevData };
+        updatedData.communication_layers[0].block_height = height;
+        return updatedData;
+      });
+    } catch (error) {
+      console.error("Error fetching Avail block height in StepFour:", error);
+    }
   };
 
   const handleSubmit = () => {
-    if (isSubmitEnabled) {
-      onSubmit(additionalInput.trim());
+    const communicationLayer = electionData.communication_layers[0];
+
+    if (communicationLayer.type === "avail") {
+      const updatedData = {
+        app_id: appId,
+        block_height: localBlockHeight,
+      };
+      onSubmit(updatedData);
+    } else if (communicationLayer.type === "celestia") {
+      const updatedData = {
+        block_height: localBlockHeight,
+        block_hash: localBlockHash,
+      };
+      onSubmit(updatedData);
     }
   };
 
@@ -35,8 +114,9 @@ const StepFour = ({ electionData, onPrevious, onSubmit }) => {
     if (newAppData && newAppData.id) {
       const appId = newAppData.id.toString();
       setAppId(appId);
-      setAdditionalInput(appId);
-      setIsSubmitEnabled(true);
+      if (localBlockHeight) {
+        setIsSubmitEnabled(true);
+      }
     } else {
       console.error("App ID not found in generated data");
     }
@@ -44,33 +124,77 @@ const StepFour = ({ electionData, onPrevious, onSubmit }) => {
 
   return (
     <div className="flex flex-col items-center space-y-6">
-      <h2 className="text-white text-2xl">Additional Input Required</h2>
-      <div className="w-full bg-[#222222] p-4 rounded-lg text-white">
-        <p className="mb-4">
-          Please read the following explanation carefully. Afterward, provide
-          the required input in the field below.
-        </p>
-        <p>For Avail, you need to create an App ID to proceed.</p>
-      </div>
-      {showCreateAppId && (
+      {electionData.communication_layers[0]?.type === "avail" && (
         <div className="w-full">
           <h3 className="text-white text-xl mb-4">Create App ID</h3>
           <CreateAppId onAppIdGenerated={handleAppIdGenerated} />
+
+          <label className="block text-white ">App ID:</label>
+          <input
+            type="text"
+            value={appId}
+            readOnly
+            className="w-full h-12 p-2 bg-[#222] text-white rounded-[23px] border my-4"
+          />
+          {!localBlockHeight && showFetchButton && (
+            <div className="py-2">
+              <button
+                onClick={fetchAvailBlockHeightInStepFour}
+                className="px-4 rounded-full py-2  bg-transparent text-white border"
+              >
+                Fetch Block Height
+              </button>
+            </div>
+          )}
+          {localBlockHeight && (
+            <>
+              <label className="block text-white my-2">Block Height:</label>
+              <input
+                type="text"
+                value={localBlockHeight}
+                readOnly
+                className="w-full h-12 p-2 bg-[#222] text-white rounded-[23px] border mt-2"
+              />
+            </>
+          )}
         </div>
       )}
-      <div className="w-full">
-        <label className="block text-white mb-2">
-          Enter the required input:
-        </label>
-        <input
-          type="text"
-          value={additionalInput}
-          onChange={handleInputChange}
-          className={`w-full h-12 p-2 bg-[#222] text-white rounded-[23px] border `}
-          placeholder="Enter your App ID here"
-          disabled={true}
-        />
-      </div>
+      {electionData.communication_layers[0]?.type === "celestia" && (
+        <>
+          {!localBlockHeight && !localBlockHash && showFetchButton && (
+            <div className="py-2">
+              <button
+                onClick={fetchCelestiaBlockDataInStepFour}
+                className="px-4 rounded-full py-2  bg-transparent text-white border"
+              >
+                Fetch Block Data
+              </button>
+            </div>
+          )}
+          {localBlockHeight && localBlockHash && (
+            <>
+              <div className="w-full">
+                <label className="block text-white mb-2">Block Height:</label>
+                <input
+                  type="text"
+                  value={localBlockHeight}
+                  readOnly
+                  className="w-full h-12 p-2 bg-[#222] text-white rounded-[23px] border"
+                />
+              </div>
+              <div className="w-full">
+                <label className="block text-white mb-2">Block Hash:</label>
+                <input
+                  type="text"
+                  value={localBlockHash}
+                  readOnly
+                  className="w-full h-12 p-2 bg-[#222] text-white rounded-[23px] border"
+                />
+              </div>
+            </>
+          )}
+        </>
+      )}
       <div className="w-full flex justify-between pt-4">
         <Button onClick={onPrevious}>Previous</Button>
         <Button
@@ -78,7 +202,7 @@ const StepFour = ({ electionData, onPrevious, onSubmit }) => {
           disabled={!isSubmitEnabled}
           className={!isSubmitEnabled ? "opacity-50 cursor-not-allowed" : ""}
         >
-          Submit
+          Next
         </Button>
       </div>
     </div>
