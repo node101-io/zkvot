@@ -4,9 +4,9 @@
     "module": "es2022",
     "lib": ["dom", "esnext"],
     "outDir": "build",
-    "rootDir": ".",
+    "rootDir": "./src",
     "strict": true,
-    "strictPropertyInitialization": false, // to enable generic constructors, e.g. on CircuitValue
+    "strictPropertyInitialization": false,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
@@ -20,7 +20,11 @@
     "allowSyntheticDefaultImports": true,
     "useDefineForClassFields": false,
     "resolveJsonModule": true,
-    "composite": true
+    "baseUrl": ".",
+    "paths": {
+      "contracts/*": ["../contracts/build/src/*"]
+    }
   },
-  "include": ["./src"]
+  "references": [{ "path": "../contracts" }],
+  "include": ["./**/*.ts"]
 }

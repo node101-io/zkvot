@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "workspaces": [
+    "app",
+    "backend",
+    "cli",
+    "contracts"
+  ],
+  "scripts": {
+    "build": "tsc -b contracts cli"
+  }
+}

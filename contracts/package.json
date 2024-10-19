@@ -1,5 +1,5 @@
 {
-  "name": "zkvote",
+  "name": "contracts",
   "version": "0.1.0",
   "description": "",
   "author": "",
@@ -42,9 +42,9 @@
     "@inquirer/prompts": "^5.5.0",
     "commander": "^12.1.0",
     "dotenv": "^16.4.5",
-    "ethers": "^5.7.2",
+    "ethers": "5.7.2",
     "level": "^8.0.1",
     "mina-signer": "^3.0.7",
-    "o1js": "^1.8.0"
+    "o1js": "^1.9.0"
   }
 }
