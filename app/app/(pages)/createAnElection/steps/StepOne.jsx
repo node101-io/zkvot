@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect } from "react";
 import Button from "@/components/common/Button";
 import ElectionInput from "./stepOneComponent/ElectionInput";
@@ -55,7 +56,7 @@ const StepOne = ({ onNext, initialData }) => {
           className="flex justify-center items-center w-64 h-40 cursor-pointer relative"
           style={{
             backgroundImage:
-              "url(\"data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='40' ry='40' stroke='%23D4A6C4FF' stroke-width='5' stroke-dasharray='2%2c 24' stroke-dashoffset='56' stroke-linecap='round'/%3e%3c/svg%3e\")",
+              "url(\"data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='40' ry='40' stroke='%23D4A6C4FF' strokeWidth='5' stroke-dasharray='2%2c 24' stroke-dashoffset='56' strokeLinecap='round'/%3e%3c/svg%3e\")",
             borderRadius: "40px",
             backgroundColor: "#222222",
           }}
