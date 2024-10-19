@@ -1,6 +1,6 @@
 import autoUpdater from 'update-electron-app';
 import electron from 'electron';
-import express from 'express';
+import express, { Request, Response } from 'express';
 import next from 'next';
 const {
   app,
@@ -15,18 +15,18 @@ import indexRouteController from './routes/indexRouteController.js';
 const DEV = process.env.NODE_ENV !== 'production';
 const PORT = process.env.PORT || 10102;
 
-const nextApp = next({ dev: DEV });
+const nextApp = next();
 const handle = nextApp.getRequestHandler();
 
 const server = express();
 
 server.use('/', indexRouteController);
-server.all('*', (req, res) => handle(req, res));
+server.all('*', (req: Request, res: Response) => handle(req, res));
 
-const setupTrayMenu = _ => {
+const setupTrayMenu = () => {
   // const image = nativeImage.createFromPath(path.join(import.meta.dirname, 'build/icon.png'));
-  const image = nativeImage.createFromNamedImage('NSApplicationIcon', 'system');
-  const tray = Tray(image.resize({ width: 16, height: 16 }));
+  const image = nativeImage.createFromNamedImage('NSApplicationIcon');
+  const tray = new Tray(image.resize({ width: 16, height: 16 }));
   const menu = Menu.buildFromTemplate([
     {
       label: 'Launch',
@@ -61,19 +61,18 @@ autoUpdater.updateElectronApp({
   repo: 'node101-io/zkvot',
 });
 
-app
-  .on('ready', _ => {
-    nextApp.prepare().then(_ => {
-      server.listen(PORT, err => {
-        if (err) throw err;
+app.on('ready', _ => {
+  nextApp.prepare().then(_ => {
+    server.listen(PORT, (err: Error) => {
+      if (err) throw err;
 
-        setupTrayMenu();
+      setupTrayMenu();
 
-        console.log(`> Ready on http://localhost:${PORT}`);
-      });
+      console.log(`> Ready on http://localhost:${PORT}`);
     });
-  })
-  .on('error', err => {
+  });
+});
+app.on('error', (err: Error) => {
     dialog.showMessageBoxSync({
       type: 'error',
       message: err && err.code == 'EADDRINUSE' ?
@@ -82,4 +81,4 @@ app
     });
 
     app.quit();
-  });
+});

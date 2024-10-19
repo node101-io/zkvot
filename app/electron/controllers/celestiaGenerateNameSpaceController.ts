@@ -1,6 +1,7 @@
+import { Request, Response } from 'express';
 import { createHash } from 'node:crypto';
 
-export default (req, res) => {
+export default (req: Request, res: Response) => {
   if (!req.query.election_id || typeof req.query.election_id != 'string' || !req.query.election_id.trim().length)
     return res.json({ success: false, error: 'bad_request' });
 
