@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import Button from "@/components/common/Button";
 import WalletInput from "./stepTwoComponent/WalletInput";

@@ -5,8 +5,6 @@ import StepTwo from "./steps/StepTwo";
 import StepThree from "./steps/StepThree";
 import StepFour from "./steps/StepFour";
 import StepFive from "./steps/StepFive.jsx";
-import Button from "@/components/common/Button";
-import { MinaWalletContext } from "@/contexts/MinaWalletContext";
 
 const HomePage = () => {
   const [step, setStep] = useState(1);

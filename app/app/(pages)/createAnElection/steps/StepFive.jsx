@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import Button from "@/components/common/Button";
 import Image from "next/image";
@@ -101,7 +103,7 @@ const StepFive = ({ onPrevious, onSubmit, downloadJSON }) => {
       <div className="w-full text-white">
         {stepsData.map((step, index) => (
           <div key={index}>
-            <p className="mb-4">{step.text}</p>
+            <div className="mb-4">{step.text}</div>
             <Image
               src={step.image}
               className="mb-6"

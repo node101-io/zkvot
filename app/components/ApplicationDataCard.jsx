@@ -1,21 +1,20 @@
 import React from "react";
 
 const ApplicationDataCard = ({ data }) => {
-  if (!data) return null;
-
-  const { id, owner, name } = data;
-
   return (
-    <div className="bg-gray-800 p-4 rounded-lg text-white w-full mt-4">
-      <h3 className="text-xl mb-2">Application Data</h3>
+    <div className="border-[1px] border-[#ccc] p-4 rounded-lg">
+      <h3>Application Details</h3>
       <p>
-        <strong>App ID:</strong> {id}
+        <strong>ID:</strong> {data.id}
       </p>
       <p>
-        <strong>Owner:</strong> {owner}
+        <strong>Owner:</strong> {data.owner}
       </p>
       <p>
-        <strong>Name:</strong> {name}
+        <strong>Name:</strong> {data.name}
+      </p>
+      <p>
+        <strong>Application Name:</strong> {data.appName}
       </p>
     </div>
   );

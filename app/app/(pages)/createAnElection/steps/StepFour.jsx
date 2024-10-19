@@ -1,6 +1,8 @@
+"use client";
+
 import React, { useState, useEffect, useContext } from "react";
 import Button from "@/components/common/Button";
-import { CreateAppId } from "@/components/CreateAppId";
+import CreateAppId from "@/components/CreateAppId";
 import { SubwalletContext } from "@/contexts/SubwalletContext";
 
 const StepFour = ({ electionData, onPrevious, onSubmit }) => {
@@ -29,11 +31,15 @@ const StepFour = ({ electionData, onPrevious, onSubmit }) => {
     }
   };
 
-  const handleAppIdGenerated = (newAppId) => {
-    const appId = newAppId.id.toString();
-    setAppId(appId);
-    setAdditionalInput(appId);
-    setIsSubmitEnabled(true);
+  const handleAppIdGenerated = (newAppData) => {
+    if (newAppData && newAppData.id) {
+      const appId = newAppData.id.toString();
+      setAppId(appId);
+      setAdditionalInput(appId);
+      setIsSubmitEnabled(true);
+    } else {
+      console.error("App ID not found in generated data");
+    }
   };
 
   return (
@@ -48,12 +54,7 @@ const StepFour = ({ electionData, onPrevious, onSubmit }) => {
       </div>
       {showCreateAppId && (
         <div className="w-full">
-          <h3 className="text-white text-xl mb-2">Create App ID</h3>
-          {!selectedAccount && (
-            <p className="text-red-500">
-              Please connect your wallet to create an App ID.
-            </p>
-          )}
+          <h3 className="text-white text-xl mb-4">Create App ID</h3>
           <CreateAppId onAppIdGenerated={handleAppIdGenerated} />
         </div>
       )}
@@ -65,8 +66,9 @@ const StepFour = ({ electionData, onPrevious, onSubmit }) => {
           type="text"
           value={additionalInput}
           onChange={handleInputChange}
-          className={`w-[578px] h-12 p-2 bg-[#222] text-white rounded-[23px] border `}
+          className={`w-full h-12 p-2 bg-[#222] text-white rounded-[23px] border `}
           placeholder="Enter your App ID here"
+          disabled={true}
         />
       </div>
       <div className="w-full flex justify-between pt-4">

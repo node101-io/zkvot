@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import AvailLogo from "@/assets/DaLogos/Avail";
 import CelestiaLogo from "@/assets/DaLogos/Celestia";
