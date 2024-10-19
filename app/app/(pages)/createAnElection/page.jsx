@@ -120,13 +120,13 @@ const HomePage = () => {
   return (
     <div className="flex justify-center items-center h-full py-12">
       <div className="w-[1062px] h-full p-6 rounded-lg">
-        {step === 2 && (
+        {step === 1 && (
           <StepOne
             onNext={handleStepOneNext}
             initialData={electionData}
           />
         )}
-        {step === 1 && (
+        {step === 2 && (
           <StepTwo
             onPrevious={() => setStep(1)}
             onSubmit={handleStepTwoSubmit}
