@@ -4,7 +4,7 @@ import isURL from '../../../utils/isURL.js';
 const BLOCK_DATA_NOT_FOUND_ERROR_MESSAGE_REGEX: RegExp = /header: given height is from the future: networkHeight: (.*?), requestedHeight: (.*?)/;
 const SYNCING_IN_PROGRESS_ERROR_MESSAGE_REGEX: RegExp = /header: syncing in progress: localHeadHeight: (.*?), requestedHeight: (.*?)/;
 
-const CEL_AUTH_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJwdWJsaWMiLCJyZWFkIiwid3JpdGUiLCJhZG1pbiJdfQ.nC-rmjFCQOZkXVaug_Btozp0A1Kta4idiKd7UebCHA8';
+// const CEL_AUTH_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJwdWJsaWMiLCJyZWFkIiwid3JpdGUiLCJhZG1pbiJdfQ.nC-rmjFCQOZkXVaug_Btozp0A1Kta4idiKd7UebCHA8';
 
 export default (
   url: string,
@@ -17,7 +17,7 @@ export default (
   if (!isURL(url))
     return callback('bad_request');
 
-  db.get('celestia_auth_key', (err, celestiaKuthKey) => {
+  db.get('celestia_auth_key', (err, celestiaAuthKey) => {
     if (err && (err as any).code === 'LEVEL_NOT_FOUND')
       return callback('key_not_found');
 
@@ -28,7 +28,7 @@ export default (
       method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + CEL_AUTH_KEY
+          Authorization: `Bearer ${celestiaAuthKey}`
         },
         body: JSON.stringify({
           id: 1,
