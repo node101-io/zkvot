@@ -351,8 +351,7 @@ const HomePage = () => {
   const [electionData, setElectionData] = useState({
     voters_list: [],
     communication_layers: [],
-    storageLayer: "",
-    transactionId: "",
+    storageLayer: [],
   });
   const [wallets, setWallets] = useState([]);
   const [isTwitterRequired, setIsTwitterRequired] = useState(false);
@@ -405,8 +404,11 @@ const HomePage = () => {
           setBlockHash(data.blockHash);
           setElectionData((prevData) => {
             const updatedData = { ...prevData };
-            updatedData.communication_layers[0].block_height = data.blockHeight;
-            updatedData.communication_layers[0].block_hash = data.blockHash;
+            if (updatedData.communication_layers[0]) {
+              updatedData.communication_layers[0].block_height =
+                data.blockHeight;
+              updatedData.communication_layers[0].block_hash = data.blockHash;
+            }
             return updatedData;
           });
         } else {
@@ -415,11 +417,15 @@ const HomePage = () => {
       } else if (selectedLayer.type === "avail") {
         const height = await fetchAvailBlockHeight();
         setBlockHeight(height);
-        setElectionData((prevData) => {
-          const updatedData = { ...prevData };
-          updatedData.communication_layers[0].block_height = height;
-          return updatedData;
-        });
+        setElectionData((prevData) => ({
+          ...prevData,
+          communication_layers: [
+            {
+              ...selectedLayer,
+              block_height: height,
+            },
+          ],
+        }));
       } else {
         setElectionData((prevData) => ({
           ...prevData,
@@ -452,19 +458,17 @@ const HomePage = () => {
     setStep(5);
   };
 
-  const handleStepFiveSubmit = (selectedStorageLayer) => {
+  const handleStepFiveSubmit = (storageLayer) => {
     setElectionData((prevData) => ({
       ...prevData,
-      storageLayer: selectedStorageLayer,
+      storageLayer: storageLayer,
     }));
     setStep(6);
   };
 
   const handleStepSixSubmit = (transactionId, setErrorMessage) => {
-    console.log("electionData.storageLayer:", electionData.storageLayer);
-
     let fetchDataFunction;
-    switch (electionData.storageLayer.toLowerCase().trim()) {
+    switch (electionData.storageLayer.name.toLowerCase().trim()) {
       case "arweave":
         fetchDataFunction = fetchDataFromArweave;
         break;
@@ -475,8 +479,6 @@ const HomePage = () => {
         fetchDataFunction = fetchDataFromFilecoin;
         break;
       default:
-        console.error("Invalid storage layer:", electionData.storageLayer);
-
         return;
     }
 
@@ -505,13 +507,20 @@ const HomePage = () => {
         setLoading(false);
       });
   };
+  const handleStepFourPrevious = () => {
+    setElectionData((prevData) => ({
+      ...prevData,
+      communication_layers: [],
+    }));
+    setStep(3);
+  };
 
   const generateAndDownloadJSON = (currentElectionData) => {
     const finalElectionData = { ...currentElectionData };
 
     delete finalElectionData.someComponent;
     delete finalElectionData.someEventObject;
-
+    delete finalElectionData.storageLayer;
     console.log("Final Election Data:", finalElectionData);
 
     downloadJSON(finalElectionData);
@@ -569,7 +578,7 @@ const HomePage = () => {
             electionData={electionData}
             blockHeight={blockHeight}
             blockHash={blockHash}
-            onPrevious={() => setStep(3)}
+            onPrevious={handleStepFourPrevious}
             onSubmit={handleStepFourSubmit}
           />
         )}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { FaImage, FaTelegramPlane, FaTwitter } from "react-icons/fa";
+import { FaImage } from "react-icons/fa";
 import Clock from "@/assets/ElectionCard/Clock";
 import AvailLogo from "@/assets/DaLogos/Avail";
 import CelestiaLogo from "@/assets/DaLogos/Celestia";
@@ -107,7 +107,7 @@ const StepSeven = ({ electionData }) => {
     }
 
     const layer = electionData.storageLayer;
-    const logo = storageLayerLogos[layer.name];
+    const logo = storageLayerLogos[layer.name.toLowerCase()];
 
     return (
       <div className="flex items-center bg-[#222222] p-4 rounded-2xl mb-4">
@@ -150,7 +150,7 @@ const StepSeven = ({ electionData }) => {
 
     return (
       <>
-        <div className="grid grid-cols-1  gap-4">
+        <div className="grid grid-cols-1 gap-4">
           {votersToDisplay.map((voter, index) => (
             <div
               key={index}
@@ -170,7 +170,7 @@ const StepSeven = ({ electionData }) => {
         {electionData.voters_list.length > initialVotersCount && (
           <button
             onClick={() => setShowAllVoters(!showAllVoters)}
-            className="mt-4 text-white  transition underline"
+            className="mt-4 text-white transition underline"
           >
             {showAllVoters ? "Show Less" : "Show More"}
           </button>
@@ -211,18 +211,20 @@ const StepSeven = ({ electionData }) => {
                     <Clock />
                   </span>
                   <span className="text-sm text-[#B7B7B7]">
-                    Start Date: {electionData.start_date}, End Date:{" "}
-                    {electionData.end_date}
+                    Start Date:{" "}
+                    {new Date(electionData.start_date * 1000).toLocaleString()},
+                    End Date:{" "}
+                    {new Date(electionData.end_date * 1000).toLocaleString()}
                   </span>
                 </span>
               </div>
             </div>
-            <div className=" flex flex-col  w-full h-fit ">
+            <div className="flex flex-col w-full h-fit ">
               <h2 className="text-2xl mb-2">{electionData.question}</h2>
 
               <div className="flex flex-col md:flex-row justify-between py-2 gap-y-1">
                 <span>
-                  <span className=" text-sm mr-1 flex flex-col items-start">
+                  <span className="text-sm mr-1 flex flex-col items-start">
                     <span className="text-[16px] italic">
                       {electionData.description}
                     </span>
@@ -269,7 +271,6 @@ const StepSeven = ({ electionData }) => {
         ) : (
           <p className="text-gray-500">No voters have participated yet.</p>
         )}
-        <h3></h3>
       </div>
     </div>
   );

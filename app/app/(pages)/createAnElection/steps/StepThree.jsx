@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AvailLogo from "@/assets/DaLogos/Avail";
 import CelestiaLogo from "@/assets/DaLogos/Celestia";
 import Button from "@/components/common/Button";
@@ -24,11 +24,17 @@ const StepThree = ({ onPrevious, onSubmit, loading }) => {
   const [selectedCommunicationLayer, setSelectedCommunicationLayer] =
     useState(null);
 
+  useEffect(() => {
+    setSelectedCommunicationLayer(null);
+  }, []);
+
   const handleCommunicationSelection = (index) => {
     setSelectedCommunicationLayer(index);
   };
 
   const handleSubmit = () => {
+    if (selectedCommunicationLayer === null) return;
+
     const selectedName =
       CreationData.CommunicationChoicesName[selectedCommunicationLayer];
     let communicationLayer = {
