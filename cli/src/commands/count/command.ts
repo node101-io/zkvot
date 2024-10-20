@@ -17,7 +17,7 @@ await new Promise((resolve) => setTimeout(resolve, 1000));
 //     return logger.log('error', err);
 
 const election = {
-  mina_contract_id: 'B62qk5sunym3zRih83JroVF3X8AoNnCJJ3yKfsxyj5VCcitZphqmQ5p',
+  mina_contract_id: 'B62qospDjUj43x2yMKiNehojWWRUsE1wpdUDVpfxH8V3n5Y1QgJKFfw',
   end_block: 0,
   question: 'What is your favorite color?',
   options: ['Red', 'Green', 'Blue'],
@@ -28,7 +28,7 @@ const election = {
   da_layers: [
     {
       name: 'celestia' as const,
-      start_block_height: 2903935,
+      start_block_height: 2960050,
       start_block_hash: '821CE8B3BFFFD76FEA4666C32495896E26C92271B264D8E490989CBC3227A94C',
       namespace: 'AAAAAAAAAAAAAAAAAAAAAAAAAK0xKC+NMFwlyBM=',
     },

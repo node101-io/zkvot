@@ -1,15 +1,17 @@
 {
-  "name": "zkvot",
+  "name": "zkvot-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "type": "module",
+  "main": "build/app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app.js"
+    "build": "tsc",
+    "start": "nodemon build/app.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "contracts": "*",
     "avail-js-sdk": "^0.2.18",
     "body-parser": "^1.20.3",
     "cluster": "^0.7.7",
@@ -17,6 +19,7 @@
     "express": "^4.21.0",
     "mongoose": "^6.10.4",
     "nodemon": "^3.1.7",
+    "o1js": "^1.9.0",
     "path": "^0.12.7"
   }
 }

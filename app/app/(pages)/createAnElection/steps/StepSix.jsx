@@ -26,37 +26,20 @@ const StepSix = ({ electionData, onPrevious, onSubmit, onDownload }) => {
     setErrorMessage("");
   };
 
-  console.log("electionData.storageLayer:", electionData.storageLayer);
-
-  const isValidTransactionId = (transactionId) => {
-    switch (electionData.storageLayer) {
-      case "arweave":
-        return /^[a-zA-Z0-9_-]{43,}$/.test(transactionId);
-      case "ipfs":
-        return /^[a-zA-Z0-9]{46}$/.test(transactionId);
-      case "filecoin":
-        return /^[a-zA-Z0-9]{59}$/.test(transactionId);
-      default:
-        return false;
-    }
-  };
-
   const handleSubmit = () => {
     if (isSubmitEnabled) {
-      if (!isValidTransactionId(transactionId.trim())) {
-        setErrorMessage("Please enter a valid transaction ID.");
-        return;
-      }
-
-      setErrorMessage("");
       setIsFetchingData(true);
 
-      onSubmit(transactionId.trim())
+      Promise.resolve(onSubmit(transactionId.trim(), setErrorMessage))
         .then(() => {
-          onSubmit();
+          console.log("Submission successful.");
         })
         .catch((error) => {
           console.error("Submission error:", error);
+          const errorMessageToDisplay =
+            error.message || "An error occurred during submission.";
+          setErrorMessage(errorMessageToDisplay);
+          console.log("Displaying error message:", errorMessageToDisplay); // Log the error message directly
         })
         .finally(() => {
           setIsFetchingData(false);
@@ -66,9 +49,7 @@ const StepSix = ({ electionData, onPrevious, onSubmit, onDownload }) => {
 
   return (
     <div className="flex flex-col items-start space-y-6">
-      <h2 className="text-white text-2xl">
-        {electionData.storageLayer.toUpperCase()} Guide
-      </h2>
+      <h2 className="text-white text-2xl">{electionData.storageLayer} Guide</h2>
       <div className="w-full text-white">
         {stepsData.map((step, index) => (
           <div key={index}>
@@ -121,7 +102,7 @@ export default StepSix;
 
 function getStepsData(storageLayer, onDownload) {
   switch (storageLayer) {
-    case "arweave":
+    case "Arweave":
       return [
         {
           text: (
@@ -176,7 +157,6 @@ function getStepsData(storageLayer, onDownload) {
           ),
           image: DownloadFileImage,
         },
-
         {
           text: "6. Click on the file you uploaded to see its content.",
           image: FileContentImage,
@@ -184,17 +164,17 @@ function getStepsData(storageLayer, onDownload) {
         {
           text: (
             <>
-              7. Click on “info” button on right to see the file info. Copy the
-              URL starting with “https://arweave.net” and paste it into the
-              below field.
+              7. Click on “info” button on the right to see the file info. Copy
+              the URL starting with “https://arweave.net” and paste it into the
+              field below.
             </>
           ),
           image: CopyFromFileImage,
         },
       ];
-    case "ipfs":
+    case "IPFS":
       return [];
-    case "filecoin":
+    case "Filecoin":
       return [];
     default:
       return [];

@@ -6,7 +6,7 @@ import StepThree from "./steps/StepThree";
 import StepFour from "./steps/StepFour";
 import StepFive from "./steps/StepFive";
 import StepSix from "./steps/StepSix";
-// import StepSeven from "./steps/StepSeven";
+import StepSeven from "./steps/StepSeven";
 
 import {
   fetchAvailBlockHeight,
@@ -51,10 +51,10 @@ const HomePage = () => {
 
   const handleStepThreeSubmit = async (communicationLayersData) => {
     const selectedLayer = communicationLayersData[0];
+    setLoading(true);
 
-    if (selectedLayer.type === "celestia") {
-      setLoading(true);
-      try {
+    try {
+      if (selectedLayer.type === "celestia") {
         const response = await fetch(
           `/celestia-generate-namespace?election_id=${encodeURIComponent(
             electionData.question
@@ -64,79 +64,46 @@ const HomePage = () => {
 
         if (result.success) {
           const namespaceIdentifier = result.data;
-
           const updatedCommunicationLayer = {
             ...selectedLayer,
             namespace: namespaceIdentifier,
           };
-
           setElectionData((prevData) => ({
             ...prevData,
             communication_layers: [updatedCommunicationLayer],
           }));
 
-          try {
-            const data = await fetchCelestiaBlockInfo();
-            setBlockHeight(data.blockHeight);
-            setBlockHash(data.blockHash);
-
-            setElectionData((prevData) => {
-              const updatedData = { ...prevData };
-              updatedData.communication_layers[0].block_height =
-                data.blockHeight;
-              updatedData.communication_layers[0].block_hash = data.blockHash;
-              return updatedData;
-            });
-
-            setLoading(false);
-            setStep(4);
-          } catch (error) {
-            console.error("Error fetching Celestia block data:", error);
-            setLoading(false);
-            setTimeout(() => {
-              setStep(4);
-            }, 3000);
-          }
+          const data = await fetchCelestiaBlockInfo();
+          setBlockHeight(data.blockHeight);
+          setBlockHash(data.blockHash);
+          setElectionData((prevData) => {
+            const updatedData = { ...prevData };
+            updatedData.communication_layers[0].block_height = data.blockHeight;
+            updatedData.communication_layers[0].block_hash = data.blockHash;
+            return updatedData;
+          });
         } else {
-          setLoading(false);
-          console.error("Error generating namespace:", result.error);
+          throw new Error("Error generating namespace.");
         }
-      } catch (error) {
-        setLoading(false);
-        console.error("Error fetching namespace:", error);
-      }
-    } else if (selectedLayer.type === "avail") {
-      setElectionData((prevData) => ({
-        ...prevData,
-        communication_layers: communicationLayersData,
-      }));
-      setLoading(true);
-
-      try {
+      } else if (selectedLayer.type === "avail") {
         const height = await fetchAvailBlockHeight();
         setBlockHeight(height);
-
         setElectionData((prevData) => {
           const updatedData = { ...prevData };
           updatedData.communication_layers[0].block_height = height;
           return updatedData;
         });
-
-        setLoading(false);
-        setStep(4);
-      } catch (error) {
-        console.error("Error fetching Avail block height:", error);
-        setLoading(false);
-        setTimeout(() => {
-          setStep(4);
-        }, 3000);
+      } else {
+        setElectionData((prevData) => ({
+          ...prevData,
+          communication_layers: communicationLayersData,
+        }));
       }
-    } else {
-      setElectionData((prevData) => ({
-        ...prevData,
-        communication_layers: communicationLayersData,
-      }));
       setStep(4);
+    } catch (error) {
+      console.error("Error during Step Three:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -166,7 +133,7 @@ const HomePage = () => {
     setStep(6);
   };
 
-  const handleStepSixSubmit = (transactionId) => {
+  const handleStepSixSubmit = (transactionId, setErrorMessage) => {
     console.log("electionData.storageLayer:", electionData.storageLayer);
 
     let fetchDataFunction;
@@ -182,50 +149,38 @@ const HomePage = () => {
         break;
       default:
         console.error("Invalid storage layer:", electionData.storageLayer);
-        return Promise.reject("Invalid storage layer");
+
+        return;
     }
 
-    if (typeof fetchDataFunction !== "function") {
-      console.error("fetchDataFunction is not a function:", fetchDataFunction);
+    setLoading(true);
 
-      return Promise.reject("fetchDataFunction is not a function");
-    }
-
-    return fetchDataFunction(transactionId)
+    fetchDataFunction(transactionId)
       .then((data) => {
         if (data) {
-          console.log("Fetched data:", data);
-
           const updatedData = {
             ...electionData,
             transactionId,
             daData: data,
           };
           setElectionData(updatedData);
-
-          return sendTransaction();
+          setStep(7);
         } else {
-          console.error("Error fetching data from storage layer");
+          throw new Error("Data not found for the provided transaction ID.");
         }
       })
-      .then((transactionResult) => {
-        console.log(transactionResult);
-        alert("Transaction sent successfully.");
-        setStep(7);
-      })
       .catch((error) => {
-        console.error("Error during Step Six submission:", error);
-        alert(error.message || "The data is not submitted correctly.");
-        throw error;
+        setErrorMessage(
+          error.message || "An error occurred while fetching data."
+        );
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
   const generateAndDownloadJSON = (currentElectionData) => {
     const finalElectionData = { ...currentElectionData };
-
-    delete finalElectionData.storageLayer;
-    delete finalElectionData.transactionId;
-    delete finalElectionData.daData;
 
     delete finalElectionData.someComponent;
     delete finalElectionData.someEventObject;
@@ -239,11 +194,6 @@ const HomePage = () => {
     if (!finalElectionData) {
       console.error("finalElectionData is undefined or null");
       return;
-    }
-
-    if (finalElectionData.picture) {
-      finalElectionData.image_raw = finalElectionData.picture;
-      delete finalElectionData.picture;
     }
 
     delete finalElectionData.someComponent;
@@ -260,14 +210,6 @@ const HomePage = () => {
     link.click();
     URL.revokeObjectURL(url);
   };
-
-  // const sendTransaction = () => {
-  //   return new Promise((resolve, reject) => {
-  //     setTimeout(() => {
-  //       resolve("Transaction successful");
-  //     }, 2000);
-  //   });
-  // };
 
   return (
     <div className="flex justify-center items-center h-full py-12">
@@ -317,14 +259,15 @@ const HomePage = () => {
             onPrevious={() => setStep(5)}
             onSubmit={handleStepSixSubmit}
             onDownload={() => generateAndDownloadJSON(electionData)}
+            isLoading={loading}
           />
         )}
-        {/* {step === 7 && (
+        {step === 7 && (
           <StepSeven
             electionData={electionData}
             onPrevious={() => setStep(6)}
           />
-        )} */}
+        )}
       </div>
     </div>
   );

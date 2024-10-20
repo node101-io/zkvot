@@ -1,3 +1,5 @@
+# TODO: this workflow is not maintained anymore
+
 name: Build/release
 
 on:
@@ -20,7 +22,7 @@ jobs:
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v4
         with:
-          node-version: 21
+          node-version: 20
 
       - name: Prepare for app notarization
         if: startsWith(matrix.os, 'macos')
@@ -30,7 +32,7 @@ jobs:
             echo '${{ secrets.APPLE_API_KEY }}' > ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
 
       - name: Install and build the app
-        run: cd app && npm ci && npm run build
+        run: cd app && npm ci && npm run build:next && npm run build:electron
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1.6.0

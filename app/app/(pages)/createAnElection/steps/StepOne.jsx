@@ -6,7 +6,7 @@ import ElectionList from "./stepOneComponent/ElectionList";
 
 const StepOne = ({ onNext, initialData }) => {
   const [pictureDataURL, setPictureDataURL] = useState(
-    initialData?.picture || ""
+    initialData?.image_raw || ""
   );
   const [question, setQuestion] = useState(initialData?.question || "");
   const [elections, setElections] = useState(initialData?.options || []);
@@ -46,7 +46,7 @@ const StepOne = ({ onNext, initialData }) => {
   const handleSubmit = () => {
     if (isNextEnabled) {
       const data = {
-        picture: pictureDataURL,
+        image_raw: pictureDataURL,
         question,
         options: elections,
         description,
