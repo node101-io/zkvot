@@ -39,7 +39,7 @@ const StepSix = ({ electionData, onPrevious, onSubmit, onDownload }) => {
           const errorMessageToDisplay =
             error.message || "An error occurred during submission.";
           setErrorMessage(errorMessageToDisplay);
-          console.log("Displaying error message:", errorMessageToDisplay); // Log the error message directly
+          console.log("Displaying error message:", errorMessageToDisplay);
         })
         .finally(() => {
           setIsFetchingData(false);

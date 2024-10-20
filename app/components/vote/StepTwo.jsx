@@ -246,7 +246,7 @@ const StepTwo = ({
         {electionData.DAChoicesName.map((DA, index) => (
           <div
             key={index}
-            className={`p-4 bg-[#222222] rounded-2xl flex items-center transition duration-200 ${
+            className={`p-4 bg-[#222222] rounded-2xl cursor-pointer flex items-center transition duration-200 ${
               selectedDA === index
                 ? "border-[1px] border-primary shadow-lg"
                 : "hover:bg-[#333333]"
