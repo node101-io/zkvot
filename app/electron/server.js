@@ -15,7 +15,7 @@ console.log('Current Directory:', import.meta.dirname);
 
 const nextApp = next({
   dev: false,
-  // dir: app.getAppPath()
+  dir: app.getAppPath()
 });
 const handle = nextApp.getRequestHandler();
 
