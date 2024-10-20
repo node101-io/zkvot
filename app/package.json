@@ -17,6 +17,12 @@
   "build": {
     "appId": "io.zkvot.app",
     "asar": false,
+    "extraResources": [
+      {
+        "from": "./.next",
+        "to": "./"
+      }
+    ],
     "files": [
       "build/**/*",
       "electron/**/*",
