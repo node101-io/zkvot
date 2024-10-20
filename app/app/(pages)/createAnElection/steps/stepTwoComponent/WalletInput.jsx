@@ -3,23 +3,6 @@ import PlusIcon from "@/assets/CreateElection/PlusIcon.svg";
 import Image from "next/image";
 import { ChevronDownIcon } from "@heroicons/react/solid";
 
-const OptionsIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth="1.5"
-    stroke="currentColor"
-    class="size-6"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-    />
-  </svg>
-);
-
 const WalletInput = ({
   wallets,
   setWallets,
@@ -34,13 +17,7 @@ const WalletInput = ({
   const [inputError, setInputError] = useState({});
   const [shake, setShake] = useState(false);
   const [customOptionNames, setCustomOptionNames] = useState({});
-
-  const availableOptionalFields = [
-    "Twitter Handle",
-    "Option 1",
-    "Option 2",
-    "Option 3",
-  ];
+  const [newCustomOption, setNewCustomOption] = useState("");
 
   const isFirstWallet = wallets.length === 0;
 
@@ -97,19 +74,22 @@ const WalletInput = ({
     setInputError({});
   };
 
-  const handleOptionSelect = (option) => {
-    if (option === "Twitter Handle") {
-      setSelectedOptionalFields((prev) => [...prev, option]);
-    } else {
-      const customName = prompt(`Enter a custom name for ${option}:`, option);
-      if (customName) {
-        setSelectedOptionalFields((prev) => [...prev, option]);
-        setCustomOptionNames((prev) => ({
-          ...prev,
-          [option]: customName,
-        }));
-      }
+  const handleAddTwitterHandle = () => {
+    if (!selectedOptionalFields.includes("Twitter Handle")) {
+      setSelectedOptionalFields((prev) => [...prev, "Twitter Handle"]);
+      setShowDropdown(false);
     }
+  };
+
+  const handleAddCustomOption = () => {
+    if (newCustomOption.trim() === "") return;
+
+    setSelectedOptionalFields((prev) => [...prev, newCustomOption]);
+    setCustomOptionNames((prev) => ({
+      ...prev,
+      [newCustomOption]: newCustomOption,
+    }));
+    setNewCustomOption("");
     setShowDropdown(false);
   };
 
@@ -199,23 +179,33 @@ const WalletInput = ({
           </button>
 
           {showDropdown && (
-            <div className="absolute top-full mt-2 right-0 w-40 bg-[#222] border border-[#1E1E1E] rounded-[23px] text-white z-10">
-              {availableOptionalFields
-                .filter((opt) => !selectedOptionalFields.includes(opt))
-                .map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => handleOptionSelect(option)}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-700"
-                  >
-                    {option}
-                  </button>
-                ))}
+            <div className="absolute top-full mt-2 right-0 w-40 bg-[#222] border border-[#1E1E1E] rounded-[23px] text-white z-10 overflow-hidden">
+              {!selectedOptionalFields.includes("Twitter Handle") && (
+                <button
+                  onClick={handleAddTwitterHandle}
+                  className="w-full text-left px-4 py-3 hover:bg-[#555]"
+                >
+                  Twitter Handle
+                </button>
+              )}
+
+              <input
+                type="text"
+                placeholder="Add custom field"
+                value={newCustomOption}
+                onChange={(e) => setNewCustomOption(e.target.value)}
+                className="w-full h-12 bg-[#333] text-white focus:outline-none border-transparent focus:border-transparent focus:ring-0 px-2 "
+              />
+              <button
+                onClick={handleAddCustomOption}
+                className="w-full bg-[#444] px-2 py-3 rounded text-white hover:bg-[#555]"
+              >
+                Add Field
+              </button>
             </div>
           )}
         </div>
       )}
-
       <button
         onClick={addWallet}
         className="w-12 h-12 bg-[#222] text-white rounded-[23px] border border-[#1E1E1E] flex items-center justify-center"

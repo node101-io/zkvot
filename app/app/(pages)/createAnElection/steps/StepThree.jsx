@@ -15,7 +15,7 @@ const CreationData = {
   CommunicationChoicesCurrency: ["ETH", "ETH"],
 };
 
-const StepThree = ({ onPrevious, onSubmit }) => {
+const StepThree = ({ onPrevious, onSubmit, loading }) => {
   const communicationLogos = {
     Avail: <AvailLogo className="w-12 h-12" />,
     Celestia: <CelestiaLogo className="w-12 h-12" />,
@@ -33,12 +33,7 @@ const StepThree = ({ onPrevious, onSubmit }) => {
       CreationData.CommunicationChoicesName[selectedCommunicationLayer];
     let communicationLayer = {
       type: selectedName.toLowerCase(),
-      start_date: 1000,
     };
-
-    if (selectedName === "Celestia") {
-      communicationLayer.namespace = "namespace_value";
-    }
 
     onSubmit([communicationLayer]);
   };
@@ -87,6 +82,7 @@ const StepThree = ({ onPrevious, onSubmit }) => {
               ? "opacity-50 cursor-not-allowed"
               : ""
           }
+          loading={loading}
         >
           Submit
         </Button>
