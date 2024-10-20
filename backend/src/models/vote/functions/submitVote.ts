@@ -1,7 +1,7 @@
 import { JsonProof } from 'o1js';
 
-import writeToAvail from '../../../utils/da-layers/avail/write';
-import writeToCelestia from '../../../utils/da-layers/celestia/write';
+import writeToAvail from '../../../utils/da-layers/avail/write.js';
+import writeToCelestia from '../../../utils/da-layers/celestia/write.js';
 
 export default (
   data: {
@@ -24,7 +24,7 @@ export default (
         return callback(err);
       if (!availResult)
         return callback('bad_request');
-  
+
       return callback(null, availResult);
     });
   } else if (data.da_layer == 'celestia') {
@@ -36,7 +36,7 @@ export default (
         return callback(err);
       if (!celestiaResult)
         return callback('bad_request');
-  
+
       return callback(null, {
         txHash: '',
         ...celestiaResult

@@ -1,4 +1,4 @@
-import { ElectionState } from '../../../types/election';
+import { ElectionState } from '../../../types/election.js';
 
 const IPFS_BASE_URI = 'https://ipfs.io/ipfs';
 const ARWEAVE_BASE_URI = 'https://arweave.net';

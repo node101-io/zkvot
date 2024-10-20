@@ -1,10 +1,9 @@
 import { JsonProof } from 'o1js';
 import { model, Model, Schema } from 'mongoose';
 
-import Election from '../election/Election';
-
-import verifyVote from './functions/verifyVote';
-import submitVote from './functions/submitVote';
+import Election from '../election/Election.js';
+import verifyVote from './functions/verifyVote.js';
+import submitVote from './functions/submitVote.js';
 
 const DUPLICATED_UNIQUE_FIELD_ERROR_CODE = 11000;
 const MAX_DATABASE_TEXT_FIELD_LENGTH = 1e4;
@@ -76,7 +75,7 @@ VoteSchema.statics.createAndSubmitVote = function (
 
       Vote
         .findOne({ nullifier })
-        .then(vote => {
+        .then((vote: any) => {
           if (vote)
             return callback('vote_already_sent');
 
@@ -84,12 +83,12 @@ VoteSchema.statics.createAndSubmitVote = function (
             proof: data.vote,
             da_layer: data.da_layer
           };
-    
+
           if (data.da_layer == 'avail')
             submitVoteData.app_id = election.communication_layers.find(layer => layer.type == data.da_layer)?.app_id;
           else
             submitVoteData.namespace = election.communication_layers.find(layer => layer.type == data.da_layer)?.namespace;
-    
+
           submitVote(submitVoteData, (err, result) => {
             const vote = new Vote({
               election_contract_id: data.election_contract_id,
@@ -98,11 +97,11 @@ VoteSchema.statics.createAndSubmitVote = function (
               block_height: result?.blockHeight,
               tx_hash: result?.txHash,
             });
-    
-            vote.save((err, vote) => {
+
+            vote.save((err: any, vote: any) => {
               if (err && err.code === DUPLICATED_UNIQUE_FIELD_ERROR_CODE) return callback('duplicated_unique_field');
               if (err) return callback('bad_request');
-    
+
               return callback(null, {
                 block_height: result?.blockHeight,
                 tx_hash: result?.txHash
@@ -110,7 +109,7 @@ VoteSchema.statics.createAndSubmitVote = function (
             });
           });
         })
-        .catch(_ => callback('database_error'));
+        .catch((err: any) => callback('database_error'));
     });
   });
 };

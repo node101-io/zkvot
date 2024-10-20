@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import Election from '../../../models/election/Election';
+import Election from '../../../models/election/Election.js';
 
 export default (
   req: Request,
@@ -9,7 +9,7 @@ export default (
   Election.createElection(req.body, (err: string | null, election?: any) => {
     if (err)
       return res.json({ success: false, error: err });
-    
+
     return res.json({ success: true, data: election });
   });
 };

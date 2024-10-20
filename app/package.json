@@ -8,7 +8,7 @@
   "type": "module",
   "main": "electron/server.js",
   "scripts": {
-    "dev": "next dev",
+    "dev": "electron electron/server.js",
     "build:next": "next build",
     "build:electron": "electron-builder",
     "build": "npm run build:next && npm run build:electron",

@@ -10,12 +10,9 @@ const { app } = electron;
 const DEV = process.env.NODE_ENV !== "production";
 const PORT = process.env.PORT || 10101;
 
-console.log('App Path:', app.getAppPath());
-console.log('Current Directory:', import.meta.dirname);
-
 const nextApp = next({
-  dev: false,
-  dir: app.getAppPath()
+  dev: DEV,
+  dir: DEV ? "./" : app.getAppPath(),
 });
 const handle = nextApp.getRequestHandler();
 

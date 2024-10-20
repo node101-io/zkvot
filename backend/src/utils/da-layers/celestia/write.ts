@@ -1,4 +1,4 @@
-import encodeDataToBase64String from '../../encodeDataToBase64String';
+import encodeDataToBase64String from '../../encodeDataToBase64String.js';
 
 const CELESTIA_RPC_URL = process.env.CELESTIA_RPC_URL || 'http://127.0.0.1:10102';
 const CELESTIA_AUTH_TOKEN = process.env.CELESTIA_AUTH_TOKEN;

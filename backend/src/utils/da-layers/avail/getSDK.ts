@@ -1,8 +1,8 @@
 import { SDK } from 'avail-js-sdk';
 
-import ClientConfig from './ClientConfig';
- 
-let initializedSDK = null;
+import ClientConfig from './ClientConfig.js';
+
+let initializedSDK: any = null;
 
 export default (
   callback: (error: string | null, data?: any) => any

@@ -7,6 +7,6 @@
     "contracts"
   ],
   "scripts": {
-    "build": "tsc -b contracts cli"
+    "build": "tsc -b contracts cli backend"
   }
 }
