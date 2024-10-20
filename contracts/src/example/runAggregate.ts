@@ -163,12 +163,6 @@ export const runAggregate = async (electionId: PublicKey) => {
         ),
         fieldToUInt32BigEndian(cachedProof.publicOutput.voteOptions_4).map(
           (f, i) => [i + 22, f.toBigint()]
-        ),
-        fieldToUInt32BigEndian(cachedProof.publicOutput.voteOptions_5).map(
-          (f, i) => [i + 29, f.toBigint()]
-        ),
-        fieldToUInt32BigEndian(cachedProof.publicOutput.voteOptions_6).map(
-          (f, i) => [i + 36, f.toBigint()]
         )
       );
 
@@ -339,22 +333,6 @@ export const runAggregate = async (electionId: PublicKey) => {
 
     for (let i = 0; i < 7; i++) {
       console.log(`voteOptions_${i + 22}:`, arr[i].toString());
-    }
-
-    arr = fieldToUInt32BigEndian(
-      rootAggregatorProof.publicOutput.voteOptions_5
-    );
-
-    for (let i = 0; i < 7; i++) {
-      console.log(`voteOptions_${i + 29}:`, arr[i].toString());
-    }
-
-    arr = fieldToUInt32BigEndian(
-      rootAggregatorProof.publicOutput.voteOptions_6
-    );
-
-    for (let i = 0; i < 7; i++) {
-      console.log(`voteOptions_${i + 36}:`, arr[i].toString());
     }
   }
   return;
