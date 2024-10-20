@@ -4,22 +4,35 @@ import StepOne from "./steps/StepOne";
 import StepTwo from "./steps/StepTwo";
 import StepThree from "./steps/StepThree";
 import StepFour from "./steps/StepFour";
-import StepFive from "./steps/StepFive.jsx";
+import StepFive from "./steps/StepFive";
+import StepSix from "./steps/StepSix";
+// import StepSeven from "./steps/StepSeven";
+
 import {
   fetchAvailBlockHeight,
   fetchCelestiaBlockInfo,
 } from "@/contexts/FetchLatestBlock";
+
+import {
+  fetchDataFromIPFS,
+  fetchDataFromFilecoin,
+  fetchDataFromArweave,
+} from "@/utils/StorageUtils";
+
 const HomePage = () => {
   const [step, setStep] = useState(1);
   const [electionData, setElectionData] = useState({
     voters_list: [],
     communication_layers: [],
+    storageLayer: "",
+    transactionId: "",
   });
   const [wallets, setWallets] = useState([]);
   const [isTwitterRequired, setIsTwitterRequired] = useState(false);
   const [blockHeight, setBlockHeight] = useState("");
   const [blockHash, setBlockHash] = useState("");
   const [loading, setLoading] = useState(false);
+
   const handleStepOneNext = (data) => {
     setElectionData((prevData) => ({
       ...prevData,
@@ -127,10 +140,6 @@ const HomePage = () => {
     }
   };
 
-  const handleUpdateElectionData = (updatedData) => {
-    setElectionData(updatedData);
-  };
-
   const handleStepFourSubmit = (additionalData) => {
     setElectionData((prevData) => {
       const updatedData = { ...prevData };
@@ -149,20 +158,74 @@ const HomePage = () => {
     setStep(5);
   };
 
-  const handleStepFiveSubmit = (transactionId) => {
-    const updatedData = {
-      ...electionData,
-      transactionId: transactionId.trim(),
-    };
-
-    setElectionData(updatedData);
-
-    generateAndDownloadJSON(updatedData);
+  const handleStepFiveSubmit = (selectedStorageLayer) => {
+    setElectionData((prevData) => ({
+      ...prevData,
+      storageLayer: selectedStorageLayer,
+    }));
     setStep(6);
+  };
+
+  const handleStepSixSubmit = (transactionId) => {
+    console.log("electionData.storageLayer:", electionData.storageLayer);
+
+    let fetchDataFunction;
+    switch (electionData.storageLayer.toLowerCase().trim()) {
+      case "arweave":
+        fetchDataFunction = fetchDataFromArweave;
+        break;
+      case "ipfs":
+        fetchDataFunction = fetchDataFromIPFS;
+        break;
+      case "filecoin":
+        fetchDataFunction = fetchDataFromFilecoin;
+        break;
+      default:
+        console.error("Invalid storage layer:", electionData.storageLayer);
+        return Promise.reject("Invalid storage layer");
+    }
+
+    if (typeof fetchDataFunction !== "function") {
+      console.error("fetchDataFunction is not a function:", fetchDataFunction);
+
+      return Promise.reject("fetchDataFunction is not a function");
+    }
+
+    return fetchDataFunction(transactionId)
+      .then((data) => {
+        if (data) {
+          console.log("Fetched data:", data);
+
+          const updatedData = {
+            ...electionData,
+            transactionId,
+            daData: data,
+          };
+          setElectionData(updatedData);
+
+          return sendTransaction();
+        } else {
+          console.error("Error fetching data from storage layer");
+        }
+      })
+      .then((transactionResult) => {
+        console.log(transactionResult);
+        alert("Transaction sent successfully.");
+        setStep(7);
+      })
+      .catch((error) => {
+        console.error("Error during Step Six submission:", error);
+        alert(error.message || "The data is not submitted correctly.");
+        throw error;
+      });
   };
 
   const generateAndDownloadJSON = (currentElectionData) => {
     const finalElectionData = { ...currentElectionData };
+
+    delete finalElectionData.storageLayer;
+    delete finalElectionData.transactionId;
+    delete finalElectionData.daData;
 
     delete finalElectionData.someComponent;
     delete finalElectionData.someEventObject;
@@ -170,9 +233,6 @@ const HomePage = () => {
     console.log("Final Election Data:", finalElectionData);
 
     downloadJSON(finalElectionData);
-
-    setElectionData({ voters_list: [], communication_layers: [] });
-    setWallets([]);
   };
 
   const downloadJSON = (finalElectionData) => {
@@ -200,6 +260,14 @@ const HomePage = () => {
     link.click();
     URL.revokeObjectURL(url);
   };
+
+  // const sendTransaction = () => {
+  //   return new Promise((resolve, reject) => {
+  //     setTimeout(() => {
+  //       resolve("Transaction successful");
+  //     }, 2000);
+  //   });
+  // };
 
   return (
     <div className="flex justify-center items-center h-full py-12">
@@ -234,17 +302,29 @@ const HomePage = () => {
             blockHash={blockHash}
             onPrevious={() => setStep(3)}
             onSubmit={handleStepFourSubmit}
-            onUpdateElectionData={handleUpdateElectionData}
           />
         )}
         {step === 5 && (
           <StepFive
             electionData={electionData}
-            downloadJSON={downloadJSON}
             onPrevious={() => setStep(4)}
             onSubmit={handleStepFiveSubmit}
           />
         )}
+        {step === 6 && (
+          <StepSix
+            electionData={electionData}
+            onPrevious={() => setStep(5)}
+            onSubmit={handleStepSixSubmit}
+            onDownload={() => generateAndDownloadJSON(electionData)}
+          />
+        )}
+        {/* {step === 7 && (
+          <StepSeven
+            electionData={electionData}
+            onPrevious={() => setStep(6)}
+          />
+        )} */}
       </div>
     </div>
   );
