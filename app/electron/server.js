@@ -4,12 +4,19 @@ import express from "express";
 import next from "next";
 import setupTrayMenu from "./utils/setupTrayMenu.js";
 import indexRouteController from "./routes/indexRouteController.js";
+
 const { app } = electron;
 
 const DEV = process.env.NODE_ENV !== "production";
 const PORT = process.env.PORT || 10101;
 
-const nextApp = next({ dev: DEV });
+console.log('App Path:', app.getAppPath());
+console.log('Current Directory:', import.meta.dirname);
+
+const nextApp = next({
+  dev: false,
+  dir: app.getAppPath()
+});
 const handle = nextApp.getRequestHandler();
 
 const server = express();

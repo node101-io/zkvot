@@ -33,48 +33,48 @@ const getMerkleWitness = (tree, leafIndex) => {
 
 export default async (req, res) => {
   try {
-  if (!req.body) {
-    return res.status(400).send({ error: 'bad_request' });
+    if (!req.body)
+      return res.status(400).send({ error: 'bad_request' });
+
+    // It should be done in a way that it is only compiled once, 
+    console.log('compiling program...' , Date.now());
+    await Vote.compile();
+    console.log('compiled at:' , Date.now());
+
+    const { electionId, signedElectionId, vote, votersArray, publicKey } = req.body;
+
+    if (!publicKey || typeof publicKey !== 'string') return res.status(400).send({ error: 'bad_request' });
+    if (!electionId || typeof electionId !== 'string') return res.status(400).send({ error: 'bad_request' });
+    if (!signedElectionId || typeof signedElectionId !== 'object') return res.status(400).send({ error: 'bad_request' });
+    if (!vote || typeof vote !== 'number') return res.status(400).send({ error: 'bad_request' });
+    if (!votersArray || !Array.isArray(votersArray)) return res.status(400).send({ error: 'bad_request' });
+
+    const votersTree = createMerkleTreeFromLeaves(votersArray);
+    const witness = getMerkleWitness(votersTree, votersArray.indexOf(publicKey));
+
+    const votePublicInputs = new VotePublicInputs({
+      electionId: PublicKey.fromJSON(electionId),
+      vote: Field.from(vote),
+      votersRoot: getRootOfMerkleTree(votersTree),
+    });
+
+    const votePrivateInputs = new VotePrivateInputs({
+      voterKey: PublicKey.fromJSON(publicKey), 
+      signedElectionId: Signature.fromJSON(signedElectionId),
+      votersMerkleWitness: witness,
+    });
+
+    console.log('Going to generate Proof', Date.now());
+
+    const voteProof = await Vote.vote(votePublicInputs, votePrivateInputs);
+    console.log('Proof generated at:', Date.now());
+
+    return res.status(200).send({ voteProof: voteProof.proof });
+  } catch (error) {
+    console.log(error)
+    
+    return res.status(500).send({ error: 'internal_server_error' });
   }
-
-  //It should be done in a way that it is only compiled once, 
-  console.log('compiling program...' , Date.now());
-  await Vote.compile();
-  console.log('compiled at:' , Date.now());
-
-  const { electionId, signedElectionId, vote, votersArray, publicKey } = req.body;
-
-  if (!publicKey || typeof publicKey !== 'string') return res.status(400).send({ error: 'bad_request' });
-  if (!electionId || typeof electionId !== 'string') return res.status(400).send({ error: 'bad_request' });
-  if (!signedElectionId || typeof signedElectionId !== 'object') return res.status(400).send({ error: 'bad_request' });
-  if(!vote || typeof vote !== 'number') return res.status(400).send({ error: 'bad_request' });
-  if(!votersArray || !Array.isArray(votersArray)) return res.status(400).send({ error: 'bad_request' });
-
-  const votersTree = createMerkleTreeFromLeaves(votersArray);
-  const witness = getMerkleWitness(votersTree, votersArray.indexOf(publicKey));
-
-  const votePublicInputs = new VotePublicInputs({
-    electionId: PublicKey.fromJSON(electionId),
-    vote: Field.from(vote),
-    votersRoot: getRootOfMerkleTree(votersTree),
-  });
-
-  const votePrivateInputs = new VotePrivateInputs({
-    voterKey: PublicKey.fromJSON(publicKey), 
-    signedElectionId: Signature.fromJSON(signedElectionId),
-    votersMerkleWitness: witness,
-  });
-
-  console.log('Going to generate Proof', Date.now());
-
-  const voteProof = await Vote.vote(votePublicInputs, votePrivateInputs);
-  console.log('Proof generated at:', Date.now());
-
-  return res.status(200).send({ voteProof: voteProof.proof });
- } catch (error) {
-  console.log(error)
-  return res.status(500).send({ error: 'internal_server_error' });
- }
 };
 
 // Data to test this code: 
