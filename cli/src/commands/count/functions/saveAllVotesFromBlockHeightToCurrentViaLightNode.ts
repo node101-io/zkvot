@@ -92,22 +92,45 @@ const checkEachVoteAndReturnWithNullifier = (
   );
 };
 
+const writeVoteToDBSublevelByElectionId = (
+  data: {
+    electionSublevel: any,
+    nullifier: string,
+    voteProof: JsonProof
+  },
+  callback: (err: Error | string | null) => void
+) => {
+  data.electionSublevel
+    .put(data.nullifier, data.voteProof, {}, (err: Error | null) => {
+      if (err)
+        return callback(err);
+
+      return callback(null);
+    });
+};
+
 const processVerifiedVotesAndSaveToDB = (
   votes: { nullifier: string, vote_proof: JsonProof }[],
   electionId: string,
   callback: (err: Error | string | null) => void
 ) => {
+  const electionSublevel = db.sublevel(electionId, { valueEncoding: 'json' });
+
   async.each(
     votes,
     (
       vote: { nullifier: string, vote_proof: JsonProof },
       next: (err: Error | string | null) => void
     ) => {
-      db.put(`${electionId}:${vote.nullifier}`, vote.vote_proof, err => {
+      writeVoteToDBSublevelByElectionId({
+        electionSublevel: electionSublevel,
+        nullifier: vote.nullifier,
+        voteProof: vote.vote_proof
+      }, err => {
         if (err)
           return next(err);
 
-        logger.log('info', `Vote saved to DB - ${electionId}:${vote.nullifier}`);
+        logger.log('info', `Vote saved to DB under the sublevel: ${electionId}`);
 
         return next(null);
       });

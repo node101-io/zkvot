@@ -20,6 +20,7 @@ const nextApp = next({
 const handle = nextApp.getRequestHandler();
 
 const server = express();
+server.use(express.json());
 
 server.use("/", indexRouteController);
 server.all("*", (req, res) => handle(req, res));

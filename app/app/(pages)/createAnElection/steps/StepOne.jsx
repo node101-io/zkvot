@@ -5,7 +5,9 @@ import ElectionInput from "./stepOneComponent/ElectionInput";
 import ElectionList from "./stepOneComponent/ElectionList";
 
 const StepOne = ({ onNext, initialData }) => {
-  const [picture, setPicture] = useState(initialData?.picture || null);
+  const [pictureDataURL, setPictureDataURL] = useState(
+    initialData?.image_raw || ""
+  );
   const [question, setQuestion] = useState(initialData?.question || "");
   const [elections, setElections] = useState(initialData?.options || []);
   const [description, setDescription] = useState(
@@ -17,13 +19,19 @@ const StepOne = ({ onNext, initialData }) => {
 
   const handlePictureChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setPicture(e.target.files[0]);
+      const file = e.target.files[0];
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPictureDataURL(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   useEffect(() => {
     if (
-      picture &&
+      pictureDataURL &&
       question.trim() &&
       elections.length >= 2 &&
       startDate &&
@@ -33,12 +41,12 @@ const StepOne = ({ onNext, initialData }) => {
     } else {
       setIsNextEnabled(false);
     }
-  }, [picture, question, elections, startDate, endDate]);
+  }, [pictureDataURL, question, elections, startDate, endDate]);
 
   const handleSubmit = () => {
     if (isNextEnabled) {
       const data = {
-        picture,
+        image_raw: pictureDataURL,
         question,
         options: elections,
         description,
@@ -67,9 +75,9 @@ const StepOne = ({ onNext, initialData }) => {
             onChange={handlePictureChange}
             className="absolute opacity-0 w-full h-full cursor-pointer z-10"
           />
-          {picture ? (
+          {pictureDataURL ? (
             <img
-              src={URL.createObjectURL(picture)}
+              src={pictureDataURL}
               alt="Selected"
               className="w-full h-full object-cover rounded-lg"
             />

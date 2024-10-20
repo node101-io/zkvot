@@ -2,136 +2,117 @@
 
 import React, { useState } from "react";
 import Button from "@/components/common/Button";
+import IPFSLogo from "@/assets/StorageLayers/IPFS.svg";
+import FileCoinLogo from "@/assets/StorageLayers/FileCoin.svg";
+import ArweaveLogo from "@/assets/StorageLayers/FileCoin.svg";
 import Image from "next/image";
-import Link from "next/link";
-import SignUpImage from "@/assets/StepFiveTutroial/AkordSignUp.svg";
-import SetUpVaultImage from "@/assets/StepFiveTutroial/AkordSetUpVault.svg";
-import CreateVaultImage from "@/assets/StepFiveTutroial/AkordCreateVault.svg";
-import UploadFileImage from "@/assets/StepFiveTutroial/AkordUploadFile.svg";
-import DownloadFileImage from "@/assets/StepFiveTutroial/AkordDownloadUploadFile.svg";
-import FileContentImage from "@/assets/StepFiveTutroial/AkordFileContent.svg";
-import CopyFromFileImage from "@/assets/StepFiveTutroial/AkordCopyFromFile.svg";
 
-const StepFive = ({ onPrevious, onSubmit, downloadJSON }) => {
-  const [transactionId, setTransactionId] = useState("");
-  const [isSubmitEnabled, setIsSubmitEnabled] = useState(false);
+const storageLayersNames = [
+  {
+    name: "Arweave",
+    description:
+      "It is a long established fact that a reader will be distracted by the readable content of a page.",
+    fee: "0.0001",
+    currency: "AR",
+  },
+  {
+    name: "IPFS",
+    description:
+      "It is a long established fact that a reader will be distracted by the readable content of a page.",
+    fee: "0.0001",
+    currency: "ETH",
+  },
+  {
+    name: "Filecoin",
+    description:
+      "It is a long established fact that a reader will be distracted by the readable content of a page.",
+    fee: "0.0001",
+    currency: "FIL",
+  },
+];
 
-  const stepsData = [
-    {
-      text: (
-        <>
-          1. Go to
-          <Link
-            className="text-blue-400"
-            href={"https://v2.akord.com/signup"}
-          >
-            {" "}
-            https://v2.akord.com/signup{" "}
-          </Link>
-          and create an account.
-        </>
-      ),
-      image: SignUpImage,
-    },
-    {
-      text: (
-        <>
-          2. After you sign up, sign in. You will see the following page, choose
-          “NFT assets / public archives” and click “Setup vault”.
-        </>
-      ),
-      image: SetUpVaultImage,
-    },
-    {
-      text: "3. Give it a title and click “Create vault”.",
-      image: CreateVaultImage,
-    },
-    {
-      text: "4. Click “Upload a file”.",
-      image: UploadFileImage,
-    },
-    {
-      text: (
-        <>
-          <div>
-            5.{" "}
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                downloadJSON();
-              }}
-              className="hover:text-white/70 underline"
-            >
-              Download
-            </button>{" "}
-            the file here and upload it to the website.
-          </div>
-        </>
-      ),
-      image: DownloadFileImage,
-    },
-
-    {
-      text: "6. Click on the file you uploaded to see its content.",
-      image: FileContentImage,
-    },
-    {
-      text: (
-        <>
-          7. Click on “info” button on right. to see the file info. Copy the URL
-          starting with “https://arweave.net” and paste it into the below field.
-        </>
-      ),
-      image: CopyFromFileImage,
-    },
-  ];
-
-  const handleInputChange = (e) => {
-    setTransactionId(e.target.value);
-    setIsSubmitEnabled(e.target.value.trim() !== "");
+const StepFive = ({ electionData, onPrevious, onSubmit }) => {
+  const [selectedStorageLayer, setSelectedStorageLayer] = useState(
+    electionData.storageLayer || null
+  );
+  const handleNext = () => {
+    if (selectedStorageLayer !== null) {
+      onSubmit(storageLayersNames[selectedStorageLayer].name);
+    }
   };
 
-  const handleSubmit = () => {
-    if (isSubmitEnabled) {
-      onSubmit(transactionId.trim());
-    }
+  const isSubmitEnabled = selectedStorageLayer !== null;
+
+  const LayersLogos = {
+    Arweave: (
+      <Image
+        src={ArweaveLogo}
+        alt="Arweave Logo"
+        width={160}
+        height={160}
+      />
+    ),
+    IPFS: (
+      <Image
+        src={IPFSLogo}
+        alt="IPFS Logo"
+        width={160}
+        height={160}
+      />
+    ),
+    Filecoin: (
+      <Image
+        src={FileCoinLogo}
+        alt="Filecoin Logo"
+        width={160}
+        height={160}
+      />
+    ),
   };
 
   return (
     <div className="flex flex-col items-start space-y-6">
-      <h2 className="text-white text-2xl">Why do we use it?</h2>
-      <div className="w-full text-white">
-        {stepsData.map((step, index) => (
-          <div key={index}>
-            <div className="mb-4">{step.text}</div>
-            <Image
-              src={step.image}
-              className="mb-6"
-              alt=""
-              width={1000}
-              height={530}
-            />
-          </div>
-        ))}
-      </div>
+      <h2 className="text-white text-2xl">Choose a Storage Layer</h2>
       <div className="w-full">
-        <label className="block text-white mb-2">Transaction id</label>
-        <input
-          type="text"
-          value={transactionId}
-          onChange={handleInputChange}
-          className="w-[578px] h-12 p-2 bg-[#222] text-white rounded-[23px] border"
-          placeholder="Enter your input here"
-        />
+        <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 w-full`}>
+          {storageLayersNames.map((storageLayer, index) => (
+            <div
+              key={index}
+              className={`p-4 bg-[#222222] rounded-2xl cursor-pointer flex items-center transition duration-200 ${
+                selectedStorageLayer === index
+                  ? "border-[1px] border-primary shadow-lg"
+                  : "hover:bg-[#333333]"
+              }`}
+              onClick={() => setSelectedStorageLayer(index)}
+            >
+              <div className="w-[160px] h-[160px] flex-shrink-0 rounded-[12px] mr-4 flex items-center justify-center">
+                {LayersLogos[storageLayer.name] || (
+                  <div className="w-full h-full bg-gray-500 rounded-[12px]" />
+                )}
+              </div>
+              <div className="flex flex-col h-full justify-between">
+                <h3 className="text-white text-[24px] mb-2">
+                  {storageLayer.name}
+                </h3>
+                <p className="text-[16px] mb-2">{storageLayer.description}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-[16px]">
+                    Fee: {storageLayer.fee} {storageLayer.currency}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
       <div className="w-full flex justify-between pt-4">
         <Button onClick={onPrevious}>Previous</Button>
         <Button
-          onClick={handleSubmit}
+          onClick={handleNext}
           disabled={!isSubmitEnabled}
           className={!isSubmitEnabled ? "opacity-50 cursor-not-allowed" : ""}
         >
-          Submit
+          Next
         </Button>
       </div>
     </div>
