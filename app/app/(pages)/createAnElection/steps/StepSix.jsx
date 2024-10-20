@@ -49,9 +49,7 @@ const StepSix = ({ electionData, onPrevious, onSubmit, onDownload }) => {
 
   return (
     <div className="flex flex-col items-start space-y-6">
-      <h2 className="text-white text-2xl">
-        {electionData.storageLayer.toUpperCase()} Guide
-      </h2>
+      <h2 className="text-white text-2xl">{electionData.storageLayer} Guide</h2>
       <div className="w-full text-white">
         {stepsData.map((step, index) => (
           <div key={index}>
@@ -104,7 +102,7 @@ export default StepSix;
 
 function getStepsData(storageLayer, onDownload) {
   switch (storageLayer) {
-    case "arweave":
+    case "Arweave":
       return [
         {
           text: (
@@ -174,9 +172,9 @@ function getStepsData(storageLayer, onDownload) {
           image: CopyFromFileImage,
         },
       ];
-    case "ipfs":
+    case "IPFS":
       return [];
-    case "filecoin":
+    case "Filecoin":
       return [];
     default:
       return [];
