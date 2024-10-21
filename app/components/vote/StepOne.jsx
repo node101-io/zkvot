@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import Image from "next/image";
 import { FaImage } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
@@ -28,8 +28,10 @@ const StepOne = ({
 }) => {
   const showToast = useToast();
 
-  const [isExpanded, setIsExpanded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+
+  const [eligibilityStatus, setEligibilityStatus] = useState("not_connected");
 
   const { minaWalletAddress, connectMinaWallet, disconnectMinaWallet } =
     useContext(MinaWalletContext);
@@ -40,9 +42,49 @@ const StepOne = ({
     disconnectMetamaskWallet,
   } = useContext(MetamaskWalletContext);
 
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  const userWalletAddresses = [metamaskWalletAddress, minaWalletAddress]
+    .filter(Boolean)
+    .map((addr) => addr.trim().toLowerCase());
+
+  useEffect(() => {
+    if (
+      userWalletAddresses.length > 0 &&
+      electionData &&
+      electionData.voters_list
+    ) {
+      setEligibilityStatus("checking");
+
+      const votersNormalized = electionData.voters_list.map((addr) =>
+        addr.trim().toLowerCase()
+      );
+
+      const eligible = userWalletAddresses.some((wallet) =>
+        votersNormalized.includes(wallet)
+      );
+
+      if (eligible) {
+        setEligibilityStatus("eligible");
+      } else {
+        setEligibilityStatus("not_eligible");
+      }
+    } else {
+      setEligibilityStatus("not_connected");
+    }
+  }, [userWalletAddresses, electionData]);
+
+  useEffect(() => {
+    return () => {
+      setEligibilityStatus("not_connected");
+    };
+  }, []);
 
   const handleWalletSelection = async (wallet) => {
+    if (selectedWallet === "Mina") {
+      await disconnectMinaWallet();
+    } else if (selectedWallet === "Metamask") {
+      await disconnectMetamaskWallet();
+    }
+
     setSelectedWallet(wallet);
     setIsWalletModalOpen(false);
 
@@ -55,19 +97,37 @@ const StepOne = ({
     }
 
     if (connectionSuccess) {
-      setIsModalOpen(true);
+      showToast("Wallet connected successfully!", "success");
     } else {
       setSelectedWallet(null);
       showToast("Wallet connection was not successful.", "error");
     }
   };
-
-  const handleVoteClick = () => {
+  const handleVoteClick = async () => {
     if (selectedChoice === null) {
       showToast("Please select a choice to proceed.", "error");
       return;
     }
-    setIsWalletModalOpen(true);
+
+    if (eligibilityStatus === "eligible") {
+      await handleConfirmAndContinue();
+      return;
+    }
+
+    if (eligibilityStatus === "not_eligible") {
+      if (selectedWallet === "Mina") {
+        await disconnectMinaWallet();
+      } else if (selectedWallet === "Metamask") {
+        await disconnectMetamaskWallet();
+      }
+      setSelectedWallet(null);
+      setIsWalletModalOpen(true);
+      return;
+    }
+
+    if (eligibilityStatus === "not_connected") {
+      setIsWalletModalOpen(true);
+    }
   };
 
   const handleCloseModal = () => {
@@ -91,11 +151,16 @@ const StepOne = ({
         return;
       }
 
+      if (eligibilityStatus !== "eligible") {
+        showToast("You are not eligible to vote in this election.", "error");
+        return;
+      }
+
       await submitZkProof();
 
       if (selectedWallet === "Mina") {
         disconnectMinaWallet();
-      } else if (selectedWallet === "metamask") {
+      } else if (selectedWallet === "Metamask") {
         disconnectMetamaskWallet();
       }
 
@@ -114,15 +179,15 @@ const StepOne = ({
       : null;
 
   const Placeholder = ({ className }) => (
-    <div className={`${className} flex items-center justify-center  h-full`}>
+    <div className={`${className} flex items-center justify-center h-full`}>
       <FaImage className="text-gray-500 text-6xl" />
     </div>
   );
 
   return (
-    <div className="flex flex-col items-center px-4 sm:px-6 md:px-8 ">
+    <div className="flex flex-col items-center px-4 sm:px-6 md:px-8">
       <div className="py-4 w-full text-start">
-        Already voted?{"  "}
+        Already voted?{" "}
         <button className="relative inline-flex items-center font-medium text-gray-300 transition duration-300 ease-out hover:text-white">
           See Results
         </button>
@@ -148,7 +213,7 @@ const StepOne = ({
             </div>
           </div>
         </div>
-        <div className="p-4  w-full h-full flex flex-col justify-between ">
+        <div className="p-4 w-full h-full flex flex-col justify-between">
           <div className="flex flex-row w-full justify-between">
             <div className="text-[#B7B7B7] text-sm mb-2 flex flex-row items-center">
               <span className="mr-2 group relative">
@@ -175,11 +240,7 @@ const StepOne = ({
           </div>
           <div className="flex-grow min-h-52">
             <h2 className="text-[24px] mb-2">{electionData.name}</h2>
-            <p
-              className={`my-4 text-[16px] italic text-[#F6F6F6] ${
-                !isExpanded ? "" : ""
-              }`}
-            >
+            <p className={`my-4 text-[16px] italic text-[#F6F6F6]`}>
               {electionData.description}
             </p>
           </div>
@@ -219,18 +280,19 @@ const StepOne = ({
         </div>
       </div>
 
-      <div className="w-full  my-5">
+      <div className="w-full my-5">
         <h3 className="text-xl mb-4">Choices</h3>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {electionData.choices.map((choice, index) => (
             <button
               key={index}
               className={`p-4 text-center bg-[#222222] rounded-2xl  
-                ${
-                  selectedChoice === index
-                    ? " border-primary border-[1px] shadow-lg"
-                    : " hover:bg-[#333333]"
-                }`}
+        ${
+          selectedChoice === index
+            ? "border-primary border-[1px] shadow-lg"
+            : "hover:bg-[#333333]"
+        }`}
               onClick={() => setSelectedChoice(index)}
               disabled={loading}
             >
@@ -240,14 +302,18 @@ const StepOne = ({
         </div>
       </div>
 
-      <div className="w-full pt-8 flex justify-end">
+      <div className="w-full pt-8 flex justify-end space-x-4">
         <Button
           onClick={handleVoteClick}
-          disabled={selectedChoice === null || loading}
           loading={loading}
         >
-          Vote
+          {eligibilityStatus === "eligible"
+            ? "Vote"
+            : eligibilityStatus === "not_eligible"
+            ? "Switch Wallet"
+            : "Connect Wallet"}
         </Button>
+
         {isWalletModalOpen && (
           <WalletSelectionModal
             availableWallets={["Mina", "Metamask"]}
@@ -266,11 +332,11 @@ const StepOne = ({
                 <IoClose size={28} />
               </button>
               <div className="px-[57px] py-2">
-                <h3 className="text-xl  mb-4">
+                <h3 className="text-xl mb-4">
                   Wait a sec, have you voted before?
                 </h3>
 
-                <p className=" mb-8">
+                <p className="mb-8">
                   Since it is fully anonymous, it is not really easy to
                   understand if you have voted before or not. Nevertheless, if
                   you send your vote twice, it will not be counted for the
@@ -292,6 +358,13 @@ const StepOne = ({
           </div>
         )}
       </div>
+
+      {eligibilityStatus === "not_eligible" && (
+        <div className="w-full mt-2 text-center text-gray-300 text-sm">
+          You’re not eligible for this election. You might be connected to the
+          wrong wallet. Please try switching wallets{" "}
+        </div>
+      )}
     </div>
   );
 };
