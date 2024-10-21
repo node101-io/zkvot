@@ -7,6 +7,7 @@ import Button from "@/components/common/Button";
 import Clock from "@/assets/ElectionCard/Clock";
 import LearnMoreIcon from "@/assets/ElectionCard/LearnMoreIcon";
 import CopyButton from "@/components/common/CopyButton";
+import ToolTip from "@/components/common/ToolTip";
 
 const ElectionCard = ({ electionData, loading }) => {
   if (loading) {
@@ -85,17 +86,14 @@ const ElectionCard = ({ electionData, loading }) => {
           </span>
         </div>
         <div className="text-[#B7B7B7] text-sm mb-2 flex flex-row items-center">
-          <span className="mr-2 group relative scale-125">
-            <LearnMoreIcon Color="#B7B7B7" />
-            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2  mb-2 hidden group-hover:flex flex-col items-start z-50">
-              <div className="bg-[#383838]  text-[#EBF0FF] text-sm rounded-3xl px-3 py-4 shadow-lg w-[370px] text-center">
-                <p>
-                  It is a long established fact that a reader will be distracted
-                  by the readable content of a page when looking at its layout.
-                </p>
-              </div>
-              <div className="w-3 h-3 bg-[#383838] rotate-45 transform translate-x-[180px] -translate-y-2"></div>
-            </div>
+          <span className="mr-2">
+            <ToolTip
+              content="It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout."
+              position="top"
+              arrowPosition="start"
+            >
+              <LearnMoreIcon Color="#B7B7B7" />
+            </ToolTip>
           </span>
           Election id: {String(electionData.electionId).slice(0, 12) + "..."}
           <span className="ml-1 cursor-pointer w-fit">
