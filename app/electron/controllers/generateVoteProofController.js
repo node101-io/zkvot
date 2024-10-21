@@ -17,7 +17,7 @@ const createMerkleTreeFromLeaves = (leaves) => {
     let leaf = Poseidon.hash(PublicKey.fromJSON(leaves[i]).toFields());
     votersTree.setLeaf(BigInt(i), leaf);
   }
-  
+
   return votersTree;
 };
 
@@ -36,7 +36,7 @@ export default async (req, res) => {
     if (!req.body)
       return res.status(400).send({ error: 'bad_request' });
 
-    // It should be done in a way that it is only compiled once, 
+    // It should be done in a way that it is only compiled once,
     console.log('compiling program...' , Date.now());
     await Vote.compile();
     console.log('compiled at:' , Date.now());
@@ -59,7 +59,7 @@ export default async (req, res) => {
     });
 
     const votePrivateInputs = new VotePrivateInputs({
-      voterKey: PublicKey.fromJSON(publicKey), 
+      voterKey: PublicKey.fromJSON(publicKey),
       signedElectionId: Signature.fromJSON(signedElectionId),
       votersMerkleWitness: witness,
     });
@@ -72,12 +72,12 @@ export default async (req, res) => {
     return res.status(200).send({ voteProof: voteProof.proof });
   } catch (error) {
     console.log(error)
-    
+
     return res.status(500).send({ error: 'internal_server_error' });
   }
 };
 
-// Data to test this code: 
+// Data to test this code:
 // {
 //   "electionId": "B62qinHTtL5wUL5ccnKudxDWhZYAyWDj2HcvVY1YVLhNXwqN9cceFkz",
 //   "signedElectionId": {

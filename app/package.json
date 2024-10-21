@@ -49,6 +49,7 @@
     }
   },
   "dependencies": {
+    "o1js": "^1.9.0",
     "@heroicons/react": "^1.0.6",
     "@polkadot/api": "^13.2.1",
     "@polkadot/extension-dapp": "^0.53.1",
@@ -57,7 +58,6 @@
     "avail-js-sdk": "^0.2.18",
     "axios": "^1.7.7",
     "buffer": "^6.0.3",
-    "contracts": "*",
     "copy-to-clipboard": "^3.3.3",
     "express": "^4.21.1",
     "framer-motion": "^11.8.0",

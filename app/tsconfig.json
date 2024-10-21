@@ -18,9 +18,8 @@
     "jsx": "preserve",
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"],
+      "contracts": ["../contracts"]
     },
     "plugins": [
       {
@@ -28,6 +27,7 @@
       }
     ]
   },
+  "references": [{ "path": "../contracts" }],
   "include": [
     "next-env.d.ts",
     ".next/types/**/*.ts",
