@@ -22,7 +22,7 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "contracts/*": ["../contracts/build/src/*"]
+      "contracts": ["../contracts"]
     }
   },
   "references": [{ "path": "../contracts" }],

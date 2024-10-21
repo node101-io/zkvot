@@ -6,7 +6,7 @@ export default (
     const dataString = JSON.stringify(data);
     const encodedData = Buffer.from(dataString).toString('base64');
     return callback(null, encodedData);
-  } catch (err) {
+  } catch (err: any) {
     return callback(err.toString());
   };
 };

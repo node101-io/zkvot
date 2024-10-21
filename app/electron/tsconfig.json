@@ -4,7 +4,7 @@
     "module": "es2022",
     "lib": ["dom", "esnext"],
     "outDir": "build",
-    "rootDir": "./src",
+    "rootDir": ".",
     "strict": true,
     "strictPropertyInitialization": false,
     "skipLibCheck": true,
@@ -22,9 +22,9 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "contracts": ["../contracts"]
+      "contracts": ["../../contracts"]
     }
   },
-  "references": [{ "path": "../contracts" }],
+  "references": [{ "path": "../../contracts" }],
   "include": ["./**/*.ts"]
 }

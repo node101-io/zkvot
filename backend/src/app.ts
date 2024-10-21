@@ -4,11 +4,15 @@ import dotenv from 'dotenv';
 import express from 'express';
 import http from 'http';
 import mongoose from 'mongoose';
+import os from 'os';
 import path from 'path';
+
+import electionRouteController from './routes/electionRoute.js';
+import voteRouteController from './routes/voteRoute.js';
 
 dotenv.config({ path: path.join(import.meta.dirname, '.env') });
 
-const CLUSTER_COUNT = process.env.WEB_CONCURRENCY || require('os').cpus().length;
+const CLUSTER_COUNT = Number(process.env.WEB_CONCURRENCY) || os.cpus().length;
 
 if (cluster.isMaster) {
   console.log(`Master ${process.pid} is running`);
@@ -39,9 +43,6 @@ if (cluster.isMaster) {
 
     next();
   });
-
-  const electionRouteController = require('./routes/electionRoute');
-  const voteRouteController = require('./routes/voteRoute');
 
   app.use('/election', electionRouteController);
   app.use('/vote', voteRouteController);

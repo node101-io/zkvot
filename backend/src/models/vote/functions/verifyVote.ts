@@ -1,6 +1,5 @@
 import { JsonProof } from 'o1js';
-
-import { VoteProof } from '../../../utils/zk-proofs/vote';
+import { VoteProof } from 'contracts';
 
 export default (
   data: {

@@ -1,12 +1,12 @@
 import { model, Model, Schema } from 'mongoose';
 
-import { ElectionModel } from '../../types/election';
+import { ElectionModel } from '../../types/election.js';
 
-import fetchDataFromStorageLayer from './functions/fetchDataFromStorageLayer';
-import fetchElectionStateFromMina from './functions/fetchElectionStateFromMina';
-import generateMerkleRootFromVotersList from './functions/generateMerkleRootFromVotersList';
-import getStorageInfoFromFields from './functions/getStorageInfoFromFields';
-import uploadImageRaw from './functions/uploadImageRaw';
+import fetchDataFromStorageLayer from './functions/fetchDataFromStorageLayer.js';
+import fetchElectionStateFromMina from './functions/fetchElectionStateFromMina.js';
+import generateMerkleRootFromVotersList from './functions/generateMerkleRootFromVotersList.js';
+import getStorageInfoFromFields from './functions/getStorageInfoFromFields.js';
+import uploadImageRaw from './functions/uploadImageRaw.js';
 
 const DEFAULT_QUERY_LIMIT = 100;
 const DUPLICATED_UNIQUE_FIELD_ERROR_CODE = 11000;
@@ -163,9 +163,9 @@ ElectionSchema.statics.createElection = function (
   const mina_contract_id = data.mina_contract_id;
 
   Election.findOne({
-    mina_contract_id 
+    mina_contract_id
   })
-  .then(election => {
+  .then((election: ElectionModel) => {
     if (election)
       return callback('duplicated_unique_field');
 
@@ -207,9 +207,9 @@ ElectionSchema.statics.createElection = function (
               voters_merkle_root,
               ...data
             };
-        
+
             const election = new Election(electionData);
-    
+
             election.save((error: { code: number; }, election: any) => {
               if (error) {
                 if (error.code == DUPLICATED_UNIQUE_FIELD_ERROR_CODE)
@@ -224,7 +224,7 @@ ElectionSchema.statics.createElection = function (
       });
     });
   })
-  .catch(_ => callback('database_error'));
+  .catch((err: any) => callback('database_error'));
 };
 
 ElectionSchema.statics.findElectionByContractId = function (
@@ -244,7 +244,7 @@ ElectionSchema.statics.findElectionByContractId = function (
 
       callback(null, election)
     })
-    .catch(_ => callback('database_error'));
+    .catch((err: any) => callback('database_error'));
 };
 
 ElectionSchema.statics.findElectionsByFilter = function (
@@ -287,7 +287,7 @@ ElectionSchema.statics.findElectionsByFilter = function (
     .skip(data.skip || 0)
     .limit(DEFAULT_QUERY_LIMIT)
     .then((elections: ElectionModel[]) => callback(null, elections))
-    .catch(_ => callback('database_error'));
+    .catch((err: any) => callback('database_error'));
 };
 
 export default model('Election', ElectionSchema) as Model<any> & ElectionStatics;

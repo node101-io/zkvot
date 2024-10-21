@@ -1,9 +1,11 @@
-// import { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { createHash } from 'node:crypto';
 
-export default (req, res) => {
-  if (!req.query.election_id || typeof req.query.election_id != 'string' || !req.query.election_id.trim().length)
-    return res.json({ success: false, error: 'bad_request' });
+export default (req: Request, res: Response) => {
+  if (!req.query.election_id || typeof req.query.election_id != 'string' || !req.query.election_id.trim().length) {
+    res.json({ success: false, error: 'bad_request' });
+    return;
+  }
 
   const namespaceVersionByte = Buffer.from([0x00]);
 
@@ -18,5 +20,5 @@ export default (req, res) => {
     slicedVotingIdHash
   ]).toString('base64');
 
-  return res.json({ success: true, data: namespaceIdentifier });
+  res.json({ success: true, data: namespaceIdentifier });
 };

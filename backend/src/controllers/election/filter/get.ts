@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import Election from '../../../models/election/Election';
+import Election from '../../../models/election/Election.js';
 
 export default (
   req: Request,

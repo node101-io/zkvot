@@ -1,9 +1,9 @@
 import { Keyring, WaitFor } from 'avail-js-sdk';
 
-import encodeDataToBase64String from '../../encodeDataToBase64String';
+import encodeDataToBase64String from '../../encodeDataToBase64String.js';
 
-import ClientConfig from './ClientConfig';
-import getSDK from './getSDK';
+import ClientConfig from './ClientConfig.js';
+import getSDK from './getSDK.js';
 
 export default (
   app_id: any,
@@ -41,7 +41,7 @@ export default (
           return callback(null, {
             blockHeight: Number(result.blockNumber),
             txHash: result.txHash.toString()
-          });          
+          });
         })
         .catch((_: any) => callback('da_layer_error'));
     });

@@ -1,42 +1,36 @@
+import { Request, Response } from 'express';
 import {
   Field,
-  Mina,
   MerkleTree,
-  PrivateKey,
   PublicKey,
   Poseidon,
   Signature,
 } from 'o1js';
-
 import { Vote, VotePrivateInputs, VotePublicInputs, MerkleWitnessClass } from 'contracts';
 
-const createMerkleTreeFromLeaves = (leaves) => {
+const createMerkleTreeFromLeaves = (leaves: string[]): MerkleTree => {
   let votersTree = new MerkleTree(20);
 
   for (let i = 0; i < leaves.length; i++) {
     let leaf = Poseidon.hash(PublicKey.fromJSON(leaves[i]).toFields());
     votersTree.setLeaf(BigInt(i), leaf);
   }
-  
+
   return votersTree;
 };
 
-const getRootOfMerkleTree = (tree) => {
-  return tree.getRoot();
-};
-
-const getMerkleWitness = (tree, leafIndex) => {
+const getMerkleWitness = (tree: MerkleTree, leafIndex: number) => {
   const merkleTreeWitness = tree.getWitness(BigInt(leafIndex));
 
   return new MerkleWitnessClass(merkleTreeWitness);
 }
 
-export default async (req, res) => {
+export default async (req: Request, res: Response) => {
   try {
     if (!req.body)
       return res.status(400).send({ error: 'bad_request' });
 
-    // It should be done in a way that it is only compiled once, 
+    // It should be done in a way that it is only compiled once,
     console.log('compiling program...' , Date.now());
     await Vote.compile();
     console.log('compiled at:' , Date.now());
@@ -55,11 +49,11 @@ export default async (req, res) => {
     const votePublicInputs = new VotePublicInputs({
       electionId: PublicKey.fromJSON(electionId),
       vote: Field.from(vote),
-      votersRoot: getRootOfMerkleTree(votersTree),
+      votersRoot: votersTree.getRoot(),
     });
 
     const votePrivateInputs = new VotePrivateInputs({
-      voterKey: PublicKey.fromJSON(publicKey), 
+      voterKey: PublicKey.fromJSON(publicKey),
       signedElectionId: Signature.fromJSON(signedElectionId),
       votersMerkleWitness: witness,
     });
@@ -72,12 +66,12 @@ export default async (req, res) => {
     return res.status(200).send({ voteProof: voteProof.proof });
   } catch (error) {
     console.log(error)
-    
+
     return res.status(500).send({ error: 'internal_server_error' });
   }
 };
 
-// Data to test this code: 
+// Data to test this code:
 // {
 //   "electionId": "B62qinHTtL5wUL5ccnKudxDWhZYAyWDj2HcvVY1YVLhNXwqN9cceFkz",
 //   "signedElectionId": {

@@ -129,7 +129,7 @@ for (let i = 0; i < 20; i++) {
   const electionId_first_field = electionId.toFields()[0].toBigInt();
   const electionId_second_field = electionId.toFields()[1].toBigInt();
 
-  const VoteIdArray = [
+  const VoteIdArray: any = [
     ...bigintToUint8Array32BigEndian(electionId_first_field),
     ...bigintToUint8Array32BigEndian(electionId_second_field),
   ];
@@ -194,7 +194,7 @@ for (let i = 20; i < 40; i++) {
   const electionId_first_field = electionId.toFields()[0].toBigInt();
   const electionId_second_field = electionId.toFields()[1].toBigInt();
 
-  const VoteIdArray = [
+  const VoteIdArray: any = [
     ...bigintToUint8Array32BigEndian(electionId_first_field),
     ...bigintToUint8Array32BigEndian(electionId_second_field),
   ];
