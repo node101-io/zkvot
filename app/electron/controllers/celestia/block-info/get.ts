@@ -1,43 +1,41 @@
 import { Request, Response } from "express";
 
-export default async (_req: Request, res: Response) => {
-  try {
-    const response = await fetch("https://rpc-mocha.pops.one/block", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        method: "block",
-        params: [],
-        id: 1,
-      }),
-    });
+const CELESTIA_MAINNET_RPC = "https://rpc-mocha.pops.one/block";
 
-    const result = await response.json();
+export default (_req: Request, res: Response) => {
+  fetch(CELESTIA_MAINNET_RPC, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      method: "block",
+      params: [],
+      id: 1,
+    }),
+  })
+    .then(response => response.json())
+    .then(result => {
+      const blockHeight = result?.result?.block?.header?.height;
+      const blockHash = result?.result?.block_id?.hash;
 
-    if (result.result) {
-      const block = result.result.block;
-      const blockHeight = block.header.height;
-      const blockHash = result.result.block_id.hash;
+      if (!blockHeight || !blockHash)
+        return res.status(500).json({
+          success: false,
+          error: "block_info_not_found",
+        });
 
       res.json({
         success: true,
         block_height: blockHeight,
         block_hash: blockHash,
       });
-    } else {
+    })
+    .catch(error => {
       res.status(500).json({
         success: false,
-        error: "Failed to get block data",
+        error: error.message,
       });
-    }
-  } catch (error) {
-    console.error("Error fetching Ceaaaaalestia block data:", error);
-    res.status(500).json({
-      success: false,
-      error: "Internal Server Error",
     });
-  }
 };

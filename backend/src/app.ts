@@ -1,4 +1,3 @@
-import bodyParser from 'body-parser';
 import cluster from 'cluster';
 import dotenv from 'dotenv';
 import express from 'express';
@@ -14,7 +13,7 @@ dotenv.config({ path: path.join(import.meta.dirname, '.env') });
 
 const CLUSTER_COUNT = Number(process.env.WEB_CONCURRENCY) || os.cpus().length;
 
-if (cluster.isMaster) {
+if (cluster.isPrimary) {
   console.log(`Master ${process.pid} is running`);
 
   for (let i = 0; i < CLUSTER_COUNT; i++) cluster.fork();
@@ -34,8 +33,7 @@ if (cluster.isMaster) {
   mongoose.set('strictQuery', false);
   mongoose.connect(MONGODB_URI);
 
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(express.json());
 
   app.use((req, res, next) => {
     if (!req.query || typeof req.query != 'object') req.query = {};
