@@ -1,3 +1,4 @@
+import { Request, Response } from 'express';
 import {
   Field,
   Mina,
@@ -7,7 +8,6 @@ import {
   Poseidon,
   Signature,
 } from 'o1js';
-
 import { Vote, VotePrivateInputs, VotePublicInputs, MerkleWitnessClass } from 'contracts';
 
 const createMerkleTreeFromLeaves = (leaves) => {
@@ -31,7 +31,7 @@ const getMerkleWitness = (tree, leafIndex) => {
   return new MerkleWitnessClass(merkleTreeWitness);
 }
 
-export default async (req, res) => {
+export default async (req: Request, res: Response) => {
   try {
     if (!req.body)
       return res.status(400).send({ error: 'bad_request' });

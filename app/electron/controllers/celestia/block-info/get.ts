@@ -1,4 +1,6 @@
-export default async (req, res) => {
+import { Request, Response } from "express";
+
+export default async (_req: Request, res: Response) => {
   try {
     const response = await fetch("https://rpc-mocha.pops.one/block", {
       method: "POST",
