@@ -17,7 +17,6 @@
   },
   "build": {
     "appId": "io.zkvot.app",
-    "asar": false,
     "extraResources": [
       {
         "from": "./.next",
@@ -27,7 +26,6 @@
     "files": [
       "build/**/*",
       "electron/**/*",
-      "node_modules/**/*",
       ".next/**/*",
       "package.json",
       "package-lock.json"
