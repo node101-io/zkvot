@@ -37,7 +37,7 @@ const StepFive = ({ electionData, onPrevious, onSubmit }) => {
   );
   const handleNext = () => {
     if (selectedStorageLayer !== null) {
-      onSubmit(storageLayersNames[selectedStorageLayer].name);
+      onSubmit(storageLayersNames[selectedStorageLayer]);
     }
   };
 

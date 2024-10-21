@@ -66,8 +66,10 @@ const StepFour = ({
 
       onUpdateElectionData((prevData) => {
         const updatedData = { ...prevData };
-        updatedData.communication_layers[0].block_height = data.blockHeight;
-        updatedData.communication_layers[0].block_hash = data.blockHash;
+        if (updatedData.communication_layers[0]) {
+          updatedData.communication_layers[0].block_height = data.blockHeight;
+          updatedData.communication_layers[0].block_hash = data.blockHash;
+        }
         return updatedData;
       });
     } catch (error) {
@@ -84,7 +86,9 @@ const StepFour = ({
 
       onUpdateElectionData((prevData) => {
         const updatedData = { ...prevData };
-        updatedData.communication_layers[0].block_height = height;
+        if (updatedData.communication_layers[0]) {
+          updatedData.communication_layers[0].block_height = height;
+        }
         return updatedData;
       });
     } catch (error) {

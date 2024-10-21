@@ -5,6 +5,15 @@ import ElectionInput from "./stepOneComponent/ElectionInput";
 import ElectionList from "./stepOneComponent/ElectionList";
 
 const StepOne = ({ onNext, initialData }) => {
+  const formatDateTimeLocal = (timestamp) => {
+    if (!timestamp) return "";
+    const date = new Date(timestamp * 1000);
+    const tzOffset = -date.getTimezoneOffset();
+    const diff = tzOffset >= 0 ? "+" : "-";
+    const pad = (n) => `${Math.floor(Math.abs(n))}`.padStart(2, "0");
+    return date.toISOString().slice(0, 16);
+  };
+
   const [pictureDataURL, setPictureDataURL] = useState(
     initialData?.image_raw || ""
   );
@@ -13,8 +22,12 @@ const StepOne = ({ onNext, initialData }) => {
   const [description, setDescription] = useState(
     initialData?.description || ""
   );
-  const [startDate, setStartDate] = useState(initialData?.start_date || "");
-  const [endDate, setEndDate] = useState(initialData?.end_date || "");
+  const [startDate, setStartDate] = useState(
+    formatDateTimeLocal(initialData?.start_date)
+  );
+  const [endDate, setEndDate] = useState(
+    formatDateTimeLocal(initialData?.end_date)
+  );
   const [isNextEnabled, setIsNextEnabled] = useState(false);
 
   const handlePictureChange = (e) => {
@@ -45,13 +58,16 @@ const StepOne = ({ onNext, initialData }) => {
 
   const handleSubmit = () => {
     if (isNextEnabled) {
+      const startTimestamp = Math.floor(new Date(startDate).getTime() / 1000);
+      const endTimestamp = Math.floor(new Date(endDate).getTime() / 1000);
+
       const data = {
-        image_raw: pictureDataURL,
         question,
         options: elections,
         description,
-        start_date: parseInt(startDate),
-        end_date: parseInt(endDate),
+        start_date: startTimestamp,
+        end_date: endTimestamp,
+        image_raw: pictureDataURL,
       };
       onNext(data);
     }
@@ -99,14 +115,14 @@ const StepOne = ({ onNext, initialData }) => {
           </div>
           <div className="flex space-x-4">
             <input
-              type="date"
+              type="datetime-local"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               className="p-2 bg-[#222] text-white rounded-[73px] border border-[#1E1E1E] w-full"
             />
             <span className="text-white self-center">—</span>
             <input
-              type="date"
+              type="datetime-local"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
               className="p-2 bg-[#222] text-white rounded-[73px] border border-[#1E1E1E] w-full"

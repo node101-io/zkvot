@@ -6,30 +6,14 @@ import StepTwo from "@/components/vote/StepTwo";
 import { MinaWalletContext } from "@/contexts/MinaWalletContext";
 import { MetamaskWalletContext } from "@/contexts/MetamaskWalletContext";
 import StepThree from "@/components/vote/StepThree";
+import mockElections from "@/utils/mockElectionsData";
 
-const electionData = {
-  zkvoteBy: "Cosmos12sf123412y346781234781234asdasflj",
-  assignedVoters: 800,
-  votedNow: 300,
-  electionId: 234123412341234,
-  name: "Trump mı kazanır Harris mi?",
-  description:
-    "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout...",
-  date: "1 Jan 2024",
-  images: [
-    "https://upload.wikimedia.org/wikipedia/commons/5/56/Donald_Trump_official_portrait.jpg",
-  ],
-  choices: ["Donald Trump", "Kamala Harris", "Third Choice", "Fourth Choice"],
-  DAChoicesName: ["Avail", "Celestia"],
-  DAChoicesDescription: [
-    "It is a long established fact that a reader will be distracted by the readable content of a page.",
-    "It is a long established fact that a reader will be distracted by the readable content of a page.",
-  ],
-  DAChoicesFee: [1.2593, 1.4212],
-  DAChoicesCurrency: ["$AVAIL", "$CELE"],
-};
+const VotePage = ({ params }) => {
+  const { id } = params;
+  const electionData = mockElections.find(
+    (election) => election.electionId.toString() === id
+  );
 
-const VotePage = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [stepErrors, setStepErrors] = useState({});

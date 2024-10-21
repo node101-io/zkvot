@@ -39,7 +39,7 @@ const StepSix = ({ electionData, onPrevious, onSubmit, onDownload }) => {
           const errorMessageToDisplay =
             error.message || "An error occurred during submission.";
           setErrorMessage(errorMessageToDisplay);
-          console.log("Displaying error message:", errorMessageToDisplay); // Log the error message directly
+          console.log("Displaying error message:", errorMessageToDisplay);
         })
         .finally(() => {
           setIsFetchingData(false);
@@ -49,7 +49,9 @@ const StepSix = ({ electionData, onPrevious, onSubmit, onDownload }) => {
 
   return (
     <div className="flex flex-col items-start space-y-6">
-      <h2 className="text-white text-2xl">{electionData.storageLayer} Guide</h2>
+      <h2 className="text-white text-2xl">
+        {electionData.storageLayer.name} Guide
+      </h2>
       <div className="w-full text-white">
         {stepsData.map((step, index) => (
           <div key={index}>
@@ -101,7 +103,7 @@ const StepSix = ({ electionData, onPrevious, onSubmit, onDownload }) => {
 export default StepSix;
 
 function getStepsData(storageLayer, onDownload) {
-  switch (storageLayer) {
+  switch (storageLayer.name) {
     case "Arweave":
       return [
         {
