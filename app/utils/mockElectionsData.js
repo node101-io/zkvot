@@ -10,9 +10,8 @@ const mockElections = [
     images: [
       "https://upload.wikimedia.org/wikipedia/commons/5/56/Donald_Trump_official_portrait.jpg",
     ],
-    listOfVoters: [
+    voters_list: [
       "B62qn71Re1CnnJxbmUmDVE7mgVY2Y82mdCwGLg5DKkJeyHfC7qGKiG2",
-      "123123",
       "1433123",
       "123123",
     ],
@@ -44,6 +43,7 @@ const mockElections = [
     ],
     DAChoicesFee: [1.2593, 1.4212],
     DAChoicesCurrency: ["$AVAIL", "$CELE"],
+    voters_list: ["1433123", "123123"],
   },
   {
     zkvoteBy: "Alice",
@@ -64,6 +64,7 @@ const mockElections = [
     ],
     DAChoicesFee: [1.2593, 1.4212],
     DAChoicesCurrency: ["$AVAIL", "$CELE"],
+    voters_list: ["1433123", "123123"],
   },
   {
     zkvoteBy: "Bob",
@@ -82,6 +83,11 @@ const mockElections = [
     ],
     DAChoicesFee: [1.2593, 1.4212],
     DAChoicesCurrency: ["$AVAIL", "$CELE"],
+    voters_list: [
+      "B62qn71Re1CnnJxbmUmDVE7mgVY2Y82mdCwGLg5DKkJeyHfC7qGKiG2",
+      "1433123",
+      "123123",
+    ],
   },
   {
     zkvoteBy: "Carol",
@@ -102,6 +108,11 @@ const mockElections = [
     ],
     DAChoicesFee: [1.2593, 1.4212],
     DAChoicesCurrency: ["$AVAIL", "$CELE"],
+    voters_list: [
+      "B62qn71Re1CnnJxbmUmDVE7mgVY2Y82mdCwGLg5DKkJeyHfC7qGKiG2",
+      "1433123",
+      "123123",
+    ],
   },
   {
     zkvoteBy: "Dave",
@@ -122,6 +133,10 @@ const mockElections = [
     ],
     DAChoicesFee: [1.2593, 1.4212],
     DAChoicesCurrency: ["$AVAIL", "$CELE"],
+    voters_list: [
+      "B62qn71Re1CnnJxbmUmDVE7mgVY2Y82mdCwGLg5DKkJeyHfC7qGKiG2",
+      "123123",
+    ],
   },
 ];
 
