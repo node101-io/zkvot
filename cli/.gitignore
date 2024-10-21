@@ -3,5 +3,4 @@ db
 build
 *.log
 .env
-
-json.json
+.DS_Store

@@ -3,7 +3,7 @@ import os from 'os';
 import path from 'path';
 
 import copyDockerFilesToUserFolder from '../../../utils/copyDockerFilesToUserFolder.js';
-import createDockerFolderIfDoesntExist from '../../../utils/createDockerFolderIfNotExists.js';
+import createDockerFolderIfNotExists from '../../../utils/createDockerFolderIfNotExists.js';
 import logger from '../../../utils/logger.js';
 
 const templateAvailComposeFilePath: string = path.join(import.meta.dirname, '../../../../src/da-layers/avail/light-node/docker-compose.yaml');
@@ -22,7 +22,7 @@ export default (
   },
   callback: (err: string | null) => void
 ) => {
-  createDockerFolderIfDoesntExist(availDockerFolderPath, err => {
+  createDockerFolderIfNotExists(availDockerFolderPath, err => {
     if (err)
       return callback(err);
 
