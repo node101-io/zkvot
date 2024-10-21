@@ -105,7 +105,11 @@ const StepOne = ({
     }
   };
   const handleVoteClick = async () => {
-    if (selectedChoice === null) {
+    if (
+      selectedChoice === null &&
+      eligibilityStatus !== "not_eligible" &&
+      eligibilityStatus !== "not_connected"
+    ) {
       showToast("Please select a choice to proceed.", "error");
       return;
     }
@@ -299,9 +303,10 @@ const StepOne = ({
           selectedChoice === index
             ? "border-primary border-[1px] shadow-lg"
             : "hover:bg-[#333333]"
-        }`}
+        }
+        ${eligibilityStatus !== "eligible" ? "cursor-not-allowed" : ""}`}
               onClick={() => setSelectedChoice(index)}
-              disabled={loading}
+              disabled={loading || eligibilityStatus !== "eligible"}
             >
               {choice}
             </button>
@@ -318,7 +323,7 @@ const StepOne = ({
             ? "Vote"
             : eligibilityStatus === "not_eligible"
             ? "Switch Wallet"
-            : "Connect Wallet"}
+            : "Connect wallet to check eligibility"}
         </Button>
 
         {isWalletModalOpen && (
