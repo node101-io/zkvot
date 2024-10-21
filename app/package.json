@@ -6,14 +6,14 @@
   "repository": "github:node101-io/zkvot",
   "private": true,
   "type": "module",
-  "main": "electron/server.js",
+  "main": "electron/build/server.js",
   "scripts": {
     "dev": "electron electron/server.js",
     "build:next": "next build",
-    "build:electron": "tsc -p electron",
+    "build:electron": "tsc --project electron",
     "build": "npm run build:next && npm run build:electron",
-    "dist": "electron-builder",
-    "start": "electron electron/server.js"
+    "dist": "npm run build && electron-builder",
+    "start": "electron electron/build/server.js"
   },
   "build": {
     "appId": "io.zkvot.app",

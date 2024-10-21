@@ -7,8 +7,10 @@ import indexRouteController from './routes/indexRoute.js';
 
 const { app } = electron;
 
-const DEV = process.env.NODE_ENV !== 'production';
+const DEV = !app.isPackaged;
 const PORT = Number(process.env.PORT) || 10101;
+
+console.log('deneme', DEV ? './' : app.getAppPath());
 
 const nextApp = next({
   dev: DEV,
