@@ -14,6 +14,7 @@ import { MetamaskWalletContext } from "@/contexts/MetamaskWalletContext";
 import WalletSelectionModal from "../common/WalletSelectionModal";
 import CopyButton from "../common/CopyButton";
 import { useToast } from "../ToastProvider";
+import ToolTip from "../common/ToolTip";
 
 const StepOne = ({
   electionData,
@@ -217,7 +218,13 @@ const StepOne = ({
           <div className="flex flex-row w-full justify-between">
             <div className="text-[#B7B7B7] text-sm mb-2 flex flex-row items-center">
               <span className="mr-2 group relative">
-                <LearnMoreIcon Color="#B7B7B7" />
+                <ToolTip
+                  content="It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout."
+                  position="top"
+                  arrowPosition="start"
+                >
+                  <LearnMoreIcon Color="#B7B7B7" />
+                </ToolTip>
               </span>
               Election id:{" "}
               {String(electionData.electionId).slice(0, 12) + "..."}

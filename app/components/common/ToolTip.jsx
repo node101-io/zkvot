@@ -8,7 +8,7 @@ const ToolTip = ({
   arrowPosition = "start",
 }) => {
   const positionClasses = {
-    top: "bottom-full mb-2",
+    top: "bottom-full mb-3",
     bottom: "top-full mt-2",
   };
 
