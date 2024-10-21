@@ -1,3 +1,5 @@
+import { JsonProof } from 'o1js';
+
 import { AvailDaLayerInfo, CelestiaDaLayerInfo } from './daLayers.js';
 
 export type Election = {
@@ -10,4 +12,9 @@ export type Election = {
   image_raw?: string,
   voters_list: object[],
   da_layers: (AvailDaLayerInfo | CelestiaDaLayerInfo)[]
+};
+
+export type AggregatedElectionResult = {
+  electionId: string,
+  result?: JsonProof
 };
