@@ -10,8 +10,9 @@
   "scripts": {
     "dev": "electron electron/server.js",
     "build:next": "next build",
-    "build:electron": "electron-builder",
+    "build:electron": "tsc -p electron",
     "build": "npm run build:next && npm run build:electron",
+    "dist": "electron-builder",
     "start": "electron electron/server.js"
   },
   "build": {
