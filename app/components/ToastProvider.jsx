@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, createContext, useContext } from "react";
 import Toast from "./common/Toast101";
+import { v4 as uuidv4 } from "uuid";
 
 const ToastContext = createContext();
 
@@ -10,7 +11,7 @@ const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
 
   const showToast = (message, type = "success", duration = 1500) => {
-    const id = Date.now();
+    const id = uuidv4();
     setToasts((prevToasts) => [...prevToasts, { id, message, type, duration }]);
 
     setTimeout(() => {
