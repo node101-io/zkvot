@@ -123,28 +123,8 @@ export const Vote = ZkProgram({
         ];
 
         const calculatedAddressBytes = Keccak.ethereum(voterPubKeyUI8Arr).bytes;
-        const calculatedAddress = [
-          calculatedAddressBytes[12],
-          calculatedAddressBytes[13],
-          calculatedAddressBytes[14],
-          calculatedAddressBytes[15],
-          calculatedAddressBytes[16],
-          calculatedAddressBytes[17],
-          calculatedAddressBytes[18],
-          calculatedAddressBytes[19],
-          calculatedAddressBytes[20],
-          calculatedAddressBytes[21],
-          calculatedAddressBytes[22],
-          calculatedAddressBytes[23],
-          calculatedAddressBytes[24],
-          calculatedAddressBytes[25],
-          calculatedAddressBytes[26],
-          calculatedAddressBytes[27],
-          calculatedAddressBytes[28],
-          calculatedAddressBytes[29],
-          calculatedAddressBytes[30],
-          calculatedAddressBytes[31],
-        ];
+
+        const calculatedAddress = calculatedAddressBytes.slice(12, 32);
 
         bytesToFieldBigEndian(calculatedAddress, 20).assertEquals(voterAddress);
 
