@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import WalletButton from "../common/WalletButton";
 import { motion } from "framer-motion";
-import Logo from "../../assets/Logo.svg";
 import Image from "next/image";
 import ZKVot from "@/assets/Logo/ZKVot.svg";
 import ZKVotDot from "@/assets/Logo/ZKVotDot.svg";
