@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { FaImage } from "react-icons/fa";
 import Clock from "@/assets/ElectionCard/Clock";
 import AvailLogo from "@/assets/DaLogos/Avail";
@@ -10,6 +10,8 @@ import IPFSLogo from "@/assets/StorageLayers/IPFS.svg";
 import FileCoinLogo from "@/assets/StorageLayers/FileCoin.svg";
 
 import Image from "next/image";
+// import { MinaWalletContext } from "@/contexts/MinaWalletContext";
+// import { useToast } from "@/components/ToastProvider";
 
 const StepSeven = ({ electionData }) => {
   const communicationLayerLogos = {
@@ -107,7 +109,9 @@ const StepSeven = ({ electionData }) => {
     }
 
     const layer = electionData.storageLayer;
-    const logo = storageLayerLogos[layer.name.toLowerCase()];
+    const logo = layer.name
+      ? storageLayerLogos[layer.name.toLowerCase()]
+      : null;
 
     return (
       <div className="flex items-center bg-[#222222] p-4 rounded-2xl mb-4">
@@ -154,10 +158,10 @@ const StepSeven = ({ electionData }) => {
           {votersToDisplay.map((voter, index) => (
             <div
               key={index}
-              className="flex flex-row justify-between bg-[#222222] p-4 rounded-2xl"
+              className="flex flex-row justify-between bg-[#222222] p-4 rounded-2xl overflow-scroll"
             >
               <div className="flex items-center mb-2">
-                <span className="text-white text-sm bg-[#1E1E1E] p-2 rounded-full ">
+                <span className="text-white text-sm bg-[#1E1E1E] p-2 rounded-full max-w-[530px] overflow-scroll">
                   {voter.pubkey}
                 </span>
               </div>
