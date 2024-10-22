@@ -70,7 +70,8 @@ const Navbar = () => {
             <Image
               src={ZKVot}
               alt="ZKVot Logo"
-              layout="fill"
+              fill
+              sizes="100%"
               priority
             />
           </motion.div>
