@@ -84,8 +84,8 @@ export const RangeAggregationProgram = ZkProgram({
 
         const nullifier = vote.publicOutput.nullifier;
 
-        let batchOptionsArray: Field[] = new Array(6).fill(Field.from(0));
-        for (let i = 0; i <= 5; i++) {
+        let batchOptionsArray: Field[] = new Array(4).fill(Field.from(0));
+        for (let i = 0; i <= 3; i++) {
           let optionsArray: UInt32[] = new Array(7).fill(UInt32.from(0));
           for (let j = 1; j <= 7; j++) {
             optionsArray[j - 1] = Provable.if(
@@ -105,7 +105,6 @@ export const RangeAggregationProgram = ZkProgram({
           voteOptions_2: batchOptionsArray[1],
           voteOptions_3: batchOptionsArray[2],
           voteOptions_4: batchOptionsArray[3],
-          voteOptions_5: batchOptionsArray[4],
         };
       },
     },
