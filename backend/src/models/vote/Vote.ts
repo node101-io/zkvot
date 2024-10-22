@@ -21,7 +21,7 @@ interface VoteStatics {
 
 const VoteSchema = new Schema({
   election_contract_id: {
-    type: Schema.Types.ObjectId,
+    type: String,
     required: true,
   },
   nullifier: {
@@ -66,6 +66,7 @@ VoteSchema.statics.createAndSubmitVote = function (
 
     verifyVote({
       vote: data.vote,
+      electionId: election.mina_contract_id,
       merkleRoot: election.voters_merkle_root
     }, (err, nullifier) => {
       if (err)

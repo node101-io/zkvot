@@ -1,4 +1,6 @@
 "use client";
+import LearnMoreIcon from "@/assets/ElectionCard/LearnMoreIcon";
+import ToolTip from "@/components/common/ToolTip";
 import AssignedElections from "@/components/elections/AssignedElections/AssignedElections";
 import { MetamaskWalletContext } from "@/contexts/MetamaskWalletContext";
 import { MinaWalletContext } from "@/contexts/MinaWalletContext";
@@ -39,34 +41,39 @@ const Page = () => {
               Voted Elections
             </button>
           </div>
-
-          <div className="flex items-center">
-            <input
-              id="onlyOngoing"
-              type="checkbox"
-              checked={onlyOngoing}
-              onChange={() => setOnlyOngoing(!onlyOngoing)}
-              className={`mr-2 w-4 h-4 rounded-sm cursor-pointer border accent-green ${
-                onlyOngoing
-                  ? "bg-green-500 border-green"
-                  : "appearance-none border-[#B7B7B7]"
-              }`}
-              disabled={!isWalletConnected}
-            />
-            <label
-              htmlFor="onlyOngoing"
-              className={`cursor-pointer ${
-                onlyOngoing ? "text-green" : "text-[#B7B7B7]"
-              }`}
-            >
-              Only show elections you are eligible to vote
-            </label>
-            {!isWalletConnected && (
-              <span className="ml-2 text-red-500 text-sm">
-                Connect wallet to use
-              </span>
-            )}
-          </div>
+          <ToolTip
+            content="Connect wallet to use"
+            showTooltip={!isWalletConnected}
+            position="top"
+            arrowPosition="start"
+          >
+            <div className="flex items-center">
+              <input
+                id="onlyOngoing"
+                type="checkbox"
+                checked={onlyOngoing}
+                onChange={() => setOnlyOngoing(!onlyOngoing)}
+                className={`mr-2 w-4 h-4 rounded-sm cursor-pointer border accent-green ${
+                  onlyOngoing
+                    ? "bg-green-500 border-green"
+                    : "appearance-none border-[#B7B7B7]"
+                }`}
+                disabled={!isWalletConnected}
+              />
+              <div className="flex flex-col">
+                <div className="flex flex-col">
+                  <label
+                    htmlFor="onlyOngoing"
+                    className={`cursor-pointer ${
+                      onlyOngoing ? "text-green" : "text-[#B7B7B7]"
+                    }`}
+                  >
+                    Only show elections you are eligible to vote
+                  </label>
+                </div>
+              </div>
+            </div>
+          </ToolTip>
         </div>
 
         <div className="px-6">
