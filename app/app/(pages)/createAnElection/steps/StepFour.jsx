@@ -131,7 +131,9 @@ const StepFour = ({
       {electionData.communication_layers[0]?.type === "avail" && (
         <div className="w-full">
           <h3 className="text-white text-xl mb-4">Create App ID</h3>
-          <CreateAppId onAppIdGenerated={handleAppIdGenerated} />
+          <div className="w-full pb-6">
+            <CreateAppId onAppIdGenerated={handleAppIdGenerated} />
+          </div>
 
           <label className="block text-white ">App ID:</label>
           <input
