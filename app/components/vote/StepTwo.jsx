@@ -14,9 +14,24 @@ import { SubwalletContext } from "@/contexts/SubwalletContext";
 import CopyButton from "../common/CopyButton";
 import ToolTip from "../common/ToolTip";
 
+const daDetails = {
+  celestia: {
+    description:
+      "It is a long established fact that a reader will be distracted.",
+    fee: 1.4212,
+    currency: "$CELE",
+  },
+  avail: {
+    description:
+      "It is a long established fact that a reader will be distracted.",
+    fee: 1.2593,
+    currency: "$AVAIL",
+  },
+};
+
 const StepTwo = ({
   electionData,
-  selectedChoice,
+  selectedoption,
   selectedDA,
   setSelectedDA,
   goToNextStep,
@@ -129,8 +144,8 @@ const StepTwo = ({
   );
 
   const daLogos = {
-    Avail: <AvailLogo className="w-12 h-12" />,
-    Celestia: <CelestiaLogo className="w-12 h-12" />,
+    avail: <AvailLogo className="w-12 h-12" />,
+    celestia: <CelestiaLogo className="w-12 h-12" />,
   };
 
   return (
@@ -140,10 +155,10 @@ const StepTwo = ({
           <div className="w-full md:w-1/4 flex">
             <div className="flex w-full h-32 rounded-3xl overflow-hidden">
               <div className="w-full relative">
-                {electionData.images && electionData.images[0] ? (
+                {electionData.image_raw ? (
                   <div className="w-full h-full relative">
                     <Image
-                      src={electionData.images[0]}
+                      src={electionData.image_raw}
                       alt="Candidate 1"
                       fill
                       style={{ objectFit: "cover" }}
@@ -169,10 +184,10 @@ const StepTwo = ({
                   </ToolTip>
                 </span>
                 Election id:{" "}
-                {String(electionData.electionId).slice(0, 12) + "..."}
+                {String(electionData.mina_contract_id).slice(0, 12) + "..."}
                 <span className="ml-1 cursor-pointer w-fit">
                   <CopyButton
-                    textToCopy={electionData.electionId}
+                    textToCopy={electionData.mina_contract_id}
                     iconColor="#F6F6F6"
                     position={{ top: -26, left: -38 }}
                   />{" "}
@@ -183,12 +198,12 @@ const StepTwo = ({
                   <Clock />
                 </span>
                 <span className="ml-1 text-sm text-[#B7B7B7]">
-                  {electionData.date}
+                  {electionData.start_date}
                 </span>
               </span>
             </div>
             <div className=" flex flex-col  w-full h-fit ">
-              <h2 className="text-[24px] mb-2">{electionData.name}</h2>
+              <h2 className="text-[24px] mb-2">{electionData.question}</h2>
 
               <div className="flex flex-col md:flex-row justify-between py-2 gap-y-1">
                 <span>
@@ -212,7 +227,9 @@ const StepTwo = ({
                   <span className="text-primary mr-2 italic text-sm">
                     zkVote by
                   </span>
-                  {electionData.zkvoteBy.slice(0, 12) + "..."}
+                  {electionData.zkvoteBy
+                    ? electionData.zkvoteBy.slice(0, 12) + "..."
+                    : "Unknown"}{" "}
                   <span className="ml-2 cursor-pointer w-fit">
                     <CopyButton
                       textToCopy={electionData.zkvoteBy}
@@ -228,7 +245,7 @@ const StepTwo = ({
         <div className="pt-4 pb-2 w-full">
           <h3 className="text-[16px] text-[#B7B7B7] mb-4">Your Choice</h3>
           <div className="pl-4 rounded text-[20px]">
-            {electionData.choices[selectedChoice]}
+            {electionData.options[selectedoption]}
           </div>
         </div>
       </div>
@@ -240,9 +257,9 @@ const StepTwo = ({
             : ""
         }`}
       >
-        {electionData.DAChoicesName.map((DA, index) => (
+        {electionData.communication_layers.map((layer, index) => (
           <div
-            key={index}
+            key={layer._id}
             className={`p-4 bg-[#222222] rounded-2xl cursor-pointer flex items-center transition duration-200 ${
               selectedDA === index
                 ? "border-[1px] border-primary shadow-lg"
@@ -251,19 +268,22 @@ const StepTwo = ({
             onClick={() => !isSubmitting && setSelectedDA(index)}
           >
             <div className="flex-shrink-0 mr-4">
-              {daLogos[DA] || (
+              {daLogos[layer.type] || (
                 <div className="w-12 h-12 bg-gray-500 rounded-full" />
               )}
             </div>
             <div className="flex flex-col h-full justify-between">
-              <h3 className="text-white text-[24px] mb-2">{DA}</h3>
+              <h3 className="text-white text-[24px] mb-2">
+                {layer.type.charAt(0).toUpperCase() + layer.type.slice(1)}
+              </h3>
               <p className="text-[16px] mb-2">
-                {electionData.DAChoicesDescription[index]}
+                {daDetails[layer.type]?.description ||
+                  "No description available."}
               </p>
               <div className="flex items-center justify-between">
                 <span className="text-[16px]">
-                  Fee: {electionData.DAChoicesFee[index]}{" "}
-                  {electionData.DAChoicesCurrency[index]}
+                  Fee: {daDetails[layer.type]?.fee}{" "}
+                  {daDetails[layer.type]?.currency}
                 </span>
               </div>
             </div>

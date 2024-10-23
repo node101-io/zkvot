@@ -18,8 +18,8 @@ import ToolTip from "../common/ToolTip";
 
 const StepOne = ({
   electionData,
-  selectedChoice,
-  setSelectedChoice,
+  selectedoption,
+  setSelectedoption,
   setLoading,
   loading,
   submitZkProof,
@@ -34,8 +34,12 @@ const StepOne = ({
 
   const [eligibilityStatus, setEligibilityStatus] = useState("not_connected");
 
-  const { minaWalletAddress, connectMinaWallet, disconnectMinaWallet } =
-    useContext(MinaWalletContext);
+  const {
+    minaWalletAddress,
+    connectMinaWallet,
+    disconnectMinaWallet,
+    signElectionId,
+  } = useContext(MinaWalletContext);
 
   const {
     metamaskWalletAddress,
@@ -55,8 +59,8 @@ const StepOne = ({
     ) {
       setEligibilityStatus("checking");
 
-      const votersNormalized = electionData.voters_list.map((addr) =>
-        addr.trim().toLowerCase()
+      const votersNormalized = electionData.voters_list.map((voter) =>
+        voter.address.trim().toLowerCase()
       );
 
       const eligible = userWalletAddresses.some((wallet) =>
@@ -106,11 +110,11 @@ const StepOne = ({
   };
   const handleVoteClick = async () => {
     if (
-      selectedChoice === null &&
+      selectedoption === null &&
       eligibilityStatus !== "not_eligible" &&
       eligibilityStatus !== "not_connected"
     ) {
-      showToast("Please select a choice to proceed.", "error");
+      showToast("Please select a option to proceed.", "error");
       return;
     }
 
@@ -139,19 +143,39 @@ const StepOne = ({
     setIsModalOpen(false);
   };
 
+  const checkWalletConnection = () => {
+    if (selectedWallet === "Mina") {
+      return !!minaWalletAddress;
+    } else if (selectedWallet === "Metamask") {
+      return !!metamaskWalletAddress;
+    }
+    return false;
+  };
+
+  const generateElectionJson = (
+    electionData,
+    signedElectionId,
+    selectedoption,
+    votersArray,
+    publicKey
+  ) => {
+    return {
+      electionId: electionData._id,
+      signedElectionId,
+      vote: selectedoption,
+      votersArray: votersArray.map(
+        (voter) => voter.address?.trim().toLowerCase() || ""
+      ),
+      publicKey: publicKey,
+    };
+  };
+
   const handleConfirmAndContinue = async () => {
     try {
       setLoading(true);
       setIsModalOpen(false);
 
-      let walletConnected = false;
-      if (selectedWallet === "Mina" && minaWalletAddress) {
-        walletConnected = true;
-      } else if (selectedWallet === "Metamask" && metamaskWalletAddress) {
-        walletConnected = true;
-      }
-
-      if (!walletConnected) {
+      if (!checkWalletConnection()) {
         showToast("Wallet not connected.", "error");
         return;
       }
@@ -161,7 +185,32 @@ const StepOne = ({
         return;
       }
 
+      const signedElectionId = await signElectionId(electionData._id);
+      console.log("signedElectionId", signedElectionId);
+      if (!signedElectionId) {
+        showToast("Failed to generate the signed election ID.", "error");
+        return;
+      }
+
       await submitZkProof();
+
+      const votersArray = electionData.voters_list.map(
+        (voter) => voter.address
+      );
+      const publicKey =
+        selectedWallet === "Mina" ? minaWalletAddress : metamaskWalletAddress;
+
+      const electionJson = generateElectionJson(
+        electionData,
+        signedElectionId,
+        selectedoption,
+        votersArray,
+        publicKey
+      );
+
+      console.log("electionJson", electionJson);
+
+      await submitElectionVote(electionJson);
 
       if (selectedWallet === "Mina") {
         disconnectMinaWallet();
@@ -178,17 +227,11 @@ const StepOne = ({
     }
   };
 
-  const image1 =
-    electionData.images && electionData.images[0]
-      ? electionData.images[0]
-      : null;
-
   const Placeholder = ({ className }) => (
     <div className={`${className} flex items-center justify-center h-full`}>
       <FaImage className="text-gray-500 text-6xl" />
     </div>
   );
-
   return (
     <div className="flex flex-col items-center px-4 sm:px-6 md:px-8">
       <div className="py-4 w-full text-start">
@@ -202,10 +245,10 @@ const StepOne = ({
         <div className="w-full md:w-1/2 flex">
           <div className="flex w-full h-64 rounded-3xl overflow-hidden">
             <div className="w-full relative">
-              {image1 ? (
+              {electionData.image_raw ? (
                 <div className="w-full h-full relative">
                   <Image
-                    src={image1}
+                    src={electionData.image_raw}
                     alt="Candidate 1"
                     fill
                     style={{ objectFit: "cover" }}
@@ -278,7 +321,9 @@ const StepOne = ({
               <span className="text-primary mr-2 italic text-sm">
                 zkVote by
               </span>
-              {electionData.zkvoteBy.slice(0, 12) + "..."}
+              {electionData.zkvoteBy
+                ? electionData.zkvoteBy.slice(0, 12) + "..."
+                : "Unknown"}
               <span className="ml-2 cursor-pointer w-fit relative">
                 <CopyButton
                   textToCopy={electionData.zkvoteBy}
@@ -292,23 +337,23 @@ const StepOne = ({
       </div>
 
       <div className="w-full my-5">
-        <h3 className="text-xl mb-4">Choices</h3>
+        <h3 className="text-xl mb-4">options</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {electionData.choices.map((choice, index) => (
+          {electionData.options.map((option, index) => (
             <button
               key={index}
               className={`p-4 text-center bg-[#222222] rounded-2xl  
         ${
-          selectedChoice === index
+          selectedoption === index
             ? "border-primary border-[1px] shadow-lg"
             : "hover:bg-[#333333]"
         }
         ${eligibilityStatus !== "eligible" ? "cursor-not-allowed" : ""}`}
-              onClick={() => setSelectedChoice(index)}
+              onClick={() => setSelectedoption(index)}
               disabled={loading || eligibilityStatus !== "eligible"}
             >
-              {choice}
+              {option}
             </button>
           ))}
         </div>

@@ -10,14 +10,14 @@ import MinaLogo from "@/assets/StepsProgress/MinaLastStep.svg";
 import CopyButton from "../common/CopyButton";
 import ToolTip from "../common/ToolTip";
 
-const StepThree = ({ electionData, selectedChoice }) => {
+const StepThree = ({ electionData, selectedoption }) => {
   const Placeholder = ({ className }) => (
     <div className={`${className} flex items-center justify-center h-full`}>
       <FaImage className="text-gray-500 text-6xl" />
     </div>
   );
 
-  const results = electionData.choices.map((choice, index) => ({
+  const results = electionData.options.map((choice, index) => ({
     name: choice,
     percentage: Math.floor(Math.random() * 101),
   }));
@@ -30,10 +30,10 @@ const StepThree = ({ electionData, selectedChoice }) => {
           <div className="w-full md:w-1/4 flex">
             <div className="flex w-full h-32 rounded-3xl overflow-hidden">
               <div className="w-full relative">
-                {electionData.images && electionData.images[0] ? (
+                {electionData.image_raw ? (
                   <div className="w-full h-full relative">
                     <Image
-                      src={electionData.images[0]}
+                      src={electionData.image_raw}
                       alt="Candidate 1"
                       fill
                       style={{ objectFit: "cover" }}
@@ -59,10 +59,10 @@ const StepThree = ({ electionData, selectedChoice }) => {
                   </ToolTip>
                 </span>
                 Election id:{" "}
-                {String(electionData.electionId).slice(0, 12) + "..."}
+                {String(electionData.mina_contract_id).slice(0, 12) + "..."}
                 <span className="ml-1 cursor-pointer w-fit">
                   <CopyButton
-                    textToCopy={electionData.electionId}
+                    textToCopy={electionData.mina_contract_id}
                     iconColor="#F6F6F6"
                     position={{ top: -26, left: -38 }}
                   />
@@ -78,7 +78,7 @@ const StepThree = ({ electionData, selectedChoice }) => {
               </span>
             </div>
             <div className=" flex flex-col  w-full h-fit ">
-              <h2 className="text-[24px] mb-2">{electionData.name}</h2>
+              <h2 className="text-[24px] mb-2">{electionData.question}</h2>
 
               <div className="flex flex-col md:flex-row justify-between py-2 gap-y-1">
                 <span>
@@ -102,7 +102,9 @@ const StepThree = ({ electionData, selectedChoice }) => {
                   <span className="text-primary mr-2 italic text-sm">
                     zkVote by
                   </span>
-                  {electionData.zkvoteBy.slice(0, 12) + "..."}
+                  {electionData.zkvoteBy
+                    ? electionData.zkvoteBy.slice(0, 12) + "..."
+                    : "Unknown"}
                   <span className="ml-2 cursor-pointer w-fit">
                     <CopyButton
                       textToCopy={electionData.zkvoteBy}
@@ -119,7 +121,7 @@ const StepThree = ({ electionData, selectedChoice }) => {
         <div className="pt-4 pb-2 w-full">
           <h3 className="text-[16px] text-[#B7B7B7] mb-4">Your Choice</h3>
           <div className="pl-4 rounded text-[20px]">
-            {electionData.choices[selectedChoice]}
+            {electionData.options[selectedoption]}
           </div>
         </div>
       </div>

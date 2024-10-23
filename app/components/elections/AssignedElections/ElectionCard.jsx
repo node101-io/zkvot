@@ -50,9 +50,9 @@ const ElectionCard = ({ electionData, loading }) => {
         <div className="relative aspect-w-16 aspect-h-9 mb-4">
           <div className="flex w-full h-full">
             <div className="w-full relative rounded-xl overflow-hidden">
-              {image1 ? (
+              {electionData.image_raw ? (
                 <Image
-                  src={image1}
+                  src={electionData.image_raw}
                   alt="Candidate 1"
                   fill
                   sizes="100%"
@@ -67,7 +67,10 @@ const ElectionCard = ({ electionData, loading }) => {
         <div className="text-green-400 text-sm mb-1 flex justify-between">
           <span className="flex flex-row items-center">
             <span className="text-primary mr-1 italic text-sm">zkVote by</span>
-            {electionData.zkvoteBy.slice(0, 12) + "..."}
+            {electionData.zkvoteBy
+              ? electionData.zkvoteBy.slice(0, 12) + "..."
+              : "Unknown"}
+
             <span className="ml-1 cursor-pointer w-fit">
               <CopyButton
                 textToCopy={electionData.zkvoteBy}
@@ -110,7 +113,7 @@ const ElectionCard = ({ electionData, loading }) => {
           <button className="relative inline-flex items-center  py-3 font-medium text-gray-300 transition duration-300 ease-out group hover:-translate-y-1 hover:text-white">
             See Results
           </button>
-          <Link href={`/elections/vote/${electionData.electionId}`}>
+          <Link href={`/elections/vote/${electionData._id}`}>
             <Button>Vote</Button>
           </Link>
         </div>

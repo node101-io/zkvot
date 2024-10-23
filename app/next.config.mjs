@@ -11,6 +11,14 @@ const nextConfig = {
       "via.placeholder.com",
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "http://localhost:3000/api/:path*",
+      },
+    ];
+  },
   webpack: (config, options) => {
     config.resolve.alias = {
       ...config.resolve.alias,
