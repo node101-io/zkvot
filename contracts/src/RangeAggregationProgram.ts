@@ -48,8 +48,6 @@ export class RangeAggregationPublicOutputs extends Struct({
   voteOptions_2: Field,
   voteOptions_3: Field,
   voteOptions_4: Field,
-  voteOptions_5: Field,
-  voteOptions_6: Field,
 }) {}
 
 export const RangeAggregationProgram = ZkProgram({
@@ -73,8 +71,6 @@ export const RangeAggregationProgram = ZkProgram({
           voteOptions_2: Field.from(0),
           voteOptions_3: Field.from(0),
           voteOptions_4: Field.from(0),
-          voteOptions_5: Field.from(0),
-          voteOptions_6: Field.from(0),
         };
       },
     },
@@ -88,8 +84,8 @@ export const RangeAggregationProgram = ZkProgram({
 
         const nullifier = vote.publicOutput.nullifier;
 
-        let batchOptionsArray: Field[] = new Array(6).fill(Field.from(0));
-        for (let i = 0; i <= 5; i++) {
+        let batchOptionsArray: Field[] = new Array(4).fill(Field.from(0));
+        for (let i = 0; i <= 3; i++) {
           let optionsArray: UInt32[] = new Array(7).fill(UInt32.from(0));
           for (let j = 1; j <= 7; j++) {
             optionsArray[j - 1] = Provable.if(
@@ -109,8 +105,6 @@ export const RangeAggregationProgram = ZkProgram({
           voteOptions_2: batchOptionsArray[1],
           voteOptions_3: batchOptionsArray[2],
           voteOptions_4: batchOptionsArray[3],
-          voteOptions_5: batchOptionsArray[4],
-          voteOptions_6: batchOptionsArray[5],
         };
       },
     },
@@ -134,8 +128,8 @@ export const RangeAggregationProgram = ZkProgram({
 
         lowerNullifier.assertLessThan(upperNullifier);
 
-        let batchOptionsArray: Field[] = new Array(6).fill(Field.from(0));
-        for (let i = 0; i <= 5; i++) {
+        let batchOptionsArray: Field[] = new Array(4).fill(Field.from(0));
+        for (let i = 0; i <= 3; i++) {
           let optionsArray: UInt32[] = new Array(7).fill(UInt32.from(0));
           for (let j = 1; j <= 7; j++) {
             const lower = Provable.if(
@@ -161,8 +155,6 @@ export const RangeAggregationProgram = ZkProgram({
           voteOptions_2: batchOptionsArray[1],
           voteOptions_3: batchOptionsArray[2],
           voteOptions_4: batchOptionsArray[3],
-          voteOptions_5: batchOptionsArray[4],
-          voteOptions_6: batchOptionsArray[5],
         };
       },
     },
@@ -196,8 +188,8 @@ export const RangeAggregationProgram = ZkProgram({
 
         previousLowerBound.assertGreaterThan(nullifier);
 
-        let batchOptionsArray: Field[] = new Array(6).fill(Field.from(0));
-        for (let i = 0; i <= 5; i++) {
+        let batchOptionsArray: Field[] = new Array(4).fill(Field.from(0));
+        for (let i = 0; i <= 3; i++) {
           let optionsArray: UInt32[] = new Array(7).fill(UInt32.from(0));
           for (let j = 1; j <= 7; j++) {
             optionsArray[j - 1] = Provable.if(
@@ -224,12 +216,6 @@ export const RangeAggregationProgram = ZkProgram({
           ),
           voteOptions_4: batchOptionsArray[3].add(
             previousProof.publicOutput.voteOptions_4
-          ),
-          voteOptions_5: batchOptionsArray[4].add(
-            previousProof.publicOutput.voteOptions_5
-          ),
-          voteOptions_6: batchOptionsArray[5].add(
-            previousProof.publicOutput.voteOptions_6
           ),
         };
       },
@@ -263,8 +249,8 @@ export const RangeAggregationProgram = ZkProgram({
 
         previousUpperBound.assertLessThan(nullifier);
 
-        let batchOptionsArray: Field[] = new Array(6).fill(Field.from(0));
-        for (let i = 0; i <= 5; i++) {
+        let batchOptionsArray: Field[] = new Array(4).fill(Field.from(0));
+        for (let i = 0; i <= 3; i++) {
           let optionsArray: UInt32[] = new Array(7).fill(UInt32.from(0));
           for (let j = 1; j <= 7; j++) {
             optionsArray[j - 1] = Provable.if(
@@ -292,12 +278,6 @@ export const RangeAggregationProgram = ZkProgram({
           ),
           voteOptions_4: batchOptionsArray[3].add(
             previousProof.publicOutput.voteOptions_4
-          ),
-          voteOptions_5: batchOptionsArray[4].add(
-            previousProof.publicOutput.voteOptions_5
-          ),
-          voteOptions_6: batchOptionsArray[5].add(
-            previousProof.publicOutput.voteOptions_6
           ),
         };
       },
@@ -345,14 +325,6 @@ export const RangeAggregationProgram = ZkProgram({
           rightProof.publicOutput.voteOptions_4
         );
 
-        const voteOptions_5 = leftProof.publicOutput.voteOptions_5.add(
-          rightProof.publicOutput.voteOptions_5
-        );
-
-        const voteOptions_6 = leftProof.publicOutput.voteOptions_6.add(
-          rightProof.publicOutput.voteOptions_6
-        );
-
         return {
           totalAggregatedCount: leftProof.publicOutput.totalAggregatedCount.add(
             rightProof.publicOutput.totalAggregatedCount
@@ -363,8 +335,6 @@ export const RangeAggregationProgram = ZkProgram({
           voteOptions_2: voteOptions_2,
           voteOptions_3: voteOptions_3,
           voteOptions_4: voteOptions_4,
-          voteOptions_5: voteOptions_5,
-          voteOptions_6: voteOptions_6,
         };
       },
     },

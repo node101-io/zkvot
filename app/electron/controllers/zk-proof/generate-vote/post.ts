@@ -7,6 +7,8 @@ import {
   Signature,
 } from 'o1js';
 import { Vote, VotePrivateInputs, VotePublicInputs, MerkleWitnessClass } from 'contracts';
+import { isVoteCompiled } from '../../../utils/compileZkPrograms.js';
+import { encodeDataToBase64String } from '../../../utils/encodeDataToBase64String.js';
 
 const createMerkleTreeFromLeaves = (leaves: string[]): MerkleTree => {
   let votersTree = new MerkleTree(20);
@@ -20,19 +22,11 @@ const createMerkleTreeFromLeaves = (leaves: string[]): MerkleTree => {
   return votersTree;
 };
 
-let isVoteCompiled = false;
-
-Vote.compile()
-  .then(() => isVoteCompiled = true)
-  .catch(error => {
-    console.log('Error compiling Vote contract:', error);
-  });
-
 export default (req: Request, res: Response): any => {
   if (!req.body)
     return res.status(400).json({ success: false, error: 'bad_request' });
 
-  if (!isVoteCompiled)
+  if (!isVoteCompiled())
     return res.status(500).json({ success: false, error: 'not_compiled_yet' });
 
   const { electionId, signedElectionId, vote, votersArray, publicKey } = req.body;
@@ -64,17 +58,38 @@ export default (req: Request, res: Response): any => {
     votersMerkleWitness: new MerkleWitnessClass(witness),
   });
 
-  console.log('Going to generate Proof', Date.now());
+  console.time('vote proof generation');
 
   Vote.vote(votePublicInputs, votePrivateInputs)
     .then(voteProof => {
-      console.log('Proof generated at:', Date.now());
+      console.timeEnd('vote proof generation');
 
-      return res.status(200).json({ voteProof: voteProof.proof });
+      encodeDataToBase64String(voteProof.toJSON(), (error, encodedVoteProof) => {
+        if (error)
+          return res.status(500).json({ success: false, error: 'internal_server_error' });
+
+        return res.status(200).json({ success: true, data: encodedVoteProof });
+      });
     })
     .catch((error) => {
-      console.log('Error generating proof:', error);
+      console.error(error);
 
-      return res.status(500).json({ error: 'internal_server_error' });
+      return res.status(500).json({ success: false, error: 'internal_server_error' });
     });
 };
+
+// Data to test this code:
+// {
+//   "electionId": "B62qinHTtL5wUL5ccnKudxDWhZYAyWDj2HcvVY1YVLhNXwqN9cceFkz",
+//   "signedElectionId": {
+//     "r": "16346194317455302813137534197593798058813563456069267503760707907206335264689",
+//     "s": "1729086860553450026742784005774108720876791402296158317085038218355413912991"
+//   },
+//   "vote": 1,
+//   "votersArray": [
+//     "B62qmFHof1QzKNcF1aVyasHxeMiENiUsqCM2cQTZSJ9QM6yYfyY7X8Q",
+//     "B62qrnHyqPgN8KJ1ZN4s84YGpijLqxp4wDRH6gUgb8mLJZMpN3QeJkZ",
+//     "B62qrMoASjs48NFsaefftxs3w7mAb3mjhMZbRVczurAwTbcQEP2BMon"
+//   ],
+//   "publicKey": "B62qrMoASjs48NFsaefftxs3w7mAb3mjhMZbRVczurAwTbcQEP2BMon"
+// }

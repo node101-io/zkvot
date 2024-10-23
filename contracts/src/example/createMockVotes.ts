@@ -69,7 +69,7 @@ const electionId = electionPrivateKey.toPublicKey();
 
 let voteProofs = [];
 for (let i = 0; i < 20; i++) {
-  let vote = BigInt(Math.floor(Math.random() * 42) + 1);
+  let vote = BigInt(Math.floor(Math.random() * 28) + 1);
   let privateKey = votersArray[i][0];
   let merkleTreeWitness = votersTree.getWitness(BigInt(i));
   let witness = new MerkleWitnessClass(merkleTreeWitness);
@@ -112,7 +112,7 @@ await fs.writeFile('voteProofs.json', JSON.stringify(voteProofs, null, 2));
 
 voteProofs = [];
 for (let i = 20; i < 40; i++) {
-  let vote = BigInt(Math.floor(Math.random() * 42) + 1);
+  let vote = BigInt(Math.floor(Math.random() * 28) + 1);
   let privateKey = votersArray[i][0];
   let merkleTreeWitness = votersTree.getWitness(BigInt(i));
   let witness = new MerkleWitnessClass(merkleTreeWitness);

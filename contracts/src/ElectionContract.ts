@@ -17,11 +17,19 @@ import { AggregateProof } from './RangeAggregationProgram.js';
 
 export const ElectionContractErrors = {};
 
-// example constants
-const ELECTION_START_HEIGHT = 140;
-const ELECTION_FINALIZE_HEIGHT = 150;
-const VOTERS_ROOT =
-  9980342968624030084106297645024923555286525192527553920497338717791905606678n;
+let ELECTION_START_HEIGHT: number;
+let ELECTION_FINALIZE_HEIGHT: number;
+let VOTERS_ROOT: bigint;
+
+export const setElectionContractConstants = (data: {
+  electionStartHeight: number;
+  electionFinalizeHeight: number;
+  votersRoot: bigint;
+}) => {
+  ELECTION_START_HEIGHT = data.electionStartHeight;
+  ELECTION_FINALIZE_HEIGHT = data.electionFinalizeHeight;
+  VOTERS_ROOT = data.votersRoot;
+};
 
 export class ElectionData extends Struct({
   first: Field,
@@ -100,9 +108,7 @@ export class ElectionContract extends SmartContract {
       aggregateProof.publicOutput.totalAggregatedCount
     );
 
-    this.maximumCountedVotes.set(
-      aggregateProof.publicOutput.totalAggregatedCount
-    );
+    this.maximumCountedVotes.set(aggregateProof.publicOutput.totalAggregatedCount);
 
     const newVoteOptions = new VoteOptions({
       voteOptions_1: aggregateProof.publicOutput.voteOptions_1,
@@ -113,9 +119,7 @@ export class ElectionContract extends SmartContract {
 
     this.voteOptions.set(newVoteOptions);
 
-    this.lastAggregatorPubKeyHash.set(
-      Poseidon.hash(lastAggregatorPubKey.toFields())
-    );
+    this.lastAggregatorPubKeyHash.set(Poseidon.hash(lastAggregatorPubKey.toFields()));
 
     this.emitEvent(
       'Settlement',
