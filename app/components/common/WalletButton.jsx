@@ -149,7 +149,7 @@ const WalletButton = () => {
               <Button onClick={handleConnect}>Connect Wallet</Button>
               {isWalletModalOpen && (
                 <WalletSelectionModal
-                  availableWallets={["Mina", "Metamask", "Keplr", "Subwallet"]}
+                  availableWallets={["Mina", "Metamask"]}
                   onClose={() => setIsWalletModalOpen(false)}
                   onSelectWallet={handleWalletSelection}
                 />

@@ -54,9 +54,9 @@ const ElectionCard = ({ electionData, loading }) => {
                 <Image
                   src={image1}
                   alt="Candidate 1"
-                  layout="fill"
-                  objectFit="cover"
-                  className="rounded-l-lg"
+                  fill
+                  sizes="100%"
+                  className="rounded-l-lg object-cover"
                 />
               ) : (
                 <Placeholder className="rounded-l-lg" />

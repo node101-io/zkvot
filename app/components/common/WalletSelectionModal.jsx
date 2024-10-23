@@ -12,7 +12,7 @@ const WalletSelectionModal = ({
   availableWallets,
 }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-    <div className="bg-[#141414] rounded-[50px] p-8 shadow-lg px-24 py-28 border-[1px] border-primary text-center relative">
+    <div className="bg-[#141414] rounded-[50px] p-8 shadow-lg px-24 py-24 border-[1px] border-primary text-center relative">
       <button
         onClick={onClose}
         className="absolute flex w-full justify-end right-12 top-12"
