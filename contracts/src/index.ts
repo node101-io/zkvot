@@ -1,3 +1,5 @@
+import { ElectionContract } from './ElectionContract.js';
 import { Vote, VoteProof } from './VoteProgram.js';
+import { AggregateProof, RangeAggregationProgram } from './RangeAggregationProgram.js';
 
-export { Vote, VoteProof };
+export { AggregateProof, ElectionContract, RangeAggregationProgram, Vote, VoteProof };

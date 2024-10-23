@@ -1,11 +1,11 @@
 import db from '../../../utils/db.js';
 
 import { AggregatedElectionResult } from '../../../types/election.js';
-import { JsonProof } from 'o1js';
+import { JsonProof, PublicKey } from 'o1js';
 
 export default (
   electionResultsSublevelIdentifier: string,
-  electionId: string,
+  electionId: PublicKey,
   callback: (
     err: Error | string | null,
     aggregatedElectionResult?: AggregatedElectionResult

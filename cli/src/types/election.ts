@@ -1,4 +1,4 @@
-import { JsonProof } from 'o1js';
+import { JsonProof, PublicKey } from 'o1js';
 
 import { AvailDaLayerInfo, CelestiaDaLayerInfo } from './daLayers.js';
 
@@ -15,6 +15,6 @@ export type Election = {
 };
 
 export type AggregatedElectionResult = {
-  electionId: string,
+  electionId: PublicKey,
   result?: JsonProof
 };
