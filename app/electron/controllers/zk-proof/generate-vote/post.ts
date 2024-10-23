@@ -8,6 +8,7 @@ import {
 } from 'o1js';
 import { Vote, VotePrivateInputs, VotePublicInputs, MerkleWitnessClass } from 'contracts';
 import { isVoteCompiled } from '../../../utils/compileZkPrograms.js';
+import { encodeDataToBase64String } from '../../../utils/encodeDataToBase64String.js';
 
 const createMerkleTreeFromLeaves = (leaves: string[]): MerkleTree => {
   let votersTree = new MerkleTree(20);
@@ -57,18 +58,23 @@ export default (req: Request, res: Response): any => {
     votersMerkleWitness: new MerkleWitnessClass(witness),
   });
 
-  console.log('Going to generate Proof', Date.now());
+  console.time('vote proof generation');
 
   Vote.vote(votePublicInputs, votePrivateInputs)
     .then(voteProof => {
-      console.log('Proof generated at:', Date.now());
+      console.timeEnd('vote proof generation');
 
-      return res.status(200).json({ voteProof: voteProof.proof });
+      encodeDataToBase64String(voteProof.toJSON(), (error, encodedVoteProof) => {
+        if (error)
+          return res.status(500).json({ success: false, error: 'internal_server_error' });
+
+        return res.status(200).json({ success: true, data: encodedVoteProof });
+      });
     })
     .catch((error) => {
-      console.log('Error generating proof:', error);
+      console.error(error);
 
-      return res.status(500).json({ error: 'internal_server_error' });
+      return res.status(500).json({ success: false, error: 'internal_server_error' });
     });
 };
 

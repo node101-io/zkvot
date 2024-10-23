@@ -24,11 +24,11 @@ let VOTERS_ROOT: bigint;
 export const setElectionContractConstants = (data: {
   electionStartHeight: number;
   electionFinalizeHeight: number;
-  votersRoot: string;
+  votersRoot: bigint;
 }) => {
   ELECTION_START_HEIGHT = data.electionStartHeight;
   ELECTION_FINALIZE_HEIGHT = data.electionFinalizeHeight;
-  VOTERS_ROOT = BigInt(data.votersRoot);
+  VOTERS_ROOT = data.votersRoot;
 };
 
 export class ElectionData extends Struct({
@@ -108,9 +108,7 @@ export class ElectionContract extends SmartContract {
       aggregateProof.publicOutput.totalAggregatedCount
     );
 
-    this.maximumCountedVotes.set(
-      aggregateProof.publicOutput.totalAggregatedCount
-    );
+    this.maximumCountedVotes.set(aggregateProof.publicOutput.totalAggregatedCount);
 
     const newVoteOptions = new VoteOptions({
       voteOptions_1: aggregateProof.publicOutput.voteOptions_1,
@@ -121,9 +119,7 @@ export class ElectionContract extends SmartContract {
 
     this.voteOptions.set(newVoteOptions);
 
-    this.lastAggregatorPubKeyHash.set(
-      Poseidon.hash(lastAggregatorPubKey.toFields())
-    );
+    this.lastAggregatorPubKeyHash.set(Poseidon.hash(lastAggregatorPubKey.toFields()));
 
     this.emitEvent(
       'Settlement',

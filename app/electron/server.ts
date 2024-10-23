@@ -4,7 +4,7 @@ import express from 'express';
 import next from 'next';
 import setupTrayMenu from './utils/setupTrayMenu.js';
 import indexRouteController from './routes/indexRoute.js';
-import { compileZkPrograms } from './utils/compileZkPrograms.js';
+import { compileVoteProgram, compileRangeAggregationProgram } from './utils/compileZkPrograms.js';
 
 const { app } = electron;
 
@@ -27,18 +27,17 @@ if (!app.requestSingleInstanceLock()) app.quit();
 
 app.dock.hide();
 
-autoUpdater.updateElectronApp({
-  repo: 'node101-io/zkvot',
-});
+autoUpdater.updateElectronApp({ repo: 'node101-io/zkvot' });
 
 app.on('ready', () => {
   nextApp.prepare().then(() => {
-    server.listen(PORT, () => {
+    server.listen(PORT, async () => {
       setupTrayMenu(PORT);
 
       console.log(`> Ready on http://localhost:${PORT}`);
 
-      compileZkPrograms();
+      await compileVoteProgram();
+      await compileRangeAggregationProgram();
     });
   });
 });
