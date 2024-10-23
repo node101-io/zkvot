@@ -15,7 +15,7 @@ export default (port: number) => {
       click: () =>
         dialog.showMessageBox({
           type: 'info',
-          message: `node101 | ${app.getVersion()}`,
+          message: `zkVot | ${app.getVersion()}`,
           icon: image,
         }),
     },
