@@ -1,4 +1,3 @@
-import { Cache } from 'o1js';
 import { Vote, ElectionContract, RangeAggregationProgram } from 'contracts';
 
 let voteCompiled = false;
