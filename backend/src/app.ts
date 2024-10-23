@@ -47,6 +47,7 @@ if (cluster.isPrimary) {
 
   app.use('/api/election', electionRouteController);
   app.use('/api/vote', voteRouteController);
+  app.use('/app', (_req, res) => res.redirect('http://localhost:10101'));
 
   server.listen(PORT, () => {
     console.log(`Server is on port ${PORT} as Worker`);
