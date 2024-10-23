@@ -60,7 +60,9 @@ export default async (req: Request, res: Response): Promise<any> => {
 
   const zkApp = new ElectionContract(zkAppAddress);
 
-  Mina.transaction(req.body.deployerAccount, zkApp.deploy)
+  Mina.transaction(req.body.deployerAccount, async () => {
+    zkApp.deploy();
+  })
     .then(async txn => {
       await txn.prove();
 
