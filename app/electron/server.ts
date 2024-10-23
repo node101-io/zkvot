@@ -4,6 +4,7 @@ import express from 'express';
 import next from 'next';
 import setupTrayMenu from './utils/setupTrayMenu.js';
 import indexRouteController from './routes/indexRoute.js';
+import { compileZkPrograms } from './utils/compileZkPrograms.js';
 
 const { app } = electron;
 
@@ -36,6 +37,8 @@ app.on('ready', () => {
       setupTrayMenu(PORT);
 
       console.log(`> Ready on http://localhost:${PORT}`);
+
+      compileZkPrograms();
     });
   });
 });

@@ -9,7 +9,9 @@ import path from 'path';
 import electionRouteController from './routes/electionRoute.js';
 import voteRouteController from './routes/voteRoute.js';
 
-dotenv.config({ path: path.join(import.meta.dirname, '.env') });
+import { compileZkProgramIfNotCompiledBefore } from './utils/compileZkProgram.js';
+
+dotenv.config({ path: path.join(import.meta.dirname, '../.env') });
 
 const CLUSTER_COUNT = Number(process.env.WEB_CONCURRENCY) || os.cpus().length;
 
@@ -18,7 +20,7 @@ if (cluster.isPrimary) {
 
   for (let i = 0; i < CLUSTER_COUNT; i++) cluster.fork();
 
-  cluster.on('exit', (worker, code, signal) => {
+  cluster.on('exit', (worker, _code, _signal) => {
     console.log(`worker ${worker.process.pid} died`);
 
     cluster.fork();
@@ -34,18 +36,21 @@ if (cluster.isPrimary) {
   mongoose.connect(MONGODB_URI);
 
   app.use(express.json());
+  app.use((req, _res, next) => {
+    if (!req.query || typeof req.query != 'object')
+      req.query = {};
+    if (!req.body || typeof req.body != 'object')
+      req.body = {};
 
-  app.use((req, res, next) => {
-    if (!req.query || typeof req.query != 'object') req.query = {};
-    if (!req.body || typeof req.body != 'object') req.body = {};
-
-    next();
+    return next();
   });
 
-  app.use('/election', electionRouteController);
-  app.use('/vote', voteRouteController);
+  app.use('/api/election', electionRouteController);
+  app.use('/api/vote', voteRouteController);
 
   server.listen(PORT, () => {
-    console.log(`Server is on port ${PORT} as Worker ${cluster.worker?.id} running @ process ${cluster.worker?.process.pid}`);
+    console.log(`Server is on port ${PORT} as Worker`);
+
+    compileZkProgramIfNotCompiledBefore(false);
   });
 }

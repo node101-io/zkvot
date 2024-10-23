@@ -1,23 +1,24 @@
 import { Request, Response } from 'express';
-import { ElectionContract } from 'contracts';
 import { Mina, PublicKey, PrivateKey } from 'o1js';
+// import { ElectionContract } from 'contracts';
+
+import { isElectionContractCompiled } from '../../../utils/compileZkPrograms.js';
 
 const MINA_MAINNET_NODE_GRAPHQL = 'https://api.minascan.io/node/mainnet/v1/graphql';
 const MINA_MAINNET_ARCHIVE_GRAPHQL = 'https://api.minascan.io/archive/mainnet/v1/graphql';
 
-let isElectionCompiled = false;
+export default async (req: Request, res: Response): Promise<any> => {
+  let deployerAccount;
+  try {
+    deployerAccount = PublicKey.fromJSON(req.body.deployerAccount);
+  } catch (error) {
+    return res.json({ success: false, error: 'bad_request' });
+  };
 
-ElectionContract.compile()
-  .then(() => isElectionCompiled = true)
-  .catch(error => {
-    console.log('Error compiling Election contract:', error);
-  });
-
-export default (req: Request, res: Response): any => {
-  if (!req.body.deployerAccount || !(req.body.deployerAccount instanceof PublicKey))
+  if (!deployerAccount || !(deployerAccount instanceof PublicKey))
     return res.json({ success: false, error: 'bad_request' });
 
-  if (!isElectionCompiled)
+  if (!isElectionContractCompiled())
     return res.json({ success: false, error: 'not_compiled_yet' });
 
   const Network = Mina.Network({
@@ -29,6 +30,16 @@ export default (req: Request, res: Response): any => {
 
   const zkAppPrivateKey = PrivateKey.random();
   const zkAppAddress = zkAppPrivateKey.toPublicKey();
+
+  const { setElectionContractConstants, ElectionContract } = await import('contracts');
+
+  // TODO: check if setting constants is working
+  setElectionContractConstants({
+    electionStartHeight: 123,
+    electionFinalizeHeight: 12412,
+    votersRoot: "9980342968624030084106297645024923555286525192527553920497338717791905606678"
+  });
+
   const zkApp = new ElectionContract(zkAppAddress);
 
   Mina.transaction(req.body.deployerAccount, zkApp.deploy)
