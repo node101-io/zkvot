@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import Button from "@/components/common/Button";
 import CreateAppId from "@/components/CreateAppId";
@@ -7,6 +6,7 @@ import {
   fetchAvailBlockHeight,
   fetchCelestiaBlockInfo,
 } from "@/contexts/FetchLatestBlock";
+import { useToast } from "@/components/ToastProvider";
 
 const StepFour = ({
   electionData,
@@ -22,6 +22,8 @@ const StepFour = ({
   const [showFetchButton, setShowFetchButton] = useState(false);
   const [localBlockHeight, setLocalBlockHeight] = useState(blockHeight);
   const [localBlockHash, setLocalBlockHash] = useState(blockHash);
+
+  const toast = useToast();
 
   useEffect(() => {
     const communicationLayer = electionData.communication_layers[0];
@@ -116,8 +118,10 @@ const StepFour = ({
 
   const handleAppIdGenerated = (newAppData) => {
     if (newAppData && newAppData.id) {
-      const appId = newAppData.id.toString();
-      setAppId(appId);
+      const generatedAppId = newAppData.id.toString();
+      setAppId(generatedAppId);
+      showToast("App ID generated successfully", "success");
+
       if (localBlockHeight) {
         setIsSubmitEnabled(true);
       }
@@ -127,26 +131,25 @@ const StepFour = ({
   };
 
   return (
-    <div className="flex flex-col items-center space-y-6">
+    <div className="flex flex-col justify-between items-center space-y-6 h-[calc(100vh-215px)] overflow-y-auto p-4">
       {electionData.communication_layers[0]?.type === "avail" && (
         <div className="w-full">
-          <h3 className="text-white text-xl mb-4">Create App ID</h3>
           <div className="w-full pb-6">
             <CreateAppId onAppIdGenerated={handleAppIdGenerated} />
           </div>
 
-          <label className="block text-white ">App ID:</label>
+          <label className="block text-white">App ID:</label>
           <input
             type="text"
             value={appId}
             readOnly
-            className="w-full h-12 p-2 bg-[#222] text-white rounded-[23px] border my-4"
+            className="w-full max-w-[620px] h-12 p-2 focus:outline-none bg-[#1E1E1E] text-[#B7B7B7] rounded-[50px] my-4"
           />
           {!localBlockHeight && showFetchButton && (
             <div className="py-2">
               <button
                 onClick={fetchAvailBlockHeightInStepFour}
-                className="px-4 rounded-full py-2  bg-transparent text-white border"
+                className="px-4 rounded-full py-2 bg-transparent text-white border hover:bg-gray-700 transition-colors duration-300"
               >
                 Fetch Block Height
               </button>
@@ -159,7 +162,7 @@ const StepFour = ({
                 type="text"
                 value={localBlockHeight}
                 readOnly
-                className="w-full h-12 p-2 bg-[#222] text-white rounded-[23px] border mt-2"
+                className="w-full max-w-[620px] h-12 p-2 focus:outline-none bg-[#1E1E1E] text-[#B7B7B7] rounded-[50px] my-4"
               />
             </>
           )}
@@ -171,7 +174,7 @@ const StepFour = ({
             <div className="py-2">
               <button
                 onClick={fetchCelestiaBlockDataInStepFour}
-                className="px-4 rounded-full py-2  bg-transparent text-white border"
+                className="px-4 rounded-full py-2 bg-transparent text-white border hover:bg-gray-700 transition-colors duration-300"
               >
                 Fetch Block Data
               </button>
@@ -206,7 +209,9 @@ const StepFour = ({
         <Button
           onClick={handleSubmit}
           disabled={!isSubmitEnabled}
-          className={!isSubmitEnabled ? "opacity-50 cursor-not-allowed" : ""}
+          className={`${
+            !isSubmitEnabled ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
           Next
         </Button>

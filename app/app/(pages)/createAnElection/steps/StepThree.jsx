@@ -45,38 +45,40 @@ const StepThree = ({ onPrevious, onSubmit, loading }) => {
   };
 
   return (
-    <div className="flex flex-col items-center space-y-6">
-      <h2 className="text-white text-2xl">Select Communication Layer</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-        {CreationData.CommunicationChoicesName.map((layer, index) => (
-          <div
-            key={index}
-            className={`p-4 bg-[#222222] rounded-2xl flex items-center transition duration-200 cursor-pointer ${
-              selectedCommunicationLayer === index
-                ? "border-[1px] border-primary shadow-lg"
-                : "hover:bg-[#333333]"
-            }`}
-            onClick={() => handleCommunicationSelection(index)}
-          >
-            <div className="flex-shrink-0 mr-4">
-              {communicationLogos[layer] || (
-                <div className="w-12 h-12 bg-gray-500 rounded-full" />
-              )}
-            </div>
-            <div className="flex flex-col h-full justify-between">
-              <h3 className="text-white text-[24px] mb-2">{layer}</h3>
-              <p className="text-[16px] mb-2">
-                {CreationData.CommunicationChoicesDescription[index]}
-              </p>
-              <div className="flex items-center justify-between">
-                <span className="text-[16px]">
-                  Fee: {CreationData.CommunicationChoicesFee[index]}{" "}
-                  {CreationData.CommunicationChoicesCurrency[index]}
-                </span>
+    <div className="flex flex-col justify-between items-center h-[calc(100vh-215px)] overflow-y-auto p-4">
+      <div className="w-full space-y-6 p">
+        <h2 className="text-white text-2xl">Select Communication Layer</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+          {CreationData.CommunicationChoicesName.map((layer, index) => (
+            <div
+              key={index}
+              className={`p-4 bg-[#222222] rounded-2xl flex items-center transition duration-200 cursor-pointer ${
+                selectedCommunicationLayer === index
+                  ? "border-[1px] border-primary shadow-lg"
+                  : "hover:bg-[#333333]"
+              }`}
+              onClick={() => handleCommunicationSelection(index)}
+            >
+              <div className="flex-shrink-0 mr-4">
+                {communicationLogos[layer] || (
+                  <div className="w-12 h-12 bg-gray-500 rounded-full" />
+                )}
+              </div>
+              <div className="flex flex-col h-full justify-between">
+                <h3 className="text-white text-[24px] mb-2">{layer}</h3>
+                <p className="text-[16px] mb-2">
+                  {CreationData.CommunicationChoicesDescription[index]}
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-[16px]">
+                    Fee: {CreationData.CommunicationChoicesFee[index]}{" "}
+                    {CreationData.CommunicationChoicesCurrency[index]}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
       <div className="w-full flex justify-between pt-4">
         <Button onClick={onPrevious}>Previous</Button>

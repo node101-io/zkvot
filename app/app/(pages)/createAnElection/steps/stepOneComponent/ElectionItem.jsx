@@ -29,7 +29,7 @@ const ElectionItem = ({ index, election, elections, setElections }) => {
   };
 
   return (
-    <div className="w-[620px] h-12 flex items-center px-4 bg-[#1E1E1E] text-white rounded-[73px] border border-[#1E1E1E]">
+    <div className="w-[620px] min-h-12 h-12 flex items-center px-4 bg-[#1E1E1E] text-white rounded-[73px] border border-[#1E1E1E]">
       {isEditing ? (
         <>
           <input

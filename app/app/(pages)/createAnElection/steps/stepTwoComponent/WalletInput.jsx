@@ -111,7 +111,7 @@ const WalletInput = ({
 
   return (
     <div
-      className={`flex items-center space-x-2 w-full justify-center ${
+      className={`flex items-center space-x-2 w-full justify-start ${
         shake ? "animate-shake" : ""
       }`}
     >
