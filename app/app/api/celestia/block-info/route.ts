@@ -51,7 +51,7 @@ export async function GET() {
       success: true,
       ...lastResponse,
     });
-  } catch (err) {
+  } catch (err: any) {
     return NextResponse.json({
       success: false,
       error: err.message,
