@@ -80,7 +80,7 @@ const Toast = ({ message, type = "success", duration = 1500, onClose }) => {
 
   return createPortal(
     <div
-      className={`w-fit fixed flex flex-row items-center justify-start bottom-4 right-4 px-6 py-4 rounded-[60px] shadow-lg bg-[#1B1B1B] transition-all duration-500 ease-out gap-x-[10px] font-medium text-[16px] ${
+      className={`w-fit z-[999999] fixed flex flex-row items-center justify-start bottom-4 right-4 px-6 py-4 rounded-[60px] shadow-lg bg-[#1B1B1B] transition-all duration-500 ease-out gap-x-[10px] font-medium text-[16px] ${
         type === "success" ? "text-green" : "text-[#CD3556]"
       } ${position}`}
     >

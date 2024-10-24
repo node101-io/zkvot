@@ -14,7 +14,15 @@ const mockElectionData = {
   start_date: "2024-10-25T08:00:00.000Z",
   end_date: "2024-11-01T18:00:00.000Z",
   question: "Who should be the next student council president?",
-  options: ["Candidate A", "Candidate B", "Candidate C"],
+  options: [
+    "Donald Trump",
+    "Recep",
+    "Harris",
+    "Biden",
+    "Kamala",
+    "Joe",
+    "Erdoğan",
+  ],
   description:
     "Election to decide the next student council president. All registered students are eligible to vote.",
   voters_list: [
