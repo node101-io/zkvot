@@ -1,15 +1,13 @@
 "use client";
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import ProgressBar from "@/components/vote/ProgressBar";
 import StepOne from "@/components/vote/StepOne";
 import StepTwo from "@/components/vote/StepTwo";
-import { MinaWalletContext } from "@/contexts/MinaWalletContext";
-import { MetamaskWalletContext } from "@/contexts/MetamaskWalletContext";
 import StepThree from "@/components/vote/StepThree";
 // import mockElections from "@/utils/mockElectionsData";
 
 const mockElectionData = {
-  _id: "67194df7b50eab81d74f2a0f",
+  _id: "B62qinHTtL5wUL5ccnKudxDWhZYAyWDj2HcvVY1YVLhNXwqN9cceFkz",
   mina_contract_id: "mina-12345",
   storage_layer_id: "storage-67890",
   storage_layer_platform: "C",
@@ -64,34 +62,6 @@ const VotePage = ({ params }) => {
 
   const [zkProofData, setZkProofData] = useState(null);
 
-  const { generateZkProofWithMina } = useContext(MinaWalletContext);
-  const { generateZkProofWithMetamask } = useContext(MetamaskWalletContext);
-
-  const submitZkProof = async () => {
-    setLoading(true);
-    setStepErrors({ ...stepErrors, [currentStep]: false });
-    try {
-      let zkProof;
-      if (selectedWallet === "Mina") {
-        zkProof = await generateZkProofWithMina(selectedoption, electionData);
-      } else if (selectedWallet === "Metamask") {
-        zkProof = await generateZkProofWithMetamask(
-          selectedoption,
-          electionData
-        );
-      } else {
-        throw new Error("No wallet selected");
-      }
-      console.log("Generated ZK proof:", zkProof);
-      setZkProofData(zkProof);
-    } catch (error) {
-      console.error("Error generating ZK proof:", error);
-      setStepErrors({ ...stepErrors, [currentStep]: true });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const goToNextStep = () => {
     setCurrentStep((prevStep) => prevStep + 1);
   };
@@ -115,7 +85,7 @@ const VotePage = ({ params }) => {
             loading={loading}
             errorStep={stepErrors[currentStep]}
             setLoading={setLoading}
-            submitZkProof={submitZkProof}
+            setZkProofData={setZkProofData}
             selectedWallet={selectedWallet}
             setSelectedWallet={setSelectedWallet}
           />

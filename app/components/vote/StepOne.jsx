@@ -7,7 +7,6 @@ import { IoClose } from "react-icons/io5";
 import Button from "@/components/common/Button";
 import LearnMoreIcon from "@/assets/ElectionCard/LearnMoreIcon";
 import Clock from "@/assets/ElectionCard/Clock";
-
 import DownloadIcon from "@/assets/ElectionCard/DownloadIcon";
 import { MinaWalletContext } from "@/contexts/MinaWalletContext";
 import { MetamaskWalletContext } from "@/contexts/MetamaskWalletContext";
@@ -22,7 +21,7 @@ const StepOne = ({
   setSelectedoption,
   setLoading,
   loading,
-  submitZkProof,
+  setZkProofData,
   goToNextStep,
   selectedWallet,
   setSelectedWallet,
@@ -37,6 +36,7 @@ const StepOne = ({
   const {
     minaWalletAddress,
     connectMinaWallet,
+    generateZkProofWithMina,
     disconnectMinaWallet,
     signElectionId,
   } = useContext(MinaWalletContext);
@@ -55,13 +55,15 @@ const StepOne = ({
     if (
       userWalletAddresses.length > 0 &&
       electionData &&
-      electionData.voters_list
+      electionData.voters_list &&
+      Array.isArray(electionData.voters_list)
     ) {
+      console.log("Voters List:", electionData.voters_list);
       setEligibilityStatus("checking");
 
-      const votersNormalized = electionData.voters_list.map((voter) =>
-        voter.address.trim().toLowerCase()
-      );
+      const votersNormalized = electionData.voters_list
+        .map((voter) => voter.address?.trim().toLowerCase())
+        .filter((address) => address);
 
       const eligible = userWalletAddresses.some((wallet) =>
         votersNormalized.includes(wallet)
@@ -84,37 +86,43 @@ const StepOne = ({
   }, []);
 
   const handleWalletSelection = async (wallet) => {
-    if (selectedWallet === "Mina") {
-      await disconnectMinaWallet();
-    } else if (selectedWallet === "Metamask") {
-      await disconnectMetamaskWallet();
-    }
+    try {
+      if (selectedWallet === "Mina") {
+        await disconnectMinaWallet();
+      } else if (selectedWallet === "Metamask") {
+        await disconnectMetamaskWallet();
+      }
 
-    setSelectedWallet(wallet);
-    setIsWalletModalOpen(false);
+      setSelectedWallet(wallet);
+      setIsWalletModalOpen(false);
 
-    let connectionSuccess = false;
+      let connectionSuccess = false;
 
-    if (wallet === "Mina") {
-      connectionSuccess = await connectMinaWallet();
-    } else if (wallet === "Metamask") {
-      connectionSuccess = await connectMetamaskWallet();
-    }
+      if (wallet === "Mina") {
+        connectionSuccess = await connectMinaWallet();
+      } else if (wallet === "Metamask") {
+        connectionSuccess = await connectMetamaskWallet();
+      }
 
-    if (connectionSuccess) {
-      showToast("Wallet connected successfully!", "success");
-    } else {
-      setSelectedWallet(null);
-      showToast("Wallet connection was not successful.", "error");
+      if (connectionSuccess) {
+        showToast("Wallet connected successfully!", "success");
+      } else {
+        setSelectedWallet(null);
+        showToast("Wallet connection was not successful.", "error");
+      }
+    } catch (error) {
+      console.error("Error during wallet selection:", error);
+      showToast("An error occurred while selecting the wallet.", "error");
     }
   };
+
   const handleVoteClick = async () => {
     if (
       selectedoption === null &&
       eligibilityStatus !== "not_eligible" &&
       eligibilityStatus !== "not_connected"
     ) {
-      showToast("Please select a option to proceed.", "error");
+      showToast("Please select an option to proceed.", "error");
       return;
     }
 
@@ -163,9 +171,9 @@ const StepOne = ({
       electionId: electionData._id,
       signedElectionId,
       vote: selectedoption,
-      votersArray: votersArray.map(
-        (voter) => voter.address?.trim().toLowerCase() || ""
-      ),
+      votersArray: votersArray
+        .map((address) => address?.trim().toLowerCase())
+        .filter((address) => address),
       publicKey: publicKey,
     };
   };
@@ -187,16 +195,21 @@ const StepOne = ({
 
       const signedElectionId = await signElectionId(electionData._id);
       console.log("signedElectionId", signedElectionId);
-      if (!signedElectionId) {
+
+      if (!signedElectionId || !signedElectionId.r || !signedElectionId.s) {
         showToast("Failed to generate the signed election ID.", "error");
         return;
       }
 
-      await submitZkProof();
+      const votersArray = electionData.voters_list
+        .map((voter) => voter.address)
+        .filter((address) => address && address.trim() !== "");
 
-      const votersArray = electionData.voters_list.map(
-        (voter) => voter.address
-      );
+      if (votersArray.length === 0) {
+        showToast("No valid voters found.", "error");
+        return;
+      }
+
       const publicKey =
         selectedWallet === "Mina" ? minaWalletAddress : metamaskWalletAddress;
 
@@ -210,12 +223,13 @@ const StepOne = ({
 
       console.log("electionJson", electionJson);
 
-      await submitElectionVote(electionJson);
+      const proof = await generateZkProofWithMina(electionJson);
+      setZkProofData(proof);
 
       if (selectedWallet === "Mina") {
-        disconnectMinaWallet();
+        await disconnectMinaWallet();
       } else if (selectedWallet === "Metamask") {
-        disconnectMetamaskWallet();
+        await disconnectMetamaskWallet();
       }
 
       goToNextStep();
@@ -232,6 +246,7 @@ const StepOne = ({
       <FaImage className="text-gray-500 text-6xl" />
     </div>
   );
+
   return (
     <div className="flex flex-col items-center px-4 sm:px-6 md:px-8">
       <div className="py-4 w-full text-start">
@@ -337,7 +352,7 @@ const StepOne = ({
       </div>
 
       <div className="w-full my-5">
-        <h3 className="text-xl mb-4">options</h3>
+        <h3 className="text-xl mb-4">Options</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {electionData.options.map((option, index) => (
@@ -419,7 +434,7 @@ const StepOne = ({
       {eligibilityStatus === "not_eligible" && (
         <div className="w-full mt-2 text-center text-gray-300 text-sm">
           You’re not eligible for this election. You might be connected to the
-          wrong wallet. Please try switching wallets{" "}
+          wrong wallet. Please try switching wallets.
         </div>
       )}
     </div>
