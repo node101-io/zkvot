@@ -1,5 +1,6 @@
+"use client";
 import Image from "next/image";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FaImage } from "react-icons/fa";
 import { motion } from "framer-motion";
 
@@ -10,17 +11,150 @@ import MinaLogo from "@/assets/StepsProgress/MinaLastStep.svg";
 import CopyButton from "../common/CopyButton";
 import ToolTip from "../common/ToolTip";
 
-const StepThree = ({ electionData, selectedChoice }) => {
+const DEFAULT_MINA_RPC_URL = "https://api.minascan.io/node/devnet/v1/graphql";
+const PUBLIC_KEY = "B62qmsjhW3v8XQXHPAJairdpVrLD7RRmzWXCkgZUAsbXbmn2UMGdrYm";
+
+const StepThree = ({ electionData, selectedoption }) => {
+  const [contractState, setContractState] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [results, setResults] = useState([]);
+
   const Placeholder = ({ className }) => (
     <div className={`${className} flex items-center justify-center h-full`}>
       <FaImage className="text-gray-500 text-6xl" />
     </div>
   );
 
-  const results = electionData.choices.map((choice, index) => ({
-    name: choice,
-    percentage: Math.floor(Math.random() * 101),
-  }));
+  const getElectionContractStateFromMinaRPC = async (data) => {
+    if (!data || typeof data !== "object") throw new Error("data_required");
+
+    if (
+      !data.election_id ||
+      typeof data.election_id !== "string" ||
+      !data.election_id.length
+    )
+      throw new Error("election_id_required");
+
+    if (
+      !data.mina_rpc_url ||
+      typeof data.mina_rpc_url !== "string" ||
+      !data.mina_rpc_url.length
+    )
+      throw new Error("mina_rpc_url_required");
+
+    try {
+      const response = await fetch(data.mina_rpc_url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query: `
+            query GetContractState($publicKey: String!) {
+              account(publicKey: $publicKey) {
+                zkappState
+              }
+            }
+          `,
+          variables: {
+            publicKey: data.election_id,
+          },
+        }),
+      });
+
+      const resJson = await response.json();
+
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        console.error("Failed to get contract state:", errorMessage);
+        throw new Error("Failed to get contract state");
+      }
+
+      return resJson.data?.account?.zkappState;
+    } catch (error) {
+      console.error("Error fetching contract state:", error);
+      throw new Error("mina_rpc_error");
+    }
+  };
+
+  useEffect(() => {
+    const fetchContractState = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = {
+          election_id: PUBLIC_KEY,
+          mina_rpc_url: DEFAULT_MINA_RPC_URL,
+        };
+        const state = await getElectionContractStateFromMinaRPC(data);
+        setContractState(state);
+
+        const voteCounts = electionData.options.map((option, index) => {
+          const voteCountStr = state[index] || "0";
+          return BigInt(voteCountStr);
+        });
+
+        const totalVotes = voteCounts.reduce((acc, curr) => acc + curr, 0n);
+
+        const CalculatedResults = electionData.options.map((option, index) => {
+          const voteCount = voteCounts[index];
+          const percentage =
+            totalVotes > 0n
+              ? (Number(voteCount) / Number(totalVotes)) * 100
+              : 0;
+          return {
+            name: option,
+            percentage: Math.floor(percentage),
+            voteCount: voteCount.toString(),
+          };
+        });
+
+        setResults(CalculatedResults);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContractState();
+  }, [electionData.options]);
+
+  const handleFetchAndLogData = async () => {
+    try {
+      const data = {
+        election_id: PUBLIC_KEY,
+        mina_rpc_url: DEFAULT_MINA_RPC_URL,
+      };
+      const state = await getElectionContractStateFromMinaRPC(data);
+      console.log("Fetched zkappState on button click:", state);
+
+      const voteCounts = electionData.options.map((option, index) => {
+        const voteCountStr = state[index] || "0";
+        return BigInt(voteCountStr);
+      });
+
+      const totalVotes = voteCounts.reduce((acc, curr) => acc + curr, 0n);
+
+      const CalculatedResults = electionData.options.map((option, index) => {
+        const voteCount = voteCounts[index];
+        const percentage =
+          totalVotes > 0n ? (Number(voteCount) / Number(totalVotes)) * 100 : 0;
+        return {
+          name: option,
+          percentage: Math.floor(percentage),
+          voteCount: voteCount.toString(),
+        };
+      });
+
+      setResults(CalculatedResults);
+    } catch (err) {
+      console.error("Error fetching data on button click:", err.message || err);
+    }
+  };
+
+  console.log("Selected option:", selectedoption);
 
   return (
     <div className="flex flex-col items-center px-4 sm:px-6 md:px-8 h-full">
@@ -30,10 +164,10 @@ const StepThree = ({ electionData, selectedChoice }) => {
           <div className="w-full md:w-1/4 flex">
             <div className="flex w-full h-32 rounded-3xl overflow-hidden">
               <div className="w-full relative">
-                {electionData.images && electionData.images[0] ? (
+                {electionData.image_raw ? (
                   <div className="w-full h-full relative">
                     <Image
-                      src={electionData.images[0]}
+                      src={electionData.image_raw}
                       alt="Candidate 1"
                       fill
                       style={{ objectFit: "cover" }}
@@ -59,10 +193,10 @@ const StepThree = ({ electionData, selectedChoice }) => {
                   </ToolTip>
                 </span>
                 Election id:{" "}
-                {String(electionData.electionId).slice(0, 12) + "..."}
+                {String(electionData.mina_contract_id).slice(0, 12) + "..."}
                 <span className="ml-1 cursor-pointer w-fit">
                   <CopyButton
-                    textToCopy={electionData.electionId}
+                    textToCopy={electionData.mina_contract_id}
                     iconColor="#F6F6F6"
                     position={{ top: -26, left: -38 }}
                   />
@@ -78,7 +212,7 @@ const StepThree = ({ electionData, selectedChoice }) => {
               </span>
             </div>
             <div className=" flex flex-col  w-full h-fit ">
-              <h2 className="text-[24px] mb-2">{electionData.name}</h2>
+              <h2 className="text-[24px] mb-2">{electionData.question}</h2>
 
               <div className="flex flex-col md:flex-row justify-between py-2 gap-y-1">
                 <span>
@@ -102,7 +236,9 @@ const StepThree = ({ electionData, selectedChoice }) => {
                   <span className="text-primary mr-2 italic text-sm">
                     zkVote by
                   </span>
-                  {electionData.zkvoteBy.slice(0, 12) + "..."}
+                  {electionData.zkvoteBy
+                    ? electionData.zkvoteBy.slice(0, 12) + "..."
+                    : "Unknown"}
                   <span className="ml-2 cursor-pointer w-fit">
                     <CopyButton
                       textToCopy={electionData.zkvoteBy}
@@ -116,13 +252,16 @@ const StepThree = ({ electionData, selectedChoice }) => {
           </div>
         </div>
 
-        <div className="pt-4 pb-2 w-full">
-          <h3 className="text-[16px] text-[#B7B7B7] mb-4">Your Choice</h3>
-          <div className="pl-4 rounded text-[20px]">
-            {electionData.choices[selectedChoice]}
-          </div>
+        <div className="w-full flex justify-end mt-4">
+          <button
+            onClick={handleFetchAndLogData}
+            className="px-4 py-2 bg-[#121212] text-white rounded-lg transition duration-300"
+          >
+            Re Fetch Data
+          </button>
         </div>
       </div>
+
       <div className="w-full items-start pl-8 flex text-[16px] flex-col text-[#BABABA]">
         <p className="italic">Do you think the settlement is going too slow?</p>
         <p className="underline cursor-pointer">Become a sequencer</p>
@@ -133,7 +272,7 @@ const StepThree = ({ electionData, selectedChoice }) => {
             <div>
               <Image
                 src={MinaLogo}
-                alt="afsadasd"
+                alt="Settlement Layer Logo"
                 width={108}
                 height={108}
               />
@@ -147,28 +286,35 @@ const StepThree = ({ electionData, selectedChoice }) => {
             </div>
           </div>
           <div className="w-full h-full pb-44 space-y-7">
-            {results.map((result, index) => (
-              <div
-                key={index}
-                className="w-full flex flex-col items-start space-y-2"
-              >
-                <div className="flex items-center justify-start w-full">
-                  <span className="text-white text-[14px]">{result.name}</span>
-                  <span className="text-white text-[14px] pl-2">
-                    %{result.percentage}
-                  </span>
-                </div>
+            {loading && <p>Loading results...</p>}
+            {error && <p className="text-red-500">{error}</p>}
+            {!loading &&
+              !error &&
+              results.map((result, index) => (
+                <div
+                  key={index}
+                  className="w-full flex flex-col items-start space-y-2"
+                >
+                  <div className="flex items-center justify-start w-full">
+                    <span className="text-white text-[14px]">
+                      {result.name}
+                    </span>
+                    <span className="text-white text-[14px] pl-2">
+                      %{result.percentage} (
+                      {Number(result.voteCount).toLocaleString()})
+                    </span>
+                  </div>
 
-                <div className="w-full bg-[#434446] rounded-full overflow-hidden h-[30px]">
-                  <motion.div
-                    className="bg-green h-full rounded-r-full"
-                    initial={{ width: "0%" }}
-                    animate={{ width: `${result.percentage}%` }}
-                    transition={{ delay: index * 0.2 + 0.4, duration: 0.8 }}
-                  />
+                  <div className="w-full bg-[#434446] rounded-full overflow-hidden h-[30px]">
+                    <motion.div
+                      className="bg-green h-full rounded-r-full"
+                      initial={{ width: "0%" }}
+                      animate={{ width: `${result.percentage}%` }}
+                      transition={{ delay: index * 0.2 + 0.4, duration: 0.8 }}
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
       </div>

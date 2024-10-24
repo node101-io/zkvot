@@ -9,7 +9,7 @@ import Link from "next/link";
 
 const Navbar = () => {
   const navItems = [
-    { name: "How it works?", href: "/" },
+    { name: "How it works?", href: "/howitworks" },
     { name: "All Elections", href: "/elections" },
     {
       name: (

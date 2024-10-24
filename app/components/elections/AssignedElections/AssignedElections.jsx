@@ -20,8 +20,6 @@ const AssignedElections = ({
   const [error, setError] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [skip, setSkip] = useState(0);
-  const limit = 20;
-
   const observer = useRef();
 
   const walletAddresses = useMemo(
@@ -55,21 +53,21 @@ const AssignedElections = ({
 
     const getElections = async () => {
       try {
-        const { data, hasMore } = await fetchElections(limit, 0);
+        const { data, hasMore } = await fetchElections(0);
 
         let filteredData = data;
 
         if (onlyOngoing && walletAddresses.length > 0) {
           filteredData = data.filter((election) =>
-            election.voters_list?.some((address) =>
-              walletAddresses.includes(address.toLowerCase())
+            election.voters_list?.some((voter) =>
+              walletAddresses.includes(voter.student_id.toLowerCase())
             )
           );
         }
 
         setElectionData(filteredData);
         setHasMore(hasMore);
-        setSkip((prevSkip) => prevSkip + limit);
+        setSkip(100);
       } catch (error) {
         console.error("Error fetching elections:", error);
         setError("Failed to load elections.");
@@ -84,21 +82,21 @@ const AssignedElections = ({
   const loadMore = async () => {
     setLoadingMore(true);
     try {
-      const { data, hasMore: newHasMore } = await fetchElections(limit, skip);
+      const { data, hasMore: newHasMore } = await fetchElections(skip);
 
       let filteredData = data;
 
       if (onlyOngoing && walletAddresses.length > 0) {
         filteredData = data.filter((election) =>
-          election.voters_list?.some((address) =>
-            walletAddresses.includes(address.toLowerCase())
+          election.voters_list?.some((voter) =>
+            walletAddresses.includes(voter.student_id.toLowerCase())
           )
         );
       }
 
       setElectionData((prevData) => [...prevData, ...filteredData]);
       setHasMore(newHasMore);
-      setSkip((prevSkip) => prevSkip + limit);
+      setSkip((prevSkip) => prevSkip + 100);
     } catch (error) {
       console.error("Error fetching more elections:", error);
       setError("Failed to load more elections.");
@@ -139,7 +137,7 @@ const AssignedElections = ({
           return (
             <div
               ref={lastElectionElementRef}
-              key={election.electionId}
+              key={election._id}
             >
               <ElectionCard
                 electionData={election}
@@ -150,7 +148,7 @@ const AssignedElections = ({
         } else {
           return (
             <ElectionCard
-              key={election.electionId}
+              key={election._id}
               electionData={election}
               loading={loading}
             />

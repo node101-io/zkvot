@@ -14,6 +14,7 @@ import { KeplrWalletContext } from "@/contexts/KeplrWalletContext";
 import { SubwalletContext } from "@/contexts/SubwalletContext";
 import { MetamaskWalletContext } from "@/contexts/MetamaskWalletContext";
 import WalletSelectionModal from "../common/WalletSelectionModal";
+import { SelectedWalletContext } from "@/contexts/SelectedWalletContext";
 
 const WalletButton = () => {
   const { minaWalletAddress, connectMinaWallet, disconnectMinaWallet } =
@@ -31,8 +32,11 @@ const WalletButton = () => {
     disconnectMetamaskWallet,
   } = useContext(MetamaskWalletContext);
 
+  const { selectedWallet, setSelectedWallet } = useContext(
+    SelectedWalletContext
+  );
+
   const [isClient, setIsClient] = useState(false);
-  const [walletConnected, setWalletConnected] = useState(null);
   const [walletAddress, setWalletAddress] = useState("");
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
@@ -42,19 +46,19 @@ const WalletButton = () => {
 
   useEffect(() => {
     if (minaWalletAddress) {
-      setWalletConnected("Mina");
+      setSelectedWallet("Mina");
       setWalletAddress(minaWalletAddress);
     } else if (keplrWalletAddress) {
-      setWalletConnected("Keplr");
+      setSelectedWallet("Keplr");
       setWalletAddress(keplrWalletAddress);
     } else if (selectedAccount) {
-      setWalletConnected("Subwallet");
+      setSelectedWallet("Subwallet");
       setWalletAddress(selectedAccount.address);
     } else if (metamaskWalletAddress) {
-      setWalletConnected("Metamask");
+      setSelectedWallet("Metamask");
       setWalletAddress(metamaskWalletAddress);
     } else {
-      setWalletConnected(null);
+      setSelectedWallet(null);
       setWalletAddress("");
     }
   }, [
@@ -62,6 +66,7 @@ const WalletButton = () => {
     keplrWalletAddress,
     selectedAccount,
     metamaskWalletAddress,
+    setSelectedWallet,
   ]);
 
   const handleConnect = () => {
@@ -83,13 +88,13 @@ const WalletButton = () => {
   };
 
   const handleDisconnect = () => {
-    if (walletConnected === "Mina") {
+    if (selectedWallet === "Mina") {
       disconnectMinaWallet();
-    } else if (walletConnected === "Keplr") {
+    } else if (selectedWallet === "Keplr") {
       disconnectKeplrWallet();
-    } else if (walletConnected === "Subwallet") {
+    } else if (selectedWallet === "Subwallet") {
       disconnectSubwallet();
-    } else if (walletConnected === "Metamask") {
+    } else if (selectedWallet === "Metamask") {
       disconnectMetamaskWallet();
     }
   };
@@ -118,12 +123,12 @@ const WalletButton = () => {
     <>
       {isClient && (
         <div className="flex items-center md:ml-12">
-          {walletConnected ? (
+          {selectedWallet ? (
             <div className="flex items-center space-x-4 py-2">
               <div className="flex items-center space-x-2">
                 <Image
-                  src={getWalletIcon(walletConnected)}
-                  alt={walletConnected}
+                  src={getWalletIcon(selectedWallet)}
+                  alt={selectedWallet}
                   width={24}
                   height={24}
                 />
@@ -149,7 +154,7 @@ const WalletButton = () => {
               <Button onClick={handleConnect}>Connect Wallet</Button>
               {isWalletModalOpen && (
                 <WalletSelectionModal
-                  availableWallets={["Mina", "Metamask"]}
+                  availableWallets={["Mina", "Metamask", "Keplr", "Subwallet"]}
                   onClose={() => setIsWalletModalOpen(false)}
                   onSelectWallet={handleWalletSelection}
                 />

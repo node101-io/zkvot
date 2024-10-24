@@ -7,7 +7,7 @@ const WalletList = ({
   customOptionNames,
 }) => {
   return (
-    <div className="w-full max-h-[800px] overflow-y-scroll flex flex-col space-y-2 items-center">
+    <div className="w-full overflow-y-scroll flex flex-col space-y-2 items-start">
       {wallets.map((walletData, index) => (
         <WalletItem
           key={index}

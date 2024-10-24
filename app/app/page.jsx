@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import InitialLoadingPage from "@/components/InitialLoadingPage";
 import Navbar from "@/components/NavBar/NavBar";
-import HowItWorks from "@/components/HowItWorks/HowItWorks";
+import Hero from "@/components/hero/hero";
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
@@ -31,7 +31,7 @@ export default function Home() {
         }`}
       >
         <main className="flex-grow flex items-start justify-center overflow-hidden">
-          <HowItWorks />
+          <Hero />
         </main>
       </div>
 

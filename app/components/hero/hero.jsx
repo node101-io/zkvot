@@ -4,11 +4,11 @@ import TopSection from "./TopSection.jsx";
 import Panel from "./Panel.jsx";
 import { MinaWalletContext } from "@/contexts/MinaWalletContext.js";
 
-const HowItWorks = () => {
+const hero = () => {
   const [activePanel, setActivePanel] = useState(null);
   const leftPanelRef = useRef(null);
   const rightPanelRef = useRef(null);
-  const howItWorksRef = useRef(null);
+  const heroRef = useRef(null);
   const [electionID, setElectionID] = useState("");
 
   const { minaWalletAddress, connectMinaWallet } =
@@ -33,8 +33,8 @@ const HowItWorks = () => {
   }, []);
 
   useEffect(() => {
-    if (activePanel && howItWorksRef.current) {
-      howItWorksRef.current.scrollIntoView({
+    if (activePanel && heroRef.current) {
+      heroRef.current.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
@@ -58,7 +58,7 @@ const HowItWorks = () => {
       <TopSection />
 
       <div
-        ref={howItWorksRef}
+        ref={heroRef}
         className="flex flex-col sm:flex-row justify-center gap-8 p-10 h-fit max-h-[600px] overflow-hidden"
       >
         <Panel
@@ -98,4 +98,4 @@ const HowItWorks = () => {
   );
 };
 
-export default HowItWorks;
+export default hero;

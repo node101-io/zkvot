@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Button from "@/components/common/Button";
 import WalletInput from "./stepTwoComponent/WalletInput";
 import WalletList from "./stepTwoComponent/WalletList";
@@ -19,37 +19,41 @@ const StepTwo = ({ onPrevious, onSubmit }) => {
   };
 
   return (
-    <div className="flex flex-col items-center space-y-4 p-4 bg-[#121315] rounded-lg w-full">
-      <h3 className="text-white">Step 2: Add Wallet Addresses</h3>
-      <WalletInput
-        wallets={wallets}
-        setWallets={setWallets}
-        requiredFields={requiredFields}
-        setRequiredFields={setRequiredFields}
-        customOptionNames={customOptionNames}
-        setCustomOptionNamesInParent={setCustomOptionNames}
-      />
-      <WalletList
-        wallets={wallets}
-        setWallets={setWallets}
-        requiredFields={requiredFields}
-        customOptionNames={customOptionNames}
-      />
-      <div className="w-full flex justify-between">
-        <Button
-          onClick={onPrevious}
-          className="mt-4"
-        >
-          Previous
-        </Button>
+    <div className="flex flex-col h-[calc(100vh-215px)] p-4">
+      <div className="mb-4">
+        <h3 className="text-white text-xl">Step 2: Add Wallet Addresses</h3>
+      </div>
+
+      <div className="mb-8">
+        <WalletInput
+          wallets={wallets}
+          setWallets={setWallets}
+          requiredFields={requiredFields}
+          setRequiredFields={setRequiredFields}
+          customOptionNames={customOptionNames}
+          setCustomOptionNamesInParent={setCustomOptionNames}
+        />
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+        <WalletList
+          wallets={wallets}
+          setWallets={setWallets}
+          requiredFields={requiredFields}
+          customOptionNames={customOptionNames}
+        />
+      </div>
+
+      <div className="flex justify-between mt-4">
+        <Button onClick={onPrevious}>Previous</Button>
         <Button
           onClick={handleSubmit}
-          className={`mt-4 ${
+          disabled={!isSubmitEnabled}
+          className={`${
             !isSubmitEnabled ? "opacity-50 cursor-not-allowed" : ""
           }`}
-          disabled={!isSubmitEnabled}
         >
-          next
+          Next
         </Button>
       </div>
     </div>

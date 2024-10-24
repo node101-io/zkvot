@@ -26,7 +26,7 @@ const ToastProvider = ({ children }) => {
   return (
     <ToastContext.Provider value={showToast}>
       {children}
-      <div className="fixed bottom-4 right-4 flex flex-col-reverse items-end gap-4">
+      <div className="fixed bottom-4 right-4 flex flex-col-reverse items-end gap-4 z-50">
         {toasts.map((toast, index) => (
           <Toast
             key={toast.id}
