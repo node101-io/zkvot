@@ -9,11 +9,11 @@ import Face3SVG from "../../../assets/howitworks/face3.svg";
 import Face4SVG from "../../../assets/howitworks/face4.svg";
 import WhyZkProof from "../../../assets/howitworks/WhyZkProofs.svg";
 import BlueQuestionMark from "../../../assets/howitworks/BlueQuestionMark.svg";
-import FacesCircle from "../../../assets/howitworks/facesCircle.svg";
-import ThinkingFaces from "../../../assets/howitworks/thinkingFaces.svg";
-import VotesMinaAmount from "../../../assets/howitworks/votesMinaAmount.svg";
-import AllCounters from "../../../assets/howitworks/allCounters.svg";
-import FacesLine from "../../../assets/howitworks/facesLine.svg";
+import FacesCircle from "../../../assets/howitworks/FacesCircle.svg";
+import ThinkingFaces from "../../../assets/howitworks/ThinkingFaces.svg";
+import VotesMinaAmount from "../../../assets/howitworks/VotesMinaAmount.svg";
+import AllCounters from "../../../assets/howitworks/AllCounters.svg";
+import FacesLine from "../../../assets/howitworks/FacesLine.svg";
 
 const Page = () => {
   const containerVariants = {
