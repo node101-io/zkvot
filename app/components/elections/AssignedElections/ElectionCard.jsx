@@ -3,11 +3,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { FaImage } from "react-icons/fa";
 
-import Button from "@/components/common/Button";
-import Clock from "@/assets/ElectionCard/Clock";
-import LearnMoreIcon from "@/assets/ElectionCard/LearnMoreIcon";
-import CopyButton from "@/components/common/CopyButton";
-import ToolTip from "@/components/common/ToolTip";
+import Button from "../../../components/common/Button";
+import Clock from "../../../assets/ElectionCard/Clock";
+import LearnMoreIcon from "../../../assets/ElectionCard/LearnMoreIcon";
+import CopyButton from "../../../components/common/CopyButton";
+import ToolTip from "../../../components/common/ToolTip";
 
 const ElectionCard = ({ electionData, loading }) => {
   if (loading) {
@@ -45,17 +45,16 @@ const ElectionCard = ({ electionData, loading }) => {
   );
 
   return (
-    <div className="bg-[#222222] text-white rounded-xl shadow-md overflow-visible">
+    <div className="bg-[#222222] max-w-[457px] min-w-[456px] text-white rounded-xl shadow-md overflow-visible">
       <div className="p-4">
-        <div className="relative aspect-w-16 aspect-h-9 mb-4">
+        <div className="relative mb-4">
           <div className="flex w-full h-full">
-            <div className="w-full relative rounded-xl overflow-hidden">
+            <div className="w-[417px] h-[214px] relative rounded-xl overflow-hidden">
               {electionData.image_raw ? (
                 <Image
                   src={electionData.image_raw}
                   alt="Candidate 1"
                   fill
-                  sizes="100%"
                   className="rounded-l-lg object-cover"
                 />
               ) : (

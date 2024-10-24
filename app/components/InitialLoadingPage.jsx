@@ -1,11 +1,11 @@
 import React from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Logo1 from "@/assets/PoweredBy/1.svg";
-import Logo2 from "@/assets/PoweredBy/2.svg";
-import Logo3 from "@/assets/PoweredBy/3.svg";
-import Logo4 from "@/assets/PoweredBy/4.svg";
-import Logo5 from "@/assets/PoweredBy/5.svg";
+import Logo1 from "../assets/PoweredBy/1.svg";
+import Logo2 from "../assets/PoweredBy/2.svg";
+import Logo3 from "../assets/PoweredBy/3.svg";
+import Logo4 from "../assets/PoweredBy/4.svg";
+import Logo5 from "../assets/PoweredBy/5.svg";
 
 const InitialLoadingPage = ({ isExiting }) => {
   const logos = [Logo1, Logo2, Logo3, Logo4, Logo5];

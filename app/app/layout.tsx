@@ -1,8 +1,9 @@
+import "../styles/globals.css";
+
 import { Montserrat } from "next/font/google";
-import "./globals.css";
-import Navbar from "@/components/NavBar/NavBar";
-import { WalletProvider } from "@/components/providers";
-import ToastProvider from "@/components/ToastProvider";
+import Navbar from "../components/NavBar/NavBar";
+import { WalletProvider } from "../components/providers";
+import ToastProvider from "../components/ToastProvider";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -14,7 +15,11 @@ export const metadata = {
   description: "A zero-knowledge voting platform",
 };
 
-export default function RootLayout({ children }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body className={montserrat.className}>

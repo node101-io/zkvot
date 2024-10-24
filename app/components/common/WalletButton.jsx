@@ -9,12 +9,12 @@ import KeplrIcon from "../../assets/wallets/Keplr.svg";
 import SubwalletIcon from "../../assets/wallets/Subwallet.svg";
 import MetamaskIcon from "../../assets/wallets/Metamask.svg";
 
-import { MinaWalletContext } from "@/contexts/MinaWalletContext";
-import { KeplrWalletContext } from "@/contexts/KeplrWalletContext";
-import { SubwalletContext } from "@/contexts/SubwalletContext";
-import { MetamaskWalletContext } from "@/contexts/MetamaskWalletContext";
+import { MinaWalletContext } from "../../contexts/MinaWalletContext";
+import { KeplrWalletContext } from "../../contexts/KeplrWalletContext";
+import { SubwalletContext } from "../../contexts/SubwalletContext";
+import { MetamaskWalletContext } from "../../contexts/MetamaskWalletContext";
 import WalletSelectionModal from "../common/WalletSelectionModal";
-import { SelectedWalletContext } from "@/contexts/SelectedWalletContext";
+import { SelectedWalletContext } from "../../contexts/SelectedWalletContext";
 
 const WalletButton = () => {
   const { minaWalletAddress, connectMinaWallet, disconnectMinaWallet } =

@@ -1,9 +1,9 @@
 "use client";
-import LearnMoreIcon from "@/assets/ElectionCard/LearnMoreIcon";
-import ToolTip from "@/components/common/ToolTip";
-import AssignedElections from "@/components/elections/AssignedElections/AssignedElections";
-import { MetamaskWalletContext } from "@/contexts/MetamaskWalletContext";
-import { MinaWalletContext } from "@/contexts/MinaWalletContext";
+// import LearnMoreIcon from "../../../assets/ElectionCard/LearnMoreIcon";
+import ToolTip from "../../../components/common/ToolTip";
+import AssignedElections from "../../../components/elections/AssignedElections/AssignedElections";
+import { MetamaskWalletContext } from "../../../contexts/MetamaskWalletContext";
+import { MinaWalletContext } from "../../../contexts/MinaWalletContext";
 import React, { useContext, useState } from "react";
 
 const Page = () => {

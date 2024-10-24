@@ -1,10 +1,10 @@
 "use client";
 import React, { useState } from "react";
-import ProgressBar from "@/components/vote/ProgressBar";
-import StepOne from "@/components/vote/StepOne";
-import StepTwo from "@/components/vote/StepTwo";
-import StepThree from "@/components/vote/StepThree";
-// import mockElections from "@/utils/mockElectionsData";
+import ProgressBar from "../../../../..//components/vote/ProgressBar";
+import StepOne from "../../../../..//components/vote/StepOne";
+import StepTwo from "../../../../..//components/vote/StepTwo";
+import StepThree from "../../../../..//components/vote/StepThree";
+// import mockElections from "../../../../..//utils/mockElectionsData";
 
 const mockElectionData = {
   _id: "B62qinHTtL5wUL5ccnKudxDWhZYAyWDj2HcvVY1YVLhNXwqN9cceFkz",

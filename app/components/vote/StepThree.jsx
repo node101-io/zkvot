@@ -4,10 +4,10 @@ import React, { useEffect, useState } from "react";
 import { FaImage } from "react-icons/fa";
 import { motion } from "framer-motion";
 
-import Clock from "@/assets/ElectionCard/Clock";
-import LearnMoreIcon from "@/assets/ElectionCard/LearnMoreIcon";
-import DownloadIcon from "@/assets/ElectionCard/DownloadIcon";
-import MinaLogo from "@/assets/StepsProgress/MinaLastStep.svg";
+import Clock from "../..//assets/ElectionCard/Clock";
+import LearnMoreIcon from "../..//assets/ElectionCard/LearnMoreIcon";
+import DownloadIcon from "../..//assets/ElectionCard/DownloadIcon";
+import MinaLogo from "../..//assets/StepsProgress/MinaLastStep.svg";
 import CopyButton from "../common/CopyButton";
 import ToolTip from "../common/ToolTip";
 
