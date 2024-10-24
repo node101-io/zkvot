@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Button from "@/components/common/Button";
+import Button from "../../../../components/common/Button";
 import ElectionInput from "./stepOneComponent/ElectionInput";
 import ElectionList from "./stepOneComponent/ElectionList";
 
@@ -101,7 +101,6 @@ const StepOne = ({ onNext, initialData }) => {
             </label>
 
             <div className="flex flex-col space-y-4 flex-grow">
-              {/* Question Input */}
               <div className="flex flex-col space-y-2">
                 <p className="text-sm text-white">Question</p>
                 <input

@@ -1,16 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
-import Button from "@/components/common/Button";
+import Button from "../../../../components/common/Button";
 import Image from "next/image";
 import Link from "next/link";
-import SignUpImage from "@/assets/StepFiveTutroial/AkordSignUp.svg";
-import SetUpVaultImage from "@/assets/StepFiveTutroial/AkordSetUpVault.svg";
-import CreateVaultImage from "@/assets/StepFiveTutroial/AkordCreateVault.svg";
-import UploadFileImage from "@/assets/StepFiveTutroial/AkordUploadFile.svg";
-import DownloadFileImage from "@/assets/StepFiveTutroial/AkordDownloadUploadFile.svg";
-import FileContentImage from "@/assets/StepFiveTutroial/AkordFileContent.svg";
-import CopyFromFileImage from "@/assets/StepFiveTutroial/AkordCopyFromFile.svg";
+import SignUpImage from "../../../../assets/StepFiveTutroial/AkordSignUp.svg";
+import SetUpVaultImage from "../../../../assets/StepFiveTutroial/AkordSetUpVault.svg";
+import CreateVaultImage from "../../../../assets/StepFiveTutroial/AkordCreateVault.svg";
+import UploadFileImage from "../../../../assets/StepFiveTutroial/AkordUploadFile.svg";
+import DownloadFileImage from "../../../../assets/StepFiveTutroial/AkordDownloadUploadFile.svg";
+import FileContentImage from "../../../../assets/StepFiveTutroial/AkordFileContent.svg";
+import CopyFromFileImage from "../../../../assets/StepFiveTutroial/AkordCopyFromFile.svg";
 
 const StepSix = ({ electionData, onPrevious, onSubmit, onDownload }) => {
   const [transactionId, setTransactionId] = useState("");

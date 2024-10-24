@@ -3,14 +3,14 @@ import React, { useContext, useEffect, useState } from "react";
 import Image from "next/image";
 import { FaImage } from "react-icons/fa";
 
-import Button from "@/components/common/Button";
-import LearnMoreIcon from "@/assets/ElectionCard/LearnMoreIcon";
-import Clock from "@/assets/ElectionCard/Clock";
-import DownloadIcon from "@/assets/ElectionCard/DownloadIcon";
-import AvailLogo from "@/assets/DaLogos/Avail";
-import CelestiaLogo from "@/assets/DaLogos/Celestia";
-import { KeplrWalletContext } from "@/contexts/KeplrWalletContext";
-import { SubwalletContext } from "@/contexts/SubwalletContext";
+import Button from "../../components/common/Button";
+import LearnMoreIcon from "../../assets/ElectionCard/LearnMoreIcon";
+import Clock from "../../assets/ElectionCard/Clock";
+import DownloadIcon from "../../assets/ElectionCard/DownloadIcon";
+import AvailLogo from "../../assets/DaLogos/Avail";
+import CelestiaLogo from "../../assets/DaLogos/Celestia";
+import { KeplrWalletContext } from "../../contexts/KeplrWalletContext";
+import { SubwalletContext } from "../../contexts/SubwalletContext";
 import CopyButton from "../common/CopyButton";
 import ToolTip from "../common/ToolTip";
 

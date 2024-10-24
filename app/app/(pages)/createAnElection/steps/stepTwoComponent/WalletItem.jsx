@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import DeleteIcon from "@/assets/CreateElection/DeleteIcon.svg";
-import EditIcon from "@/assets/CreateElection/EditIcon.svg";
+import DeleteIcon from "../../../../../assets/CreateElection/DeleteIcon.svg";
+import EditIcon from "../../../../../assets/CreateElection/EditIcon.svg";
 import Image from "next/image";
 
 const WalletItem = ({
@@ -107,7 +107,7 @@ const WalletItem = ({
             type="text"
             value={wallet}
             onChange={(e) => setWallet(e.target.value)}
-            onKeydown={handleKeyPress}
+            onKeyDown={handleKeyPress}
             className={`flex-1 h-8 p-1 bg-[#222] text-white rounded-[73px] border ${
               inputError.wallet ? "border-red-500" : "border-[#1E1E1E]"
             } mr-2`}
@@ -136,7 +136,7 @@ const WalletItem = ({
                       [field]: e.target.value,
                     }))
                   }
-                  onKeydown={handleKeyPress}
+                  onKeyDown={handleKeyPress}
                   className={`w-[130px] max-w-[150px] overflow-x-scroll h-8 p-1 bg-[#222222] text-white rounded-[73px] border ${
                     inputError[field] ? "border-red-500" : "border-[#1E1E1E]"
                   }`}

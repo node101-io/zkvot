@@ -2,7 +2,9 @@ import mockElections from "./mockElectionsData";
 
 export const fetchElections = async (skip = 0) => {
   try {
-    const url = `/api/election/filter?skip=${encodeURIComponent(skip)}`;
+    const url = `http://localhost:4040/api/election/filter?skip=${encodeURIComponent(
+      skip
+    )}`;
 
     const response = await fetch(url, {
       method: "GET",

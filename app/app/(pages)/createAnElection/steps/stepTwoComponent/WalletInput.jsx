@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import PlusIcon from "@/assets/CreateElection/PlusIcon.svg";
+import PlusIcon from "../../../../../assets/CreateElection/PlusIcon.svg";
 import Image from "next/image";
 import { ChevronDownIcon } from "@heroicons/react/solid";
 

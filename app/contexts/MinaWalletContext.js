@@ -1,5 +1,5 @@
 "use client";
-import { useToast } from "@/components/ToastProvider";
+import { useToast } from "../components/ToastProvider";
 import React, { createContext, useState } from "react";
 
 export const MinaWalletContext = createContext();

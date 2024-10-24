@@ -2,8 +2,7 @@
 
 import React, { createContext, useState, useEffect } from "react";
 import { Buffer } from "buffer";
-import { useToast } from "@/components/ToastProvider";
-
+import { useToast } from "../components/ToastProvider";
 export const SubwalletContext = createContext();
 
 export const SubwalletProvider = ({ children }) => {
