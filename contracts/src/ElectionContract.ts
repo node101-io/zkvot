@@ -17,17 +17,17 @@ import { AggregateProof } from './RangeAggregationProgram.js';
 
 export const ElectionContractErrors = {};
 
-let ELECTION_START_HEIGHT: number;
-let ELECTION_FINALIZE_HEIGHT: number;
+let ELECTION_START_TIMESTAMP: number;
+let ELECTION_FINALIZE_TIMESTAMP: number;
 let VOTERS_ROOT: bigint;
 
 export const setElectionContractConstants = (data: {
-  electionStartHeight: number;
-  electionFinalizeHeight: number;
+  electionStartTimestamp: number;
+  electionFinalizeTimestamp: number;
   votersRoot: bigint;
 }) => {
-  ELECTION_START_HEIGHT = data.electionStartHeight;
-  ELECTION_FINALIZE_HEIGHT = data.electionFinalizeHeight;
+  ELECTION_START_TIMESTAMP = data.electionStartTimestamp;
+  ELECTION_FINALIZE_TIMESTAMP = data.electionFinalizeTimestamp;
   VOTERS_ROOT = data.votersRoot;
 };
 
@@ -94,11 +94,11 @@ export class ElectionContract extends SmartContract {
     aggregateProof.publicInput.electionId.assertEquals(this.address);
     aggregateProof.publicInput.votersRoot.assertEquals(Field.from(VOTERS_ROOT));
 
-    this.network.blockchainLength.getAndRequireEquals();
+    this.network.timestamp.getAndRequireEquals();
 
-    this.network.blockchainLength.requireBetween(
-      UInt32.from(ELECTION_START_HEIGHT),
-      UInt32.from(ELECTION_FINALIZE_HEIGHT)
+    this.network.timestamp.requireBetween(
+      UInt64.from(ELECTION_START_TIMESTAMP),
+      UInt64.from(ELECTION_FINALIZE_TIMESTAMP)
     );
 
     let currentMaximumCountedVotes =
@@ -108,7 +108,9 @@ export class ElectionContract extends SmartContract {
       aggregateProof.publicOutput.totalAggregatedCount
     );
 
-    this.maximumCountedVotes.set(aggregateProof.publicOutput.totalAggregatedCount);
+    this.maximumCountedVotes.set(
+      aggregateProof.publicOutput.totalAggregatedCount
+    );
 
     const newVoteOptions = new VoteOptions({
       voteOptions_1: aggregateProof.publicOutput.voteOptions_1,
@@ -119,7 +121,9 @@ export class ElectionContract extends SmartContract {
 
     this.voteOptions.set(newVoteOptions);
 
-    this.lastAggregatorPubKeyHash.set(Poseidon.hash(lastAggregatorPubKey.toFields()));
+    this.lastAggregatorPubKeyHash.set(
+      Poseidon.hash(lastAggregatorPubKey.toFields())
+    );
 
     this.emitEvent(
       'Settlement',
@@ -133,10 +137,10 @@ export class ElectionContract extends SmartContract {
   @method.returns(VoteOptions)
   async getFinalizedResults() {
     this.account.provedState.requireEquals(Bool(true));
-    this.network.blockchainLength.getAndRequireEquals();
-    this.network.blockchainLength.requireBetween(
-      UInt32.from(ELECTION_FINALIZE_HEIGHT),
-      UInt32.MAXINT()
+    this.network.timestamp.getAndRequireEquals();
+    this.network.timestamp.requireBetween(
+      UInt64.from(ELECTION_FINALIZE_TIMESTAMP),
+      UInt64.MAXINT()
     );
     return this.voteOptions.getAndRequireEquals();
   }
@@ -149,10 +153,10 @@ export class ElectionContract extends SmartContract {
     amount: UInt64
   ) {
     this.account.provedState.requireEquals(Bool(true));
-    this.network.blockchainLength.getAndRequireEquals();
-    this.network.blockchainLength.requireBetween(
-      UInt32.from(ELECTION_FINALIZE_HEIGHT),
-      UInt32.MAXINT()
+    this.network.timestamp.getAndRequireEquals();
+    this.network.timestamp.requireBetween(
+      UInt64.from(ELECTION_FINALIZE_TIMESTAMP),
+      UInt64.MAXINT()
     );
 
     const lastAggregatorPubKeyHash =

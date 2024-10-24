@@ -1,9 +1,24 @@
 import { NextResponse } from "next/server";
 
+interface BlockInfo {
+  block_height: number;
+  block_hash: string;
+};
+
 const CELESTIA_MAINNET_RPC = "https://rpc-mocha.pops.one/block";
+const BLOCK_INFO_CACHE_TIME = 1000 * 60 * 5;
+
+let lastResponse: BlockInfo;
+let lastRequestTime: number;
 
 export async function GET() {
   try {
+    if (lastResponse && Date.now() - lastRequestTime < BLOCK_INFO_CACHE_TIME)
+      return NextResponse.json({
+        success: true,
+        ...lastResponse,
+      });
+
     const response = await fetch(CELESTIA_MAINNET_RPC, {
       method: "POST",
       headers: {
@@ -27,15 +42,19 @@ export async function GET() {
         error: "block_info_not_found",
       });
 
-    return NextResponse.json({
-      success: true,
+    lastResponse = {
       block_height: blockHeight,
       block_hash: blockHash,
+    };
+
+    return NextResponse.json({
+      success: true,
+      ...lastResponse,
     });
   } catch (err) {
     return NextResponse.json({
       success: false,
       error: err.message,
     });
-  }
+  };
 };
