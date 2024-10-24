@@ -1,11 +1,13 @@
 "use client";
 import { useToast } from "../components/ToastProvider";
-import React, { createContext, useState } from "react";
+import React, { createContext, useState, useContext } from "react";
+import { IsCompiledContext } from "./IsCompiledContext";
 
 export const MinaWalletContext = createContext();
 
 export const MinaWalletProvider = ({ children }) => {
   const [minaWalletAddress, setMinaWalletAddress] = useState(null);
+  const { zkappWorkerClient } = useContext(IsCompiledContext);
   const showToast = useToast();
 
   const connectMinaWallet = async () => {
@@ -77,7 +79,7 @@ export const MinaWalletProvider = ({ children }) => {
   };
 
   const generateZkProofWithMina = async (electionJson) => {
-    const WorkingElectionJson = {
+    const workingElectionJson = {
       electionId: "B62qinHTtL5wUL5ccnKudxDWhZYAyWDj2HcvVY1YVLhNXwqN9cceFkz",
       signedElectionId: {
         r: "16346194317455302813137534197593798058813563456069267503760707907206335264689",
@@ -91,28 +93,19 @@ export const MinaWalletProvider = ({ children }) => {
       ],
       publicKey: "B62qrMoASjs48NFsaefftxs3w7mAb3mjhMZbRVczurAwTbcQEP2BMon",
     };
+
     try {
-      const response = await fetch(
-        "http://localhost:10102/zk-proof/generate-vote",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(WorkingElectionJson),
-        }
-      );
+      console.log("befoorreee")
 
-      if (!response.ok) {
-        const errorMessage = await response.text();
-        console.error("Failed to generate zk-proof:", errorMessage);
-        throw new Error("Failed to generate zk-proof");
-      }
+      console.time("generateZkProofWithMina");
 
-      const result = await response.json();
-      return {
-        proof: result.data || "",
-      };
+      console.log("zkappWorkerClient", zkappWorkerClient);
+
+      const encodedVoteProof = await zkappWorkerClient.createVote(workingElectionJson);
+
+      console.timeEnd("generateZkProofWithMina");
+
+      console.log("encodedVoteProof", encodedVoteProof);
     } catch (error) {
       console.error("Error generating zk-proof:", error);
       return {

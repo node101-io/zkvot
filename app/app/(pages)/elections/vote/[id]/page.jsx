@@ -35,6 +35,11 @@ const mockElectionData = {
       name: "Jane Smith",
       student_id: "S67890",
     },
+    {
+      address: "B62qjuN5cQqDbLg2L9ZZeV9bTDr7oaTYijuRbnw5idHu6DwGeJo44L6",
+      name: "ossurk",
+      student_id: "S67893",
+    },
   ],
   communication_layers: [
     {

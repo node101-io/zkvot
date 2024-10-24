@@ -38,7 +38,7 @@ export const IsCompiledProvider = ({ children }) => {
   }, []);
 
   return (
-    <IsCompiledContext.Provider value={{ hasBeenSetup, setHasBeenSetup }}>
+    <IsCompiledContext.Provider value={{ zkappWorkerClient, hasBeenSetup, setHasBeenSetup }}>
       {children}
     </IsCompiledContext.Provider>
   );

@@ -1,14 +1,19 @@
 import {
   MerkleTree,
   Poseidon,
-  Signature,
+  Field,
   PublicKey,
+  Signature
 } from "o1js";
 import * as Comlink from "comlink";
 import { Vote, VotePrivateInputs, VotePublicInputs, MerkleWitnessClass } from 'contracts';
-import { encodeDataToBase64String } from '../utils/encodeDataToBase64String.js';
+import { encodeDataToBase64String } from '../utils/encodeDataToBase64String';
 
-const createMerkleTreeFromLeaves = (leaves: string[]): MerkleTree => {
+const state = {
+  Program: null as null | typeof Vote,
+};
+
+const createMerkleTreeFromLeaves = (leaves: string[]) => {
   let votersTree = new MerkleTree(20);
 
   for (let i = 0; i < leaves.length; i++) {
@@ -19,9 +24,6 @@ const createMerkleTreeFromLeaves = (leaves: string[]): MerkleTree => {
 
   return votersTree;
 };
-const state = {
-  Program: null as null | typeof Vote,
-};
 
 export const api = {
   async loadProgram() {
@@ -31,17 +33,52 @@ export const api = {
   async compileProgram() {
     await state.Program?.compile();
   },
-  async createVote({ signature: string, candidate: number }): JSON {
-    const publicInputs = new VotePublicInputs({
-      electionId: PublicKey.fromHex("0x01"),
-      vote: BigInt(candidate),
-      votersRoot: BigInt(0),
+  async createVote(data: any) {
+    console.log('data', data);
+
+    const { electionId, signedElectionId, vote, votersArray, publicKey } = data;
+
+    const votersTree = createMerkleTreeFromLeaves(votersArray);
+
+    console.log('votersTree', votersTree);
+
+    const witness = votersTree.getWitness(BigInt(votersArray.indexOf(publicKey)));
+
+    console.log('witness', witness);
+
+    const votePublicInputs = new VotePublicInputs({
+      electionId: PublicKey.fromJSON(electionId),
+      vote: Field.from(vote),
+      votersRoot: votersTree.getRoot(),
     });
 
-    Vote.proof.vote(privateInputs, publicInputs).then((proof) => {
-      return proof.toJSON();
+    console.log('votePublicInputs', votePublicInputs);
+
+    const votePrivateInputs = new VotePrivateInputs({
+      voterKey: PublicKey.fromJSON(publicKey),
+      signedElectionId: Signature.fromJSON(signedElectionId),
+      votersMerkleWitness: new MerkleWitnessClass(witness),
     });
-  },
+
+    console.log('votePrivateInputs', votePrivateInputs);
+
+    console.time('vote proof generation');
+
+    const voteProof = await Vote.vote(votePublicInputs, votePrivateInputs);
+
+    console.log('voteProof', voteProof);
+
+    console.timeEnd('vote proof generation');
+
+    encodeDataToBase64String(voteProof.toJSON(), (error, encodedVoteProof) => {
+      console.log(error, encodedVoteProof);
+
+      if (error)
+        return console.error(error);
+
+      return encodedVoteProof;
+    });
+  }
 };
 
 Comlink.expose(api);

@@ -23,8 +23,9 @@ export default class ZkappWorkerClient {
     return this.remoteApi.compileProgram();
   }
 
-  // async createVote(): Promise<Field> {
-  //   const result = await this.remoteApi.createVote();
-  //   return Field.fromJSON(JSON.parse(result as string));
-  // }
+  async createVote(data: any) {
+    const result = await this.remoteApi.createVote(data);
+
+    return result;
+  }
 }
