@@ -58,8 +58,6 @@ const VotePage = ({ params }) => {
   const [selectedoption, setSelectedoption] = useState(null);
   const [selectedDA, setSelectedDA] = useState(null);
 
-  const [selectedWallet, setSelectedWallet] = useState(null);
-
   const [zkProofData, setZkProofData] = useState(null);
 
   const goToNextStep = () => {
@@ -86,8 +84,6 @@ const VotePage = ({ params }) => {
             errorStep={stepErrors[currentStep]}
             setLoading={setLoading}
             setZkProofData={setZkProofData}
-            selectedWallet={selectedWallet}
-            setSelectedWallet={setSelectedWallet}
           />
         )}
         {currentStep === 2 && (

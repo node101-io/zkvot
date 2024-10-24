@@ -14,6 +14,7 @@ import WalletSelectionModal from "../common/WalletSelectionModal";
 import CopyButton from "../common/CopyButton";
 import { useToast } from "../ToastProvider";
 import ToolTip from "../common/ToolTip";
+import { SelectedWalletContext } from "@/contexts/SelectedWalletContext";
 
 const StepOne = ({
   electionData,
@@ -23,8 +24,6 @@ const StepOne = ({
   loading,
   setZkProofData,
   goToNextStep,
-  selectedWallet,
-  setSelectedWallet,
 }) => {
   const showToast = useToast();
 
@@ -46,6 +45,10 @@ const StepOne = ({
     connectMetamaskWallet,
     disconnectMetamaskWallet,
   } = useContext(MetamaskWalletContext);
+
+  const { selectedWallet, setSelectedWallet } = useContext(
+    SelectedWalletContext
+  );
 
   const userWalletAddresses = [metamaskWalletAddress, minaWalletAddress]
     .filter(Boolean)
@@ -225,6 +228,7 @@ const StepOne = ({
 
       const proof = await generateZkProofWithMina(electionJson);
       setZkProofData(proof);
+      console.log("zkProofData", proof);
 
       if (selectedWallet === "Mina") {
         await disconnectMinaWallet();
