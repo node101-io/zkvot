@@ -2,16 +2,16 @@
 
 import React, { useContext, useEffect, useState } from "react";
 import { FaImage } from "react-icons/fa";
-import Clock from "@/assets/ElectionCard/Clock";
-import AvailLogo from "@/assets/DaLogos/Avail";
-import CelestiaLogo from "@/assets/DaLogos/Celestia";
-import ArweaveLogo from "@/assets/StorageLayers/IPFS.svg";
-import IPFSLogo from "@/assets/StorageLayers/IPFS.svg";
-import FileCoinLogo from "@/assets/StorageLayers/FileCoin.svg";
+import Clock from "../../../../assets/ElectionCard/Clock";
+import AvailLogo from "../../../../assets/DaLogos/Avail";
+import CelestiaLogo from "../../../../assets/DaLogos/Celestia";
+import ArweaveLogo from "../../../../assets/StorageLayers/IPFS.svg";
+import IPFSLogo from "../../../../assets/StorageLayers/IPFS.svg";
+import FileCoinLogo from "../../../../assets/StorageLayers/FileCoin.svg";
 
 import Image from "next/image";
-// import { MinaWalletContext } from "@/contexts/MinaWalletContext";
-// import { useToast } from "@/components/ToastProvider";
+// import { MinaWalletContext } from "../../../../contexts/MinaWalletContext";
+// import { useToast } from "../../../../components/ToastProvider";
 
 const StepSeven = ({ electionData }) => {
   const communicationLayerLogos = {

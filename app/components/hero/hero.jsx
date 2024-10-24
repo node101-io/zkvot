@@ -2,7 +2,7 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import TopSection from "./TopSection.jsx";
 import Panel from "./Panel.jsx";
-import { MinaWalletContext } from "@/contexts/MinaWalletContext.js";
+import { MinaWalletContext } from "../../contexts/MinaWalletContext.js";
 
 const hero = () => {
   const [activePanel, setActivePanel] = useState(null);

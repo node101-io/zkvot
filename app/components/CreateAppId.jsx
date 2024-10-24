@@ -1,6 +1,6 @@
 "use client";
 import React, { useContext, useState, useEffect } from "react";
-import { SubwalletContext } from "@/contexts/SubwalletContext";
+import { SubwalletContext } from "../contexts/SubwalletContext";
 
 const PlusIcon = () => (
   <svg
