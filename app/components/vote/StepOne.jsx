@@ -4,17 +4,17 @@ import Image from "next/image";
 import { FaImage } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 
-import Button from "../..//components/common/Button";
-import LearnMoreIcon from "../..//assets/ElectionCard/LearnMoreIcon";
-import Clock from "../..//assets/ElectionCard/Clock";
-import DownloadIcon from "../..//assets/ElectionCard/DownloadIcon";
-import { MinaWalletContext } from "../..//contexts/MinaWalletContext";
-import { MetamaskWalletContext } from "../..//contexts/MetamaskWalletContext";
+import Button from "../../components/common/Button";
+import LearnMoreIcon from "../../assets/ElectionCard/LearnMoreIcon";
+import Clock from "../../assets/ElectionCard/Clock";
+import DownloadIcon from "../../assets/ElectionCard/DownloadIcon";
+import { MinaWalletContext } from "../../contexts/MinaWalletContext";
+import { MetamaskWalletContext } from "../../contexts/MetamaskWalletContext";
 import WalletSelectionModal from "../common/WalletSelectionModal";
 import CopyButton from "../common/CopyButton";
 import { useToast } from "../ToastProvider";
 import ToolTip from "../common/ToolTip";
-import { SelectedWalletContext } from "../..//contexts/SelectedWalletContext";
+import { SelectedWalletContext } from "../../contexts/SelectedWalletContext";
 
 const StepOne = ({
   electionData,

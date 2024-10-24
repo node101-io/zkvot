@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import DeleteIcon from "@/assets/CreateElection/DeleteIcon.svg";
-import EditIcon from "@/assets/CreateElection/EditIcon.svg";
+import DeleteIcon from "../../../../../assets/CreateElection/DeleteIcon.svg";
+import EditIcon from "../../../../../assets/CreateElection/EditIcon.svg";
 import Image from "next/image";
 
 const ElectionItem = ({ index, election, elections, setElections }) => {

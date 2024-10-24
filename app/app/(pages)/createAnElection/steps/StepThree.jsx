@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import AvailLogo from "@/assets/DaLogos/Avail";
-import CelestiaLogo from "@/assets/DaLogos/Celestia";
-import Button from "@/components/common/Button";
+import AvailLogo from "../../../../assets/DaLogos/Avail";
+import CelestiaLogo from "../../../../assets/DaLogos/Celestia";
+import Button from "../../../../components/common/Button";
 
 const CreationData = {
   CommunicationChoicesName: ["Avail", "Celestia"],

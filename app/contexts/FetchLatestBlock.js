@@ -15,7 +15,7 @@ export const fetchAvailBlockHeight = async () => {
 
 export const fetchCelestiaBlockInfo = async () => {
   try {
-    const response = await fetch("/celestia-block-info");
+    const response = await fetch("api/celestia/block-info");
 
     if (!response.ok) {
       const errorText = await response.text();

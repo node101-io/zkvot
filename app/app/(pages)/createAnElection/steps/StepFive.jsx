@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import Button from "@/components/common/Button";
-import IPFSLogo from "@/assets/StorageLayers/IPFS.svg";
-import FileCoinLogo from "@/assets/StorageLayers/FileCoin.svg";
-import ArweaveLogo from "@/assets/StorageLayers/FileCoin.svg";
+import Button from "../../../..//components/common/Button";
+import IPFSLogo from "../../../..//assets/StorageLayers/IPFS.svg";
+import FileCoinLogo from "../../../..//assets/StorageLayers/FileCoin.svg";
+import ArweaveLogo from "../../../..//assets/StorageLayers/FileCoin.svg";
 import Image from "next/image";
 
 const storageLayersNames = [

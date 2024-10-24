@@ -11,13 +11,13 @@ import StepSeven from "./steps/StepSeven";
 import {
   fetchAvailBlockHeight,
   fetchCelestiaBlockInfo,
-} from "@/contexts/FetchLatestBlock";
+} from "../../../contexts/FetchLatestBlock";
 
 import {
   fetchDataFromIPFS,
   fetchDataFromFilecoin,
   fetchDataFromArweave,
-} from "@/utils/StorageUtils";
+} from "../../../utils/StorageUtils";
 
 const mockElectionData = {
   image_raw:
@@ -382,7 +382,7 @@ const HomePage = () => {
     try {
       if (selectedLayer.type === "celestia") {
         const response = await fetch(
-          `/celestia-generate-namespace?election_id=${encodeURIComponent(
+          `api/celestia/generate-namespace?election_id=${encodeURIComponent(
             electionData.question
           )}`
         );
@@ -548,8 +548,8 @@ const HomePage = () => {
   };
 
   return (
-    <div className="flex justify-center items-center h-full py-12">
-      <div className="w-[1062px] h-full p-6 rounded-lg">
+    <div className="flex justify-center items-center h-full overflow-y-scroll pb-2">
+      <div className="w-[1062px] h-full p-6 rounded-lg ">
         {step === 1 && (
           <StepOne
             onNext={handleStepOneNext}

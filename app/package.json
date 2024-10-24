@@ -10,6 +10,7 @@
     "ts-watch": "tsc --noEmit --incremental --watch"
   },
   "dependencies": {
+    "@heroicons/react": "^1.0.6",
     "@polkadot/extension-dapp": "^0.54.1",
     "avail-js-sdk": "^0.2.18",
     "comlink": "^4.4.1",

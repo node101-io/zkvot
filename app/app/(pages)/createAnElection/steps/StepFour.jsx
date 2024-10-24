@@ -1,12 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Button from "@/components/common/Button";
-import CreateAppId from "@/components/CreateAppId";
+import Button from "../../../../components/common/Button";
+import CreateAppId from "../../../../components/CreateAppId";
 import {
   fetchAvailBlockHeight,
   fetchCelestiaBlockInfo,
-} from "@/contexts/FetchLatestBlock";
-import { useToast } from "@/components/ToastProvider";
+} from "../../../../contexts/FetchLatestBlock";
+import { useToast } from "../../../../components/ToastProvider";
 
 const StepFour = ({
   electionData,
@@ -182,23 +182,25 @@ const StepFour = ({
           )}
           {localBlockHeight && localBlockHash && (
             <>
-              <div className="w-full">
-                <label className="block text-white mb-2">Block Height:</label>
-                <input
-                  type="text"
-                  value={localBlockHeight}
-                  readOnly
-                  className="w-full h-12 p-2 bg-[#222] text-white rounded-[23px] border"
-                />
-              </div>
-              <div className="w-full">
-                <label className="block text-white mb-2">Block Hash:</label>
-                <input
-                  type="text"
-                  value={localBlockHash}
-                  readOnly
-                  className="w-full h-12 p-2 bg-[#222] text-white rounded-[23px] border"
-                />
+              <div className="w-full space-y-12">
+                <div className="w-full">
+                  <label className="block text-white mb-2">Block Height:</label>
+                  <input
+                    type="text"
+                    value={localBlockHeight}
+                    readOnly
+                    className="w-full h-12 p-2 bg-[#222] text-white rounded-[23px] border"
+                  />
+                </div>
+                <div className="w-full">
+                  <label className="block text-white mb-2">Block Hash:</label>
+                  <input
+                    type="text"
+                    value={localBlockHash}
+                    readOnly
+                    className="w-full h-12 p-2 bg-[#222] text-white rounded-[23px] border"
+                  />
+                </div>
               </div>
             </>
           )}
