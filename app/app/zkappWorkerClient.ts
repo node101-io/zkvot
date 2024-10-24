@@ -1,4 +1,3 @@
-import { Field } from "o1js";
 import * as Comlink from "comlink";
 
 export default class ZkappWorkerClient {

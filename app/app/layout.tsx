@@ -4,6 +4,7 @@ import { Montserrat } from "next/font/google";
 import Navbar from "../components/NavBar/NavBar";
 import { WalletProvider } from "../components/providers";
 import ToastProvider from "../components/ToastProvider";
+import { IsCompiledProvider } from "../contexts/IsCompiledContext";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -24,12 +25,14 @@ export default function RootLayout({
     <html lang="en">
       <body className={montserrat.className}>
         <main className="flex flex-col px-4 overflow-hidden">
-          <ToastProvider>
-            <WalletProvider>
-              <Navbar />
-              {children}
-            </WalletProvider>
-          </ToastProvider>
+          <IsCompiledProvider>
+            <ToastProvider>
+              <WalletProvider>
+                <Navbar />
+                {children}
+              </WalletProvider>
+            </ToastProvider>
+          </IsCompiledProvider>
         </main>
       </body>
     </html>

@@ -14,6 +14,7 @@
     "@polkadot/extension-dapp": "^0.54.1",
     "avail-js-sdk": "^0.2.18",
     "comlink": "^4.4.1",
+    "contracts": "file:../contracts/contracts-0.1.0.tgz",
     "copy-to-clipboard": "^3.3.3",
     "framer-motion": "^11.11.9",
     "next": "14.2.12",
