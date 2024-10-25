@@ -1,5 +1,4 @@
 "use client";
-import { KeplrWalletProvider } from "../contexts/KeplrWalletContext";
 import { MinaWalletProvider } from "../contexts/MinaWalletContext";
 import { SubwalletProvider } from "../contexts/SubwalletContext";
 import { MetamaskWalletProvider } from "../contexts/MetamaskWalletContext";
@@ -11,9 +10,7 @@ export const WalletProvider = ({ children }) => {
     <SelectedWalletProvider>
       <MinaWalletProvider>
         <MetamaskWalletProvider>
-          <KeplrWalletProvider>
-            <SubwalletProvider>{children}</SubwalletProvider>
-          </KeplrWalletProvider>
+          <SubwalletProvider>{children}</SubwalletProvider>
         </MetamaskWalletProvider>
       </MinaWalletProvider>
     </SelectedWalletProvider>
