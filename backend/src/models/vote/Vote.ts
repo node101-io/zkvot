@@ -1,11 +1,10 @@
-// import { JsonProof } from 'o1js';
 import { model, Model, Schema } from 'mongoose';
 
 import Election from '../election/Election.js';
 import verifyVote from './functions/verifyVote.js';
 import submitVote from './functions/submitVote.js';
-import isBase64String from 'src/utils/isBase64String.js';
-import decodeFromBase64String from 'src/utils/decodeFromBase64String.js';
+import isBase64String from '../../utils/isBase64String.js';
+import decodeFromBase64String from '../../utils/decodeFromBase64String.js';
 
 const DUPLICATED_UNIQUE_FIELD_ERROR_CODE = 11000;
 const MAX_DATABASE_TEXT_FIELD_LENGTH = 1e4;
