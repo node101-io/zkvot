@@ -130,7 +130,7 @@ const HowItWorks = () => {
                 />
               </div>
               <div className="mb-4">
-                <h1 className="text-white font-montserrat text-[24px]">
+                <h1 className="text-white font-montserrat text-[16px]">
                   You see you are a voter in the election, and you want to vote.
                 </h1>
                 <h1 className="w-[477px] pt-2 text-white font-montserrat text-[16px] leading-[32px]">
