@@ -19,7 +19,6 @@ const createMerkleTreeFromLeaves = (leaves: string[]) => {
     const leaf = Poseidon.hash(PublicKey.fromJSON(leaves[i]).toFields());
     votersTree.setLeaf(BigInt(i), leaf);
   }
-
   return votersTree;
 };
 
