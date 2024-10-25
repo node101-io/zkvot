@@ -4,6 +4,10 @@ import "./commands/index.js";
 import "./commands/count/index.js";
 import "./commands/logs/index.js";
 
+import resultCommand from './commands/results/index.js';
+
+resultCommand();
+
 command.parse();
 
 // db structure
