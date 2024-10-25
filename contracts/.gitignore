@@ -27,3 +27,5 @@ cachedProofsDb
 
 local
 local-mock
+
+*.tgz

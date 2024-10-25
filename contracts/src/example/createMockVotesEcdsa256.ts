@@ -50,34 +50,38 @@ let Local = await Mina.LocalBlockchain({ proofsEnabled: true });
 Mina.setActiveInstance(Local);
 
 let votersArray: Array<
-  [privateKey: string, publicKey: string, pubkey: Secp256k1]
+  [privateKey: string, publicKey: string, address: string, pubkey: Secp256k1]
 > = [];
 
 for (let i = 0; i < 40; i++) {
   let wallet = Wallet.createRandom();
   let privateKey = wallet.privateKey;
   let publicKey = wallet.publicKey;
+  let address = wallet.address;
   let pubkey = Provable.witness(Secp256k1, () => Secp256k1.fromHex(publicKey));
-  votersArray.push([privateKey, publicKey, pubkey]);
+  votersArray.push([privateKey, publicKey, address, pubkey]);
 }
 
 votersArray.sort((a, b) => {
-  if (BigInt(a[1]) < BigInt(b[1])) {
+  if (BigInt(a[2]) < BigInt(b[2])) {
     return -1;
   }
-  if (BigInt(a[1]) > BigInt(b[1])) {
+  if (BigInt(a[2]) > BigInt(b[2])) {
     return 1;
   }
   return 0;
 });
 
+console.log(
+  votersArray.map((voter) => {
+    return voter[2];
+  })
+);
+
 let votersTree = new MerkleTree(20);
 
 for (let i = 0; i < 40; i++) {
-  let leaf = Poseidon.hash([
-    ...votersArray[i][2].x.value,
-    ...votersArray[i][2].y.value,
-  ]);
+  let leaf = Field.from(BigInt(votersArray[i][2]));
   votersTree.setLeaf(BigInt(i), leaf);
 }
 
@@ -106,11 +110,16 @@ const electionId = electionPrivateKey.toPublicKey();
 
 let voteProofs = [];
 for (let i = 0; i < 20; i++) {
-  let vote = BigInt(Math.floor(Math.random() * 42) + 1);
+  let vote = BigInt(Math.floor(Math.random() * 28) + 1);
   let privateKey = votersArray[i][0];
-  let pubkey = votersArray[i][2];
+  let address = votersArray[i][2];
+  let pubkey = votersArray[i][3];
   let merkleTreeWitness = votersTree.getWitness(BigInt(i));
   let witness = new MerkleWitnessClass(merkleTreeWitness);
+
+  console.log(`voter ${i} voting for ${vote}`);
+  console.log(`voter ${i} address: ${address}`);
+  console.log(`voter ${i} address in bigint: ${BigInt(address)}`);
 
   let votePublicInputs = new VotePublicInputs({
     electionId: electionId,
@@ -120,7 +129,7 @@ for (let i = 0; i < 20; i++) {
   const electionId_first_field = electionId.toFields()[0].toBigInt();
   const electionId_second_field = electionId.toFields()[1].toBigInt();
 
-  const VoteIdArray = [
+  const VoteIdArray: any = [
     ...bigintToUint8Array32BigEndian(electionId_first_field),
     ...bigintToUint8Array32BigEndian(electionId_second_field),
   ];
@@ -131,10 +140,13 @@ for (let i = 0; i < 20; i++) {
   const signedElectionIdEcdsa = ecdsaSignature.fromHex(signedElectionId);
 
   let votePrivateInputs = new VoteWithSecp256k1PrivateInputs({
-    voterKey: pubkey,
+    voterAddress: Field.from(BigInt(address)),
+    voterPubKey: pubkey,
     signedElectionId: signedElectionIdEcdsa,
     votersMerkleWitness: witness,
   });
+
+  console.log(`voter ${i} address: ${Field.from(BigInt(address)).toString()}`);
 
   console.time(`vote ${i} proof`);
   let voteProof = await Vote.voteWithSecp256k1(
@@ -167,9 +179,10 @@ await fs.writeFile(
 
 voteProofs = [];
 for (let i = 20; i < 40; i++) {
-  let vote = BigInt(Math.floor(Math.random() * 42) + 1);
+  let vote = BigInt(Math.floor(Math.random() * 28) + 1);
   let privateKey = votersArray[i][0];
-  let pubkey = votersArray[i][2];
+  let address = votersArray[i][2];
+  let pubkey = votersArray[i][3];
   let merkleTreeWitness = votersTree.getWitness(BigInt(i));
   let witness = new MerkleWitnessClass(merkleTreeWitness);
 
@@ -181,7 +194,7 @@ for (let i = 20; i < 40; i++) {
   const electionId_first_field = electionId.toFields()[0].toBigInt();
   const electionId_second_field = electionId.toFields()[1].toBigInt();
 
-  const VoteIdArray = [
+  const VoteIdArray: any = [
     ...bigintToUint8Array32BigEndian(electionId_first_field),
     ...bigintToUint8Array32BigEndian(electionId_second_field),
   ];
@@ -192,7 +205,8 @@ for (let i = 20; i < 40; i++) {
   const signedElectionIdEcdsa = ecdsaSignature.fromHex(signedElectionId);
 
   let votePrivateInputs = new VoteWithSecp256k1PrivateInputs({
-    voterKey: pubkey,
+    voterAddress: Field.from(BigInt(address)),
+    voterPubKey: pubkey,
     signedElectionId: signedElectionIdEcdsa,
     votersMerkleWitness: witness,
   });

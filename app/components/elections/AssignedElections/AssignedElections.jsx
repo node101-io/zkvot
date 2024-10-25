@@ -1,133 +1,170 @@
-import React, { useEffect, useState } from "react";
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  useRef,
+  useCallback,
+} from "react";
 import ElectionCard from "./ElectionCard";
+import { fetchElections } from "../../../utils/FetchElections.js";
+import Loader from "./Loader.jsx";
 
-const AssignedElections = () => {
-  const [electionDataArray, setElectionDataArray] = useState([]);
+const AssignedElections = ({
+  onlyOngoing,
+  metamaskWalletAddress,
+  minaWalletAddress,
+}) => {
+  const [electionData, setElectionData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [skip, setSkip] = useState(0);
+  const observer = useRef();
 
-  const [cachedData, setCachedData] = useState(null);
+  const walletAddresses = useMemo(
+    () =>
+      [metamaskWalletAddress, minaWalletAddress]
+        .filter(Boolean)
+        .map((addr) => addr.toLowerCase()),
+    [metamaskWalletAddress, minaWalletAddress]
+  );
+
+  const lastElectionElementRef = useCallback(
+    (node) => {
+      if (loadingMore) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          loadMore();
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [loadingMore, hasMore]
+  );
 
   useEffect(() => {
-    if (!cachedData) {
-      const fetchData = async () => {
-        const dummyDataArray = [
-          {
-            zkvoteBy: "Cosmos12sf123412y346781234781234asdasflj",
-            assignedVoters: 800,
-            votedNow: 300,
-            electionId: 234123412341234,
-            name: "Trump mı kazanır Harris mi?",
-            description: "Contrary to popular belief, Lorem Ipsum is not.",
-            date: "1 Jan 2024",
-            images: [
-              "https://upload.wikimedia.org/wikipedia/commons/5/56/Donald_Trump_official_portrait.jpg",
-            ],
-            listOfVoters: [
-              "B62qn71Re1CnnJxbmUmDVE7mgVY2Y82mdCwGLg5DKkJeyHfC7qGKiG2",
-              "123123",
-              "1433123",
-              "123123",
-            ],
-          },
-          {
-            zkvoteBy: "UserXYZ",
-            assignedVoters: 500,
-            electionId: 234123412341234,
+    setElectionData([]);
+    setSkip(0);
+    setHasMore(true);
+    setError(null);
+    setLoading(true);
 
-            votedNow: 200,
-            name: "Which is better: React or Angular?",
-            description: "An age-old debate between two popular frameworks.",
-            date: "15 Feb 2024",
-            images: [
-              "https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg",
-            ],
-          },
-          {
-            zkvoteBy: "Alice",
-            assignedVoters: 1000,
-            electionId: 234123412341234,
+    const getElections = async () => {
+      try {
+        const { data, hasMore } = await fetchElections(0);
 
-            votedNow: 750,
-            name: "Best programming language in 2023?",
-            description: "Help us decide the best programming language.",
-            date: "10 Mar 2024",
-            images: [
-              "https://upload.wikimedia.org/wikipedia/commons/1/18/C_Programming_Language.svg",
-            ],
-          },
-          {
-            zkvoteBy: "Bob",
-            assignedVoters: 300,
-            electionId: 234123412341234,
+        let filteredData = data;
 
-            votedNow: 150,
-            name: "Remote work vs Office work?",
-            description: "Which work environment do you prefer?",
-            date: "20 Apr 2024",
-            images: [
-              "https://via.placeholder.com/150/0000FF/FFFFFF?text=Remote+Work",
-            ],
-          },
-          {
-            zkvoteBy: "Carol",
-            assignedVoters: 400,
-            electionId: 234123412341234,
+        if (onlyOngoing && walletAddresses.length > 0) {
+          filteredData = data.filter((election) =>
+            election.voters_list?.some((voter) =>
+              walletAddresses.includes(voter.student_id.toLowerCase())
+            )
+          );
+        }
 
-            votedNow: 100,
-            name: "Android vs iOS?",
-            description: "Choose your favorite mobile operating system.",
-            date: "5 May 2024",
-            images: [
-              "https://upload.wikimedia.org/wikipedia/commons/d/d7/Android_robot.svg",
-            ],
-          },
-          {
-            zkvoteBy: "Dave",
-            assignedVoters: 600,
-            electionId: 234123412341234,
+        setElectionData(filteredData);
+        setHasMore(hasMore);
+        setSkip(100);
+      } catch (error) {
+        console.error("Error fetching elections:", error);
+        setError("Failed to load elections.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-            votedNow: 350,
-            name: "Coffee or Tea?",
-            description: "Which beverage do you prefer?",
-            date: "25 Jun 2024",
-            images: [
-              "https://upload.wikimedia.org/wikipedia/commons/4/45/A_small_cup_of_coffee.JPG",
-            ],
-          },
-        ];
+    getElections();
+  }, [onlyOngoing, walletAddresses]);
 
-        setTimeout(() => {
-          setElectionDataArray(dummyDataArray);
-          setCachedData(dummyDataArray);
-          setLoading(false);
-        });
-      };
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const { data, hasMore: newHasMore } = await fetchElections(skip);
 
-      fetchData();
-    } else {
-      setElectionDataArray(cachedData);
-      setLoading(false);
+      let filteredData = data;
+
+      if (onlyOngoing && walletAddresses.length > 0) {
+        filteredData = data.filter((election) =>
+          election.voters_list?.some((voter) =>
+            walletAddresses.includes(voter.student_id.toLowerCase())
+          )
+        );
+      }
+
+      setElectionData((prevData) => [...prevData, ...filteredData]);
+      setHasMore(newHasMore);
+      setSkip((prevSkip) => prevSkip + 100);
+    } catch (error) {
+      console.error("Error fetching more elections:", error);
+      setError("Failed to load more elections.");
+    } finally {
+      setLoadingMore(false);
     }
-  }, [cachedData]);
+  };
 
-  const skeletonCards = Array(6).fill(null);
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <ElectionCard
+            key={`skeleton-${index}`}
+            loading={true}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="text-center text-red-500">{error}</div>;
+  }
+
+  if (onlyOngoing && walletAddresses.length > 0 && electionData.length === 0) {
+    return (
+      <div className="text-center text-gray-400">
+        No elections found matching your criteria.
+      </div>
+    );
+  }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2  gap-4">
-      {loading
-        ? skeletonCards.map((_, index) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {electionData.map((election, index) => {
+        if (electionData.length === index + 1) {
+          return (
+            <div
+              ref={lastElectionElementRef}
+              key={election._id}
+            >
+              <ElectionCard
+                electionData={election}
+                loading={loading}
+              />
+            </div>
+          );
+        } else {
+          return (
             <ElectionCard
-              key={index}
-              loading={true}
+              key={election._id}
+              electionData={election}
+              loading={loading}
             />
-          ))
-        : electionDataArray.map((electionData, index) => (
-            <ElectionCard
-              key={index}
-              electionData={electionData}
-              loading={false}
-            />
-          ))}
+          );
+        }
+      })}
+      {loadingMore && (
+        <div className="col-span-1 md:col-span-2 flex justify-center my-4">
+          <Loader />
+        </div>
+      )}
+      {!hasMore && (
+        <div className="text-center text-gray-500 my-4">
+          You've reached the end of the list.
+        </div>
+      )}
     </div>
   );
 };

@@ -1,14 +1,13 @@
 import React from "react";
 import WalletItem from "./WalletItem";
-
 const WalletList = ({
   wallets,
   setWallets,
-  isTwitterRequired,
-  setIsTwitterRequired,
+  requiredFields,
+  customOptionNames,
 }) => {
   return (
-    <div className="w-full flex flex-col space-y-2 items-center">
+    <div className="w-full overflow-y-scroll flex flex-col space-y-2 items-start">
       {wallets.map((walletData, index) => (
         <WalletItem
           key={index}
@@ -16,8 +15,8 @@ const WalletList = ({
           walletData={walletData}
           wallets={wallets}
           setWallets={setWallets}
-          isTwitterRequired={isTwitterRequired}
-          setIsTwitterRequired={setIsTwitterRequired}
+          requiredFields={requiredFields}
+          customOptionNames={customOptionNames}
         />
       ))}
     </div>

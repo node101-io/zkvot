@@ -1,11 +1,20 @@
 import React from "react";
-import RightArrow from "@/assets/RightArrow";
+import RightArrow from "../../assets/RightArrow";
 
 const Spinner = () => (
   <div className="w-6 h-6 border-4 border-t-transparent border-white rounded-full animate-spin" />
 );
 
-const Button = ({
+interface ButtonProps {
+  onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+  children: React.ReactNode;
+  disabled?: boolean;
+  loading?: boolean;
+  TextColor?: string;
+  backgroundColor?: string;
+}
+
+const Button: React.FC<ButtonProps> = ({
   onClick,
   children,
   disabled = false,
@@ -17,7 +26,7 @@ const Button = ({
     <button
       disabled={disabled || loading}
       onClick={onClick}
-      className={`z-[2] group relative inline-flex items-center px-4 py-2 rounded-full font-medium overflow-hidden transition-all duration-300 ease-in-out ${
+      className={` max-w-fit z-[2] group relative inline-flex items-center px-4 py-2 rounded-full font-medium overflow-hidden transition-all duration-300 ease-in-out ${
         disabled || loading ? "cursor-not-allowed" : "cursor-pointer"
       }`}
     >

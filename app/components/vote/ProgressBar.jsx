@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
-import Step1 from "@/assets/StepsProgress/Step1.svg";
-import Step2 from "@/assets/StepsProgress/Step2.svg";
-import Step3 from "@/assets/StepsProgress/Step3.svg";
-import Current1 from "@/assets/StepsProgress/Current1.svg";
-import Current2 from "@/assets/StepsProgress/Current2.svg";
-import Current3 from "@/assets/StepsProgress/Current3.svg";
-import StepDone from "@/assets/StepsProgress/StepDone.svg";
-import Completed from "@/assets/StepsProgress/Completed.svg";
-import ErrorIcon from "@/assets/StepsProgress/Error.svg";
+import Step1 from "../../assets/StepsProgress/Step1.svg";
+import Step2 from "../../assets/StepsProgress/Step2.svg";
+import Step3 from "../../assets/StepsProgress/Step3.svg";
+import Current1 from "../../assets/StepsProgress/Current1.svg";
+import Current2 from "../../assets/StepsProgress/Current2.svg";
+import Current3 from "../../assets/StepsProgress/Current3.svg";
+import StepDone from "../../assets/StepsProgress/StepDone.svg";
+import Completed from "../../assets/StepsProgress/Completed.svg";
+import ErrorIcon from "../../assets/StepsProgress/Error.svg";
 import Image from "next/image";
 
 const ProgressBar = ({ currentStep, totalSteps, stepErrors, loading }) => {
@@ -33,15 +33,21 @@ const ProgressBar = ({ currentStep, totalSteps, stepErrors, loading }) => {
   const getStepIcon = (step) => {
     if (stepErrors && stepErrors[step]) {
       return ErrorIcon;
-    } else if (currentStep > totalSteps && step === totalSteps) {
-      return Completed;
-    } else if (step < currentStep) {
-      return StepDone;
-    } else if (step === currentStep) {
-      return currentIcons[step - 1];
-    } else {
-      return defaultIcons[step - 1];
     }
+
+    if (step === totalSteps && currentStep === totalSteps) {
+      return Completed;
+    }
+
+    if (step < currentStep) {
+      return StepDone;
+    }
+
+    if (step === currentStep) {
+      return currentIcons[step - 1];
+    }
+
+    return defaultIcons[step - 1];
   };
 
   const getProgressBarWidth = (step) => {

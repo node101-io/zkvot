@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import DeleteIcon from "../../../../../assets/CreateElection/DeleteIcon.svg";
+import EditIcon from "../../../../../assets/CreateElection/EditIcon.svg";
+import Image from "next/image";
 
 const ElectionItem = ({ index, election, elections, setElections }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -26,7 +29,7 @@ const ElectionItem = ({ index, election, elections, setElections }) => {
   };
 
   return (
-    <div className="w-[620px] h-12 flex items-center px-4 bg-[#1E1E1E] text-white rounded-[73px] border border-[#1E1E1E]">
+    <div className="w-[620px] min-h-12 h-12 flex items-center px-4 bg-[#1E1E1E] text-white rounded-[73px] border border-[#1E1E1E]">
       {isEditing ? (
         <>
           <input
@@ -42,11 +45,17 @@ const ElectionItem = ({ index, election, elections, setElections }) => {
           >
             ✓
           </button>
+
           <button
             onClick={() => setIsEditing(false)}
-            className="w-8 h-8 bg-gray-600 text-white rounded-full flex items-center justify-center ml-2"
+            className="rounded-full flex items-center justify-center mx-1"
           >
-            ×
+            <Image
+              src={DeleteIcon}
+              alt="Edit"
+              width={24}
+              height={24}
+            />
           </button>
         </>
       ) : (
@@ -54,15 +63,25 @@ const ElectionItem = ({ index, election, elections, setElections }) => {
           <span className="flex-1">{election}</span>
           <button
             onClick={() => setIsEditing(true)}
-            className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center mx-1"
+            className="rounded-full flex items-center justify-center mx-1"
           >
-            ✎
+            <Image
+              src={EditIcon}
+              alt="Edit"
+              width={24}
+              height={24}
+            />
           </button>
           <button
             onClick={deleteElection}
-            className="w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center mx-1"
+            className=" rounded-full flex items-center justify-center mx-1"
           >
-            🗑️
+            <Image
+              src={DeleteIcon}
+              alt="Delete"
+              width={20}
+              height={20}
+            />
           </button>
         </>
       )}

@@ -1,3 +1,5 @@
+*.tgz
+
 # Source files
 src
 

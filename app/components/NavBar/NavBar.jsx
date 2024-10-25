@@ -2,15 +2,14 @@
 import React, { useEffect, useState } from "react";
 import WalletButton from "../common/WalletButton";
 import { motion } from "framer-motion";
-import Logo from "../../assets/Logo.svg";
 import Image from "next/image";
-import ZKVot from "@/assets/Logo/ZKVot.svg";
-import ZKVotDot from "@/assets/Logo/ZKVotDot.svg";
+import ZKVot from "../../assets/Logo/ZKVot.svg";
+import ZKVotDot from "../../assets/Logo/ZKVotDot.svg";
 import Link from "next/link";
 
 const Navbar = () => {
   const navItems = [
-    { name: "How it works?", href: "/" },
+    { name: "How it works?", href: "/howitworks" },
     { name: "All Elections", href: "/elections" },
     {
       name: (
@@ -71,7 +70,8 @@ const Navbar = () => {
             <Image
               src={ZKVot}
               alt="ZKVot Logo"
-              layout="fill"
+              fill
+              sizes="100%"
               priority
             />
           </motion.div>

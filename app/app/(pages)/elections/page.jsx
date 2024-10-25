@@ -1,10 +1,19 @@
 "use client";
-import AssignedElections from "@/components/elections/AssignedElections/AssignedElections";
-import React, { useState } from "react";
+// import LearnMoreIcon from "../../../assets/ElectionCard/LearnMoreIcon";
+import ToolTip from "../../../components/common/ToolTip";
+import AssignedElections from "../../../components/elections/AssignedElections/AssignedElections";
+import { MetamaskWalletContext } from "../../../contexts/MetamaskWalletContext";
+import { MinaWalletContext } from "../../../contexts/MinaWalletContext";
+import React, { useContext, useState } from "react";
 
 const Page = () => {
   const [activePanel, setActivePanel] = useState("Assigned Elections");
   const [onlyOngoing, setOnlyOngoing] = useState(false);
+
+  const { metamaskWalletAddress } = useContext(MetamaskWalletContext);
+  const { minaWalletAddress } = useContext(MinaWalletContext);
+
+  const isWalletConnected = metamaskWalletAddress || minaWalletAddress;
 
   return (
     <div className="flex justify-center">
@@ -13,55 +22,68 @@ const Page = () => {
           <div className="flex mb-2 md:mb-0 space-x-12">
             <button
               onClick={() => setActivePanel("Assigned Elections")}
-              className={`  focus:outline-none ${
+              className={`focus:outline-none ${
                 activePanel === "Assigned Elections"
                   ? "text-white border-b-[1px] pb-1 border-primary"
-                  : "text-[#B7B7B7] "
+                  : "text-[#B7B7B7]"
               }`}
             >
               Assigned Elections
             </button>
             <button
               onClick={() => setActivePanel("Voted Elections")}
-              className={` focus:outline-none ${
+              className={`focus:outline-none ${
                 activePanel === "Voted Elections"
                   ? "text-white border-b-[1px] pb-1 border-primary"
-                  : "text-[#B7B7B7] "
+                  : "text-[#B7B7B7]"
               }`}
             >
               Voted Elections
             </button>
           </div>
-
-          <div className="flex items-center">
-            <input
-              id="onlyOngoing"
-              type="checkbox"
-              checked={onlyOngoing}
-              onChange={() => setOnlyOngoing(!onlyOngoing)}
-              className={`mr-2 w-4 h-4 rounded-sm cursor-pointer  border  accent-green
-      ${
-        onlyOngoing
-          ? "bg-green-500 border-green"
-          : "appearance-none border-[#B7B7B7]"
-      } 
-      `}
-            />
-            <label
-              htmlFor="onlyOngoing"
-              className={`cursor-pointer ${
-                onlyOngoing ? "text-green" : "text-[#B7B7B7]"
-              }`}
-            >
-              Only show elections you are eligible to vote
-            </label>
-          </div>
+          <ToolTip
+            content="Connect wallet to use"
+            showTooltip={!isWalletConnected}
+            position="top"
+            arrowPosition="start"
+          >
+            <div className="flex items-center">
+              <input
+                id="onlyOngoing"
+                type="checkbox"
+                checked={onlyOngoing}
+                onChange={() => setOnlyOngoing(!onlyOngoing)}
+                className={`mr-2 w-4 h-4 rounded-sm cursor-pointer border accent-green ${
+                  onlyOngoing
+                    ? "bg-green-500 border-green"
+                    : "appearance-none border-[#B7B7B7]"
+                }`}
+                disabled={!isWalletConnected}
+              />
+              <div className="flex flex-col">
+                <div className="flex flex-col">
+                  <label
+                    htmlFor="onlyOngoing"
+                    className={`cursor-pointer ${
+                      onlyOngoing ? "text-green" : "text-[#B7B7B7]"
+                    }`}
+                  >
+                    Only show elections you are eligible to vote
+                  </label>
+                </div>
+              </div>
+            </div>
+          </ToolTip>
         </div>
 
         <div className="px-6">
           {activePanel === "Assigned Elections" && (
             <div className="py-8">
-              <AssignedElections />
+              <AssignedElections
+                onlyOngoing={onlyOngoing}
+                metamaskWalletAddress={metamaskWalletAddress}
+                minaWalletAddress={minaWalletAddress}
+              />
             </div>
           )}
           {activePanel === "Voted Elections" && (

@@ -17,11 +17,19 @@ import { AggregateProof } from './RangeAggregationProgram.js';
 
 export const ElectionContractErrors = {};
 
-// example constants
-const ELECTION_START_HEIGHT = 359903;
-const ELECTION_FINALIZE_HEIGHT = 360903;
-const VOTERS_ROOT =
-  '7220410732849693290992065916960855133805021761846933220739435886085799813856';
+let ELECTION_START_TIMESTAMP: number;
+let ELECTION_FINALIZE_TIMESTAMP: number;
+let VOTERS_ROOT: bigint;
+
+export const setElectionContractConstants = (data: {
+  electionStartTimestamp: number;
+  electionFinalizeTimestamp: number;
+  votersRoot: bigint;
+}) => {
+  ELECTION_START_TIMESTAMP = data.electionStartTimestamp;
+  ELECTION_FINALIZE_TIMESTAMP = data.electionFinalizeTimestamp;
+  VOTERS_ROOT = data.votersRoot;
+};
 
 export class ElectionData extends Struct({
   first: Field,
@@ -86,11 +94,11 @@ export class ElectionContract extends SmartContract {
     aggregateProof.publicInput.electionId.assertEquals(this.address);
     aggregateProof.publicInput.votersRoot.assertEquals(Field.from(VOTERS_ROOT));
 
-    this.network.blockchainLength.getAndRequireEquals();
+    this.network.timestamp.getAndRequireEquals();
 
-    this.network.blockchainLength.requireBetween(
-      UInt32.from(ELECTION_START_HEIGHT),
-      UInt32.from(ELECTION_FINALIZE_HEIGHT)
+    this.network.timestamp.requireBetween(
+      UInt64.from(ELECTION_START_TIMESTAMP),
+      UInt64.from(ELECTION_FINALIZE_TIMESTAMP)
     );
 
     let currentMaximumCountedVotes =
@@ -129,10 +137,10 @@ export class ElectionContract extends SmartContract {
   @method.returns(VoteOptions)
   async getFinalizedResults() {
     this.account.provedState.requireEquals(Bool(true));
-    this.network.blockchainLength.getAndRequireEquals();
-    this.network.blockchainLength.requireBetween(
-      UInt32.from(ELECTION_FINALIZE_HEIGHT),
-      UInt32.MAXINT()
+    this.network.timestamp.getAndRequireEquals();
+    this.network.timestamp.requireBetween(
+      UInt64.from(ELECTION_FINALIZE_TIMESTAMP),
+      UInt64.MAXINT()
     );
     return this.voteOptions.getAndRequireEquals();
   }
@@ -145,10 +153,10 @@ export class ElectionContract extends SmartContract {
     amount: UInt64
   ) {
     this.account.provedState.requireEquals(Bool(true));
-    this.network.blockchainLength.getAndRequireEquals();
-    this.network.blockchainLength.requireBetween(
-      UInt32.from(ELECTION_FINALIZE_HEIGHT),
-      UInt32.MAXINT()
+    this.network.timestamp.getAndRequireEquals();
+    this.network.timestamp.requireBetween(
+      UInt64.from(ELECTION_FINALIZE_TIMESTAMP),
+      UInt64.MAXINT()
     );
 
     const lastAggregatorPubKeyHash =
