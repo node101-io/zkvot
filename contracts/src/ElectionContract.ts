@@ -81,6 +81,7 @@ export class ElectionContract extends SmartContract {
 
     this.electionData.set(electionData);
     this.voteOptions.set(VoteOptions.empty());
+    this.maximumCountedVotes.set(Field.from(0));
   }
 
   @method
@@ -88,13 +89,13 @@ export class ElectionContract extends SmartContract {
     aggregateProof: AggregateProof,
     lastAggregatorPubKey: PublicKey
   ) {
-    this.account.provedState.requireEquals(Bool(true));
+    // this.account.provedState.requireEquals(Bool(true));
 
     aggregateProof.verify();
     aggregateProof.publicInput.electionId.assertEquals(this.address);
     aggregateProof.publicInput.votersRoot.assertEquals(Field.from(VOTERS_ROOT));
 
-    this.network.timestamp.getAndRequireEquals();
+    // this.network.timestamp.getAndRequireEquals();
 
     this.network.timestamp.requireBetween(
       UInt64.from(ELECTION_START_TIMESTAMP),
