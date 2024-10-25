@@ -41,17 +41,17 @@ const mockElectionData = {
   ],
   communication_layers: [
     {
+      _id: "67195d7c1a11ec43bad1ccf9",
+      type: "avail",
+      start_block: 987654,
+      app_id: 42,
+    },
+    {
       _id: "67195d7c1a11ec43bad1ccf8",
       type: "celestia",
       start_block: 123456,
       namespace: "0x123abc",
       block_hash: "0xabcdef1234567890",
-    },
-    {
-      _id: "67195d7c1a11ec43bad1ccf9",
-      type: "avail",
-      start_block: 987654,
-      app_id: 42,
     },
   ],
   image_raw:

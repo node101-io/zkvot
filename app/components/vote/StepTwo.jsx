@@ -15,17 +15,17 @@ import CopyButton from "../common/CopyButton";
 import ToolTip from "../common/ToolTip";
 
 const daDetails = {
-  celestia: {
-    description:
-      "It is a long established fact that a reader will be distracted.",
-    fee: 1.4212,
-    currency: "$CELE",
-  },
   avail: {
     description:
       "It is a long established fact that a reader will be distracted.",
     fee: 1.2593,
     currency: "$AVAIL",
+  },
+  celestia: {
+    description:
+      "It is a long established fact that a reader will be distracted.",
+    fee: 1.4212,
+    currency: "$CELE",
   },
 };
 
@@ -58,29 +58,29 @@ const StepTwo = ({
   const [walletAddress, setWalletAddress] = useState(null);
 
   const handleConnectWallet = async () => {
-    if (selectedDA === 0) {
+    if (selectedDA === "avail") {
       await connectSubwallet();
-    } else if (selectedDA === 1) {
+    } else if (selectedDA === "celestia") {
       await connectKeplrWallet();
     }
   };
 
   useEffect(() => {
-    if (selectedDA === 0 && selectedAccount) {
+    if (selectedDA === "avail" && selectedAccount) {
       setWalletAddress(selectedAccount.address);
-    } else if (selectedDA === 1 && keplrWalletAddress) {
+    } else if (selectedDA === "celestia" && keplrWalletAddress) {
       setWalletAddress(keplrWalletAddress);
     }
   }, [selectedAccount, keplrWalletAddress, selectedDA]);
 
   useEffect(() => {
     setWalletAddress(null);
-    if (selectedDA === 0) {
+    if (selectedDA === "avail") {
       if (keplrWalletAddress) {
         disconnectKeplrWallet();
       }
       setSelectedWallet("Subwallet");
-    } else if (selectedDA === 1) {
+    } else if (selectedDA === "celestia") {
       if (selectedAccount) {
         disconnectSubwallet();
       }
@@ -88,18 +88,16 @@ const StepTwo = ({
     } else {
       setSelectedWallet("");
     }
-  }, [selectedDA]);
-
-  useEffect(() => {
-    if (selectedDA === 0 && selectedAccount) {
-      setWalletAddress(selectedAccount.address);
-    } else if (selectedDA === 1 && keplrWalletAddress) {
-      setWalletAddress(keplrWalletAddress);
-    }
-  }, [selectedAccount, keplrWalletAddress, selectedDA]);
+  }, [
+    selectedDA,
+    keplrWalletAddress,
+    selectedAccount,
+    disconnectKeplrWallet,
+    disconnectSubwallet,
+  ]);
 
   const handleNext = async () => {
-    if (selectedDA === null) {
+    if (!selectedDA) {
       alert("Please select a DA Layer to proceed.");
       return;
     }
@@ -119,9 +117,9 @@ const StepTwo = ({
 
       let transactionSuccess = false;
 
-      if (selectedDA === 1) {
+      if (selectedDA === "celestia") {
         transactionSuccess = await sendTransactionKeplr(zkProofData);
-      } else if (selectedDA === 0) {
+      } else if (selectedDA === "avail") {
         transactionSuccess = await sendTransactionSubwallet(zkProofData);
       }
 
@@ -134,6 +132,7 @@ const StepTwo = ({
       }
     } catch (error) {
       console.error("Error sending transaction:", error);
+      setLoading(false);
     }
   };
 
@@ -257,15 +256,15 @@ const StepTwo = ({
             : ""
         }`}
       >
-        {electionData.communication_layers.map((layer, index) => (
+        {electionData.communication_layers.map((layer) => (
           <div
             key={layer._id}
             className={`p-4 bg-[#222222] rounded-2xl cursor-pointer flex items-center transition duration-200 ${
-              selectedDA === index
+              selectedDA === layer.type
                 ? "border-[1px] border-primary shadow-lg"
                 : "hover:bg-[#333333]"
             }`}
-            onClick={() => !isSubmitting && setSelectedDA(index)}
+            onClick={() => !isSubmitting && setSelectedDA(layer.type)}
           >
             <div className="flex-shrink-0 mr-4">
               {daLogos[layer.type] || (
@@ -295,13 +294,13 @@ const StepTwo = ({
         {walletAddress ? (
           <Button
             onClick={handleNext}
-            disabled={!walletAddress || selectedDA === null || isSubmitting}
+            disabled={!walletAddress || !selectedDA || isSubmitting}
             loading={isSubmitting}
           >
             Submit Vote
           </Button>
         ) : (
-          <div className={`${selectedDA === null ? "hidden" : "flex"}`}>
+          <div className={`${!selectedDA ? "hidden" : "flex"}`}>
             <Button onClick={handleConnectWallet}>
               Connect {selectedWallet} Wallet
             </Button>
