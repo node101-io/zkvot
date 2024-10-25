@@ -8,6 +8,7 @@ import Clock from "../../../assets/ElectionCard/Clock";
 import LearnMoreIcon from "../../../assets/ElectionCard/LearnMoreIcon";
 import CopyButton from "../../../components/common/CopyButton";
 import ToolTip from "../../../components/common/ToolTip";
+import FormattedDate from "../../../components/FormattedDate";
 
 const ElectionCard = ({ electionData, loading }) => {
   if (loading) {
@@ -83,7 +84,7 @@ const ElectionCard = ({ electionData, loading }) => {
               <Clock />
             </span>
             <span className="ml-1 text-sm text-[#B7B7B7]">
-              {electionData.date}
+              <FormattedDate dateString={electionData.start_date} />
             </span>
           </span>
         </div>

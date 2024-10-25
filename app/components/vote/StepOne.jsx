@@ -17,6 +17,7 @@ import ToolTip from "../common/ToolTip";
 import { SelectedWalletContext } from "../../contexts/SelectedWalletContext";
 import { IsCompiledContext } from "../../contexts/IsCompiledContext";
 import LoadingOverlay from "../common/LoadingOverlay.jsx";
+import FormattedDate from "../FormattedDate";
 
 const StepOne = ({
   electionData,
@@ -321,7 +322,7 @@ const StepOne = ({
                 <Clock />
               </span>
               <span className="ml-1 text-sm text-[#B7B7B7]">
-                {electionData.date}
+                <FormattedDate dateString={electionData.start_date} />
               </span>
             </span>
           </div>

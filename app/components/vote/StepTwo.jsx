@@ -14,6 +14,7 @@ import CopyButton from "../common/CopyButton";
 import ToolTip from "../common/ToolTip";
 import { sendDataToBackend } from "../../utils/api";
 import { useToast } from "../ToastProvider";
+import FormattedDate from "../FormattedDate";
 
 const daDetails = {
   avail: {
@@ -32,7 +33,7 @@ const daDetails = {
 
 const ModeSelection = ({ selectionMode, setSelectionMode }) => {
   return (
-    <div className="flex mb-6 w-full space-x-6">
+    <div className="flex mb-6 w-full space-x-4">
       <button
         onClick={() => setSelectionMode("direct")}
         className={`focus:outline-none ${
@@ -289,7 +290,7 @@ const StepTwo = ({
                   <Clock />
                 </span>
                 <span className="ml-1 text-sm text-[#B7B7B7]">
-                  {electionData.start_date}
+                  <FormattedDate dateString={electionData.start_date} />
                 </span>
               </span>
             </div>

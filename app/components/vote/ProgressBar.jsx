@@ -15,7 +15,7 @@ const ProgressBar = ({ currentStep, totalSteps, stepErrors, loading }) => {
 
   const stepLabels = [
     ["We are converting", "your vote into a ZK proof."],
-    ["You are submitting", "your proof to Avail."],
+    ["You are submitting", "your proof."],
     ["Wait for decentralized", "sequencers to settle"],
   ];
 

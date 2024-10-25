@@ -10,6 +10,7 @@ import DownloadIcon from "../..//assets/ElectionCard/DownloadIcon";
 import MinaLogo from "../..//assets/StepsProgress/MinaLastStep.svg";
 import CopyButton from "../common/CopyButton";
 import ToolTip from "../common/ToolTip";
+import FormattedDate from "../FormattedDate";
 
 const DEFAULT_MINA_RPC_URL = "https://api.minascan.io/node/devnet/v1/graphql";
 const PUBLIC_KEY = "B62qmsjhW3v8XQXHPAJairdpVrLD7RRmzWXCkgZUAsbXbmn2UMGdrYm";
@@ -207,7 +208,7 @@ const StepThree = ({ electionData, selectedOption }) => {
                   <Clock />
                 </span>
                 <span className="ml-1 text-sm text-[#B7B7B7]">
-                  {electionData.date}
+                  <FormattedDate dateString={electionData.start_date} />
                 </span>
               </span>
             </div>
