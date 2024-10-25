@@ -124,25 +124,47 @@ const StepTwo = ({
     sendTransactionSubwallet,
     isSubmitting,
   } = useContext(SubwalletContext);
-  const toast = useToast();
+  const showToast = useToast();
 
   const [selectedWallet, setSelectedWallet] = useState("");
   const [walletAddress, setWalletAddress] = useState(null);
   const [selectionMode, setSelectionMode] = useState("direct");
 
   const handleConnectWallet = async () => {
-    console.log("Connecting wallet...");
-    if (selectedDA === "avail" && selectedAccount) {
-      setWalletAddress(selectedAccount.address);
+    try {
+      console.log("Connecting wallet...");
+      await connectSubwallet();
+      console.log("Wallet connection initiated.");
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+      toast({
+        title: "Connection Failed",
+        description: "Failed to connect wallet. Please try again.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
-    console.log("Wallet connected.", selectedAccount.address);
   };
 
   useEffect(() => {
-    if (selectedDA === "avail" && selectedAccount) {
+    if (
+      selectionMode === "direct" &&
+      selectedDA === "avail" &&
+      selectedAccount
+    ) {
       setWalletAddress(selectedAccount.address);
+      console.log("Wallet connected:", selectedAccount.address);
+    } else {
+      setWalletAddress(null);
     }
-  }, [selectedAccount, selectedDA]);
+
+    if (selectedDA === "avail" && selectionMode === "direct") {
+      setSelectedWallet("Subwallet");
+    } else {
+      setSelectedWallet("");
+    }
+  }, [selectedAccount, selectedDA, selectionMode]);
 
   useEffect(() => {
     setWalletAddress(null);
@@ -153,13 +175,13 @@ const StepTwo = ({
 
   const handleNext = async () => {
     if (!selectedDA) {
-      showToast("Please select a DA Layer to proceed.", "error");
+      toast("Please select a DA Layer to proceed.", "error");
 
       return;
     }
 
     if (selectionMode === "direct") {
-      if (!walletAddress) {
+      if (!selectedAccount) {
         showToast("Please connect your wallet to proceed.", "error");
         return;
       }
@@ -201,7 +223,7 @@ const StepTwo = ({
           selectedDA,
           zkProofData,
         };
-
+        console.log("Sending data to backend:", payload);
         const response = await sendDataToBackend(payload);
         console.log("Backend response:", response);
 
@@ -358,10 +380,10 @@ const StepTwo = ({
 
       <div className="w-full pt-8 flex justify-end">
         {selectionMode === "direct" ? (
-          walletAddress ? (
+          selectedAccount ? (
             <Button
               onClick={handleNext}
-              disabled={!walletAddress || !selectedDA || isSubmitting}
+              disabled={!selectedDA || isSubmitting}
               loading={isSubmitting}
             >
               Submit Vote
