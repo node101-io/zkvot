@@ -326,7 +326,7 @@ const StepOne = ({
             </span>
           </div>
           <div className="flex-grow min-h-52">
-            <h2 className="text-[24px] mb-2">{electionData.name}</h2>
+            <h2 className="text-[24px] mb-2">{electionData.question}</h2>
             <p className={`my-4 text-[16px] italic text-[#F6F6F6]`}>
               {electionData.description}
             </p>

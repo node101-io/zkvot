@@ -297,7 +297,7 @@ const StepThree = ({ electionData, selectedOption }) => {
                 >
                   <div className="flex items-center justify-start w-full">
                     <span className="text-white text-[14px]">
-                      {result.name}
+                      {result.question}
                     </span>
                     <span className="text-white text-[14px] pl-2">
                       %{result.percentage} (
