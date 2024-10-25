@@ -92,13 +92,13 @@ const Navbar = () => {
       </Link>
 
       {navItems.map((item, index) => (
-        <a
+        <Link
           key={index}
           href={item.href}
           className="group text-white hover:opacity-75 whitespace-nowrap"
         >
           {item.name}
-        </a>
+        </Link>
       ))}
 
       <WalletButton />

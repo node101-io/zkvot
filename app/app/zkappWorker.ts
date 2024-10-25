@@ -30,7 +30,7 @@ export const api = {
   async compileProgram() {
     await state.Program?.compile({ proofsEnabled: true });
   },
-  async createVote(data: any) {
+  async createVote(data: any): Promise<string> {
     if (!state.Program)
       throw new Error("Program not loaded. Call loadProgram() first.");
 
@@ -74,19 +74,27 @@ export const api = {
 
       console.timeEnd("vote proof generation");
 
-      encodeDataToBase64String(
-        voteProof.toJSON(),
-        (error, encodedVoteProof) => {
+      const encodedVoteProof = await new Promise<string>((resolve, reject) => {
+        encodeDataToBase64String(voteProof.toJSON(), (error, base64String) => {
           if (error) {
             console.error("Error encoding vote proof:", error);
-            return;
+            reject(error);
+          } else {
+            console.log("Encoded Vote Proof:", base64String);
+            if (base64String !== undefined) {
+              resolve(base64String);
+            } else {
+              reject(new Error("Encoded vote proof is undefined"));
+            }
           }
+        });
+      });
 
-          console.log("Encoded Vote Proof:", encodedVoteProof);
-        }
-      );
+      console.log("Returning encodedVoteProof:", encodedVoteProof);
+      return encodedVoteProof;
     } catch (error) {
       console.error("Error generating zk-proof:", error);
+      throw error;
     }
   },
 };

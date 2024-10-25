@@ -14,7 +14,7 @@ import ToolTip from "../common/ToolTip";
 const DEFAULT_MINA_RPC_URL = "https://api.minascan.io/node/devnet/v1/graphql";
 const PUBLIC_KEY = "B62qmsjhW3v8XQXHPAJairdpVrLD7RRmzWXCkgZUAsbXbmn2UMGdrYm";
 
-const StepThree = ({ electionData, selectedoption }) => {
+const StepThree = ({ electionData, selectedOption }) => {
   const [contractState, setContractState] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -154,7 +154,7 @@ const StepThree = ({ electionData, selectedoption }) => {
     }
   };
 
-  console.log("Selected option:", selectedoption);
+  console.log("Selected option:", selectedOption);
 
   return (
     <div className="flex flex-col items-center px-4 sm:px-6 md:px-8 h-full">

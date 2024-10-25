@@ -1,13 +1,14 @@
 "use client";
 import { useToast } from "../components/ToastProvider";
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useState, useContext, useEffect } from "react";
 import { IsCompiledContext } from "./IsCompiledContext";
 
 export const MinaWalletContext = createContext();
 
 export const MinaWalletProvider = ({ children }) => {
   const [minaWalletAddress, setMinaWalletAddress] = useState(null);
-  const { zkappWorkerClient } = useContext(IsCompiledContext);
+  const { zkappWorkerClient, hasBeenSetup, isSettingUp } =
+    useContext(IsCompiledContext);
   const showToast = useToast();
 
   const connectMinaWallet = async () => {
@@ -95,19 +96,45 @@ export const MinaWalletProvider = ({ children }) => {
     };
 
     try {
-      console.log("befoorreee")
+      if (isSettingUp) {
+        showToast("System is initializing. Please wait...", "info");
+        return {
+          proof: "",
+        };
+      }
+
+      if (!hasBeenSetup) {
+        showToast("System not ready. Please try again later.", "error");
+        return {
+          proof: "",
+        };
+      }
+
+      if (!zkappWorkerClient) {
+        showToast("Worker client not available.", "error");
+        return {
+          proof: "",
+        };
+      }
+
+      console.log("Before generating zk-proof");
 
       console.time("generateZkProofWithMina");
 
       console.log("zkappWorkerClient", zkappWorkerClient);
 
-      const encodedVoteProof = await zkappWorkerClient.createVote(workingElectionJson);
+      const encodedVoteProof = await zkappWorkerClient.createVote(
+        workingElectionJson
+      );
 
       console.timeEnd("generateZkProofWithMina");
 
       console.log("encodedVoteProof", encodedVoteProof);
+
+      return { proof: encodedVoteProof };
     } catch (error) {
       console.error("Error generating zk-proof:", error);
+      showToast("Failed to generate zk-proof.", "error");
       return {
         proof: "",
       };
