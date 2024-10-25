@@ -31,7 +31,7 @@ const daDetails = {
 
 const StepTwo = ({
   electionData,
-  selectedoption,
+  selectedOption,
   selectedDA,
   setSelectedDA,
   goToNextStep,
@@ -245,7 +245,7 @@ const StepTwo = ({
         <div className="pt-4 pb-2 w-full">
           <h3 className="text-[16px] text-[#B7B7B7] mb-4">Your Choice</h3>
           <div className="pl-4 rounded text-[20px]">
-            {electionData.options[selectedoption]}
+            {electionData.options[selectedOption]}
           </div>
         </div>
       </div>

@@ -15,17 +15,20 @@ import CopyButton from "../common/CopyButton";
 import { useToast } from "../ToastProvider";
 import ToolTip from "../common/ToolTip";
 import { SelectedWalletContext } from "../../contexts/SelectedWalletContext";
+import { IsCompiledContext } from "../../contexts/IsCompiledContext";
 
 const StepOne = ({
   electionData,
-  selectedoption,
-  setSelectedoption,
+  selectedOption,
+  setSelectedOption,
   setLoading,
   loading,
   setZkProofData,
   goToNextStep,
 }) => {
   const showToast = useToast();
+
+  const { hasBeenSetup } = useContext(IsCompiledContext);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
@@ -121,7 +124,7 @@ const StepOne = ({
 
   const handleVoteClick = async () => {
     if (
-      selectedoption === null &&
+      selectedOption === null &&
       eligibilityStatus !== "not_eligible" &&
       eligibilityStatus !== "not_connected"
     ) {
@@ -166,14 +169,14 @@ const StepOne = ({
   const generateElectionJson = (
     electionData,
     signedElectionId,
-    selectedoption,
+    selectedOption,
     votersArray,
     publicKey
   ) => {
     return {
       electionId: electionData._id,
       signedElectionId,
-      vote: selectedoption,
+      vote: selectedOption,
       votersArray: votersArray
         .map((address) => address?.trim().toLowerCase())
         .filter((address) => address),
@@ -182,6 +185,10 @@ const StepOne = ({
   };
 
   const handleConfirmAndContinue = async () => {
+    if (!hasBeenSetup) {
+      showToast("Please wait for the setup to complete.", "error");
+      return;
+    }
     try {
       setLoading(true);
       setIsModalOpen(false);
@@ -219,7 +226,7 @@ const StepOne = ({
       const electionJson = generateElectionJson(
         electionData,
         signedElectionId,
-        selectedoption,
+        selectedOption,
         votersArray,
         publicKey
       );
@@ -364,12 +371,12 @@ const StepOne = ({
               key={index}
               className={`p-4 text-center bg-[#222222] rounded-2xl  
         ${
-          selectedoption === index
+          selectedOption === index
             ? "border-primary border-[1px] shadow-lg"
             : "hover:bg-[#333333]"
         }
         ${eligibilityStatus !== "eligible" ? "cursor-not-allowed" : ""}`}
-              onClick={() => setSelectedoption(index)}
+              onClick={() => setSelectedOption(index)}
               disabled={loading || eligibilityStatus !== "eligible"}
             >
               {option}
