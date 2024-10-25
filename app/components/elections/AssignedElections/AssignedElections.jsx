@@ -6,7 +6,7 @@ import React, {
   useCallback,
 } from "react";
 import ElectionCard from "./ElectionCard";
-import { fetchElections } from "../../../utils/FetchElections.js";
+import { fetchElections } from "../../../utils/api.js";
 import Loader from "./Loader.jsx";
 
 const AssignedElections = ({

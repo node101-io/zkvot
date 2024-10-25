@@ -41,3 +41,24 @@ export const fetchElections = async (skip = 0) => {
     };
   }
 };
+
+export const sendDataToBackend = async (data) => {
+  try {
+    const response = await fetch("/api/vote/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to send data to backend.");
+    }
+
+    return await response.json();
+  } catch (error) {
+    throw error;
+  }
+};

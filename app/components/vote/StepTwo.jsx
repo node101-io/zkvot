@@ -9,10 +9,11 @@ import Clock from "../../assets/ElectionCard/Clock";
 import DownloadIcon from "../../assets/ElectionCard/DownloadIcon";
 import AvailLogo from "../../assets/DaLogos/Avail";
 import CelestiaLogo from "../../assets/DaLogos/Celestia";
-import { KeplrWalletContext } from "../../contexts/KeplrWalletContext";
 import { SubwalletContext } from "../../contexts/SubwalletContext";
 import CopyButton from "../common/CopyButton";
 import ToolTip from "../common/ToolTip";
+import { sendDataToBackend } from "../../utils/api";
+import { useToast } from "../ToastProvider";
 
 const daDetails = {
   avail: {
@@ -29,6 +30,83 @@ const daDetails = {
   },
 };
 
+const ModeSelection = ({ selectionMode, setSelectionMode }) => {
+  return (
+    <div className="flex mb-6 w-full space-x-6">
+      <button
+        onClick={() => setSelectionMode("direct")}
+        className={`focus:outline-none ${
+          selectionMode === "direct"
+            ? "text-white border-b-[1px] pb-1 border-primary"
+            : "text-[#B7B7B7]"
+        }`}
+      >
+        Direct Thru Chain
+      </button>
+      <button
+        onClick={() => setSelectionMode("backend")}
+        className={`focus:outline-none ${
+          selectionMode === "backend"
+            ? "text-white border-b-[1px] pb-1 border-primary"
+            : "text-[#B7B7B7]"
+        }`}
+      >
+        Thru Our Backends
+      </button>
+    </div>
+  );
+};
+
+const DASelection = ({
+  communicationLayers,
+  selectedDA,
+  setSelectedDA,
+  daDetails,
+  daLogos,
+  isSubmitting,
+}) => {
+  return (
+    <div
+      className={`grid grid-cols-1 sm:grid-cols-2 gap-4 w-full ${
+        isSubmitting ? "opacity-50 cursor-not-allowed pointer-events-none" : ""
+      }`}
+    >
+      {communicationLayers.map((layer) => (
+        <div
+          key={layer._id}
+          className={`p-4 bg-[#222222] rounded-2xl cursor-pointer flex items-center transition duration-200 ${
+            selectedDA === layer.type
+              ? "border-[1px] border-primary shadow-lg"
+              : "hover:bg-[#333333]"
+          }`}
+          onClick={() => !isSubmitting && setSelectedDA(layer.type)}
+        >
+          <div className="flex-shrink-0 mr-4">
+            {daLogos[layer.type] || (
+              <div className="w-12 h-12 bg-gray-500 rounded-full" />
+            )}
+          </div>
+          <div className="flex flex-col h-full justify-between">
+            <h3 className="text-white text-[24px] mb-2">
+              {layer.type.charAt(0).toUpperCase() + layer.type.slice(1)}
+            </h3>
+            <p className="text-[16px] mb-2">
+              {daDetails[layer.type]?.description ||
+                "No description available."}
+            </p>
+            <div className="flex items-center justify-between">
+              <span className="text-[16px]">
+                Fee: {daDetails[layer.type]?.fee}{" "}
+                {daDetails[layer.type]?.currency}
+              </span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 const StepTwo = ({
   electionData,
   selectedOption,
@@ -39,99 +117,106 @@ const StepTwo = ({
   setLoading,
 }) => {
   const {
-    keplrWalletAddress,
-    connectKeplrWallet,
-    sendTransactionKeplr,
-    disconnectKeplrWallet,
-    isSubmitting: isSubmittingKeplr,
-  } = useContext(KeplrWalletContext);
-
-  const {
     selectedAccount,
     connectWallet: connectSubwallet,
     disconnectWallet: disconnectSubwallet,
     sendTransactionSubwallet,
     isSubmitting,
   } = useContext(SubwalletContext);
+  const toast = useToast();
 
   const [selectedWallet, setSelectedWallet] = useState("");
   const [walletAddress, setWalletAddress] = useState(null);
+  const [selectionMode, setSelectionMode] = useState("direct");
 
   const handleConnectWallet = async () => {
-    if (selectedDA === "avail") {
-      await connectSubwallet();
-    } else if (selectedDA === "celestia") {
-      await connectKeplrWallet();
+    console.log("Connecting wallet...");
+    if (selectedDA === "avail" && selectedAccount) {
+      setWalletAddress(selectedAccount.address);
     }
+    console.log("Wallet connected.", selectedAccount.address);
   };
 
   useEffect(() => {
     if (selectedDA === "avail" && selectedAccount) {
       setWalletAddress(selectedAccount.address);
-    } else if (selectedDA === "celestia" && keplrWalletAddress) {
-      setWalletAddress(keplrWalletAddress);
     }
-  }, [selectedAccount, keplrWalletAddress, selectedDA]);
+  }, [selectedAccount, selectedDA]);
 
   useEffect(() => {
     setWalletAddress(null);
     if (selectedDA === "avail") {
-      if (keplrWalletAddress) {
-        disconnectKeplrWallet();
-      }
       setSelectedWallet("Subwallet");
-    } else if (selectedDA === "celestia") {
-      if (selectedAccount) {
-        disconnectSubwallet();
-      }
-      setSelectedWallet("Keplr");
-    } else {
-      setSelectedWallet("");
     }
-  }, [
-    selectedDA,
-    keplrWalletAddress,
-    selectedAccount,
-    disconnectKeplrWallet,
-    disconnectSubwallet,
-  ]);
+  }, [selectedDA, selectedAccount, disconnectSubwallet]);
 
   const handleNext = async () => {
     if (!selectedDA) {
-      alert("Please select a DA Layer to proceed.");
+      showToast("Please select a DA Layer to proceed.", "error");
+
       return;
     }
 
-    if (!walletAddress) {
-      alert("Please connect your wallet to proceed.");
-      return;
-    }
-
-    if (!zkProofData) {
-      alert("ZK proof data is missing. Please go back and generate it.");
-      return;
+    if (selectionMode === "direct") {
+      if (!walletAddress) {
+        showToast("Please connect your wallet to proceed.", "error");
+        return;
+      }
+      if (!zkProofData) {
+        showToast(
+          "ZK proof data is missing. Please go back and generate it.",
+          "error"
+        );
+        return;
+      }
+    } else if (selectionMode === "backend") {
+      if (!zkProofData) {
+        showToast(
+          "ZK proof data is missing. Please go back and generate it.",
+          "error"
+        );
+        return;
+      }
     }
 
     try {
       setLoading(true);
 
-      let transactionSuccess = false;
+      if (selectionMode === "direct") {
+        let transactionSuccess = false;
 
-      if (selectedDA === "celestia") {
-        transactionSuccess = await sendTransactionKeplr(zkProofData);
-      } else if (selectedDA === "avail") {
-        transactionSuccess = await sendTransactionSubwallet(zkProofData);
+        if (selectedDA === "avail") {
+          transactionSuccess = await sendTransactionSubwallet(zkProofData);
+        }
+
+        if (transactionSuccess) {
+          goToNextStep();
+        } else {
+          throw new Error("Failed to send transaction.");
+        }
+      } else if (selectionMode === "backend") {
+        const payload = {
+          electionId: electionData.mina_contract_id,
+          selectedDA,
+          zkProofData,
+        };
+
+        const response = await sendDataToBackend(payload);
+        console.log("Backend response:", response);
+
+        if (response.success) {
+          goToNextStep();
+        } else {
+          throw new Error(
+            response.error || "Failed to submit vote to backend."
+          );
+        }
       }
 
-      if (transactionSuccess) {
-        goToNextStep();
-        setLoading(false);
-      } else {
-        setLoading(false);
-        throw new Error("Failed to send transaction.");
-      }
+      setLoading(false);
     } catch (error) {
-      console.error("Error sending transaction:", error);
+      console.error("Error in handleNext:", error);
+      alert(error.message || "An unexpected error occurred.");
       setLoading(false);
     }
   };
@@ -141,6 +226,13 @@ const StepTwo = ({
       <FaImage className="text-gray-500 text-6xl" />
     </div>
   );
+
+  const filteredLayers =
+    selectionMode === "direct"
+      ? electionData.communication_layers.filter(
+          (layer) => layer.type === "avail"
+        )
+      : electionData.communication_layers;
 
   const daLogos = {
     avail: <AvailLogo className="w-12 h-12" />,
@@ -249,62 +341,45 @@ const StepTwo = ({
         </div>
       </div>
 
-      <div
-        className={`grid grid-cols-1 sm:grid-cols-2 gap-4 w-full ${
-          isSubmitting || isSubmittingKeplr
-            ? "opacity-50 cursor-not-allowed pointer-events-none"
-            : ""
-        }`}
-      >
-        {electionData.communication_layers.map((layer) => (
-          <div
-            key={layer._id}
-            className={`p-4 bg-[#222222] rounded-2xl cursor-pointer flex items-center transition duration-200 ${
-              selectedDA === layer.type
-                ? "border-[1px] border-primary shadow-lg"
-                : "hover:bg-[#333333]"
-            }`}
-            onClick={() => !isSubmitting && setSelectedDA(layer.type)}
-          >
-            <div className="flex-shrink-0 mr-4">
-              {daLogos[layer.type] || (
-                <div className="w-12 h-12 bg-gray-500 rounded-full" />
-              )}
-            </div>
-            <div className="flex flex-col h-full justify-between">
-              <h3 className="text-white text-[24px] mb-2">
-                {layer.type.charAt(0).toUpperCase() + layer.type.slice(1)}
-              </h3>
-              <p className="text-[16px] mb-2">
-                {daDetails[layer.type]?.description ||
-                  "No description available."}
-              </p>
-              <div className="flex items-center justify-between">
-                <span className="text-[16px]">
-                  Fee: {daDetails[layer.type]?.fee}{" "}
-                  {daDetails[layer.type]?.currency}
-                </span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      <ModeSelection
+        selectionMode={selectionMode}
+        setSelectionMode={setSelectionMode}
+      />
+
+      <DASelection
+        communicationLayers={filteredLayers}
+        selectedDA={selectedDA}
+        setSelectedDA={setSelectedDA}
+        daDetails={daDetails}
+        daLogos={daLogos}
+        isSubmitting={isSubmitting}
+      />
 
       <div className="w-full pt-8 flex justify-end">
-        {walletAddress ? (
+        {selectionMode === "direct" ? (
+          walletAddress ? (
+            <Button
+              onClick={handleNext}
+              disabled={!walletAddress || !selectedDA || isSubmitting}
+              loading={isSubmitting}
+            >
+              Submit Vote
+            </Button>
+          ) : (
+            <div className={`${!selectedDA ? "hidden" : "flex"}`}>
+              <Button onClick={handleConnectWallet}>
+                Connect {selectedWallet} Wallet
+              </Button>
+            </div>
+          )
+        ) : (
           <Button
             onClick={handleNext}
-            disabled={!walletAddress || !selectedDA || isSubmitting}
+            disabled={!selectedDA || isSubmitting}
             loading={isSubmitting}
           >
             Submit Vote
           </Button>
-        ) : (
-          <div className={`${!selectedDA ? "hidden" : "flex"}`}>
-            <Button onClick={handleConnectWallet}>
-              Connect {selectedWallet} Wallet
-            </Button>
-          </div>
         )}
       </div>
     </div>
