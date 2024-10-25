@@ -29,24 +29,11 @@ export const api = {
     state.Program = Vote;
   },
   async compileProgram() {
-    if (!state.Program) {
-      throw new Error("Program not loaded. Call loadProgram() first.");
-    }
-    await state.Program.compile({ proofsEnabled: true });
-    if (!state.Program.proofsEnabled) {
-      throw new Error("Proofs were not enabled during compilation.");
-    }
-    console.log("state.Program compiled with proofs enabled:", state.Program);
+    await state.Program?.compile({ proofsEnabled: true });
   },
   async createVote(data: any) {
-    if (!state.Program) {
+    if (!state.Program)
       throw new Error("Program not loaded. Call loadProgram() first.");
-    }
-    if (!state.Program.proofsEnabled) {
-      throw new Error(
-        "Program not compiled with proofs enabled. Call compileProgram() first."
-      );
-    }
 
     console.log("data", data);
 
