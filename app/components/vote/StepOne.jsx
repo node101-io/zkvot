@@ -16,6 +16,7 @@ import { useToast } from "../ToastProvider";
 import ToolTip from "../common/ToolTip";
 import { SelectedWalletContext } from "../../contexts/SelectedWalletContext";
 import { IsCompiledContext } from "../../contexts/IsCompiledContext";
+import LoadingOverlay from "../common/LoadingOverlay.jsx";
 
 const StepOne = ({
   electionData,
@@ -195,11 +196,13 @@ const StepOne = ({
 
       if (!checkWalletConnection()) {
         showToast("Wallet not connected.", "error");
+        setLoading(false); // Ensure loading is turned off
         return;
       }
 
       if (eligibilityStatus !== "eligible") {
         showToast("You are not eligible to vote in this election.", "error");
+        setLoading(false); // Ensure loading is turned off
         return;
       }
 
@@ -208,6 +211,7 @@ const StepOne = ({
 
       if (!signedElectionId || !signedElectionId.r || !signedElectionId.s) {
         showToast("Failed to generate the signed election ID.", "error");
+        setLoading(false); // Ensure loading is turned off
         return;
       }
 
@@ -217,6 +221,7 @@ const StepOne = ({
 
       if (votersArray.length === 0) {
         showToast("No valid voters found.", "error");
+        setLoading(false); // Ensure loading is turned off
         return;
       }
 
@@ -260,6 +265,8 @@ const StepOne = ({
 
   return (
     <div className="flex flex-col items-center px-4 sm:px-6 md:px-8">
+      {loading && <LoadingOverlay />}
+
       <div className="py-4 w-full text-start">
         Already voted?{" "}
         <button className="relative inline-flex items-center font-medium text-gray-300 transition duration-300 ease-out hover:text-white">

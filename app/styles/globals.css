@@ -32,3 +32,16 @@ html {
 .animate-shake {
   animation: shake 0.5s;
 }
+
+@keyframes progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-progress {
+  animation: progress 4.5s linear infinite;
+}
