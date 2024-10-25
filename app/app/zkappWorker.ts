@@ -15,6 +15,14 @@ const state = {
 const createMerkleTreeFromLeaves = (leaves: string[]) => {
   let votersTree = new MerkleTree(20);
 
+  leaves = leaves.sort((a, b) => {
+    if (BigInt(a[2]) < BigInt(b[2]))
+      return -1;
+    if (BigInt(a[2]) > BigInt(b[2]))
+      return 1;
+    return 0;
+  });
+
   for (let i = 0; i < leaves.length; i++) {
     const leaf = Poseidon.hash(PublicKey.fromJSON(leaves[i]).toFields());
     votersTree.setLeaf(BigInt(i), leaf);
