@@ -1,9 +1,11 @@
-import { JsonProof } from 'o1js';
+// import { JsonProof } from 'o1js';
 import { model, Model, Schema } from 'mongoose';
 
 import Election from '../election/Election.js';
 import verifyVote from './functions/verifyVote.js';
 import submitVote from './functions/submitVote.js';
+import isBase64String from 'src/utils/isBase64String.js';
+import decodeFromBase64String from 'src/utils/decodeFromBase64String.js';
 
 const DUPLICATED_UNIQUE_FIELD_ERROR_CODE = 11000;
 const MAX_DATABASE_TEXT_FIELD_LENGTH = 1e4;
@@ -11,7 +13,7 @@ const MAX_DATABASE_TEXT_FIELD_LENGTH = 1e4;
 interface VoteStatics {
   createAndSubmitVote: (
     data: {
-      vote: JsonProof;
+      vote: string;
       election_contract_id: string;
       da_layer: 'avail' | 'celestia';
     },
@@ -47,13 +49,16 @@ const VoteSchema = new Schema({
 
 VoteSchema.statics.createAndSubmitVote = function (
   data: {
-    vote: JsonProof;
+    vote: string;
     election_contract_id: string;
     da_layer: 'avail' | 'celestia';
   },
   callback: (error: string | null, vote?: any) => any
 ) {
   const Vote = this;
+
+  if (!isBase64String(data.vote))
+    return callback('bad_request');
 
   Election.findElectionByContractId(data.election_contract_id, (err, election) => {
     if (err)
@@ -64,53 +69,60 @@ VoteSchema.statics.createAndSubmitVote = function (
     if (!election.communication_layers.find(layer => layer.type == data.da_layer))
       return callback('bad_request');
 
-    verifyVote({
-      vote: data.vote,
-      electionId: election.mina_contract_id,
-      merkleRoot: election.voters_merkle_root
-    }, (err, nullifier) => {
-      if (err)
+    decodeFromBase64String(data.vote, (err, jsonProof) => {
+      if (err || !jsonProof)
         return callback(err);
-      if (!nullifier)
-        return callback('bad_request');
 
-      Vote
-        .findOne({ nullifier })
-        .then((vote: any) => {
-          if (vote)
-            return callback('vote_already_sent');
+      verifyVote({
+        vote: jsonProof,
+        electionId: election.mina_contract_id,
+        merkleRoot: election.voters_merkle_root
+      }, (err, nullifier) => {
+        if (err)
+          return callback(err);
+        if (!nullifier)
+          return callback('bad_request');
 
-          const submitVoteData: any = {
-            proof: data.vote,
-            da_layer: data.da_layer
-          };
+        Vote
+          .findOne({ nullifier })
+          .then((vote: any) => {
+            if (vote)
+              return callback('vote_already_sent');
 
-          if (data.da_layer == 'avail')
-            submitVoteData.app_id = election.communication_layers.find(layer => layer.type == data.da_layer)?.app_id;
-          else
-            submitVoteData.namespace = election.communication_layers.find(layer => layer.type == data.da_layer)?.namespace;
+            const submitVoteData: any = {
+              proof: data.vote,
+              da_layer: data.da_layer
+            };
 
-          submitVote(submitVoteData, (err, result) => {
-            const vote = new Vote({
-              election_contract_id: data.election_contract_id,
-              da_layer: data.da_layer,
-              nullifier,
-              block_height: result?.blockHeight,
-              tx_hash: result?.txHash,
-            });
+            if (data.da_layer == 'avail')
+              submitVoteData.app_id = election.communication_layers.find(layer => layer.type == data.da_layer)?.app_id;
+            else if (data.da_layer == 'celestia')
+              submitVoteData.namespace = election.communication_layers.find(layer => layer.type == data.da_layer)?.namespace;
+            else
+              return callback('not_possible_error');
 
-            vote.save((err: any, vote: any) => {
-              if (err && err.code === DUPLICATED_UNIQUE_FIELD_ERROR_CODE) return callback('duplicated_unique_field');
-              if (err) return callback('bad_request');
-
-              return callback(null, {
+            submitVote(submitVoteData, (err, result) => {
+              const vote = new Vote({
+                election_contract_id: data.election_contract_id,
+                da_layer: data.da_layer,
+                nullifier,
                 block_height: result?.blockHeight,
-                tx_hash: result?.txHash
+                tx_hash: result?.txHash,
+              });
+
+              vote.save((err: any, vote: any) => {
+                if (err && err.code === DUPLICATED_UNIQUE_FIELD_ERROR_CODE) return callback('duplicated_unique_field');
+                if (err) return callback('bad_request');
+
+                return callback(null, {
+                  block_height: result?.blockHeight,
+                  tx_hash: result?.txHash
+                });
               });
             });
-          });
-        })
-        .catch((err: any) => callback('database_error'));
+          })
+          .catch((err: any) => callback('database_error'));
+      });
     });
   });
 };

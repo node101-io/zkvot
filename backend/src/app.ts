@@ -29,8 +29,7 @@ if (cluster.isPrimary) {
   const app = express();
   const server = http.createServer(app);
 
-  const MONGODB_URI =
-    process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/zkVot";
+  const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/zkVot";
   const PORT = process.env.PORT || 3000;
 
   mongoose.set("strictQuery", false);
