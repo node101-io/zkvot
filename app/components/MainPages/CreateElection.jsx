@@ -368,18 +368,20 @@ const HomePage = () => {
   };
 
   const handleStepTwoSubmit = (walletsData) => {
+    walletsData = walletsData.sort((_a, _b) => {
+      const a = _a.pubkey;
+      const b = _b.pubkey;
+
+      if (BigInt(a) < BigInt(b))
+        return -1;
+      if (BigInt(a) > BigInt(b))
+        return 1;
+      return 0;
+    });
+
     setElectionData((prevData) => ({
       ...prevData,
-      voters_list: walletsData.sort((_a, _b) => {
-        const a = _a.pubkey;
-        const b = _b.pubkey;
-
-        if (BigInt(a) < BigInt(b))
-          return -1;
-        if (BigInt(a) > BigInt(b))
-          return 1;
-        return 0;
-      }),
+      voters_list: walletsData,
     }));
     setStep(3);
   };
@@ -476,45 +478,53 @@ const HomePage = () => {
   };
 
   const handleStepSixSubmit = (transactionId, setErrorMessage) => {
-    let fetchDataFunction;
-    switch (electionData.storageLayer.name.toLowerCase().trim()) {
-      case "arweave":
-        fetchDataFunction = fetchDataFromArweave;
-        break;
-      case "ipfs":
-        fetchDataFunction = fetchDataFromIPFS;
-        break;
-      case "filecoin":
-        fetchDataFunction = fetchDataFromFilecoin;
-        break;
-      default:
-        return;
-    }
+    const updatedData = {
+      ...electionData,
+      transactionId
+    };
 
-    setLoading(true);
+    setElectionData(updatedData);
+    setStep(7);
 
-    fetchDataFunction(transactionId)
-      .then((data) => {
-        if (data) {
-          const updatedData = {
-            ...electionData,
-            transactionId,
-            daData: data,
-          };
-          setElectionData(updatedData);
-          setStep(7);
-        } else {
-          throw new Error("Data not found for the provided transaction ID.");
-        }
-      })
-      .catch((error) => {
-        setErrorMessage(
-          error.message || "An error occurred while fetching data."
-        );
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    // let fetchDataFunction;
+    // switch (electionData.storageLayer.name.toLowerCase().trim()) {
+    //   case "arweave":
+    //     fetchDataFunction = fetchDataFromArweave;
+    //     break;
+    //   case "ipfs":
+    //     fetchDataFunction = fetchDataFromIPFS;
+    //     break;
+    //   case "filecoin":
+    //     fetchDataFunction = fetchDataFromFilecoin;
+    //     break;
+    //   default:
+    //     return;
+    // }
+
+    // setLoading(true);
+
+    // fetchDataFunction(transactionId)
+    //   .then((data) => {
+    //     if (data) {
+    //       const updatedData = {
+    //         ...electionData,
+    //         transactionId,
+    //         daData: data,
+    //       };
+    //       setElectionData(updatedData);
+    //       setStep(7);
+    //     } else {
+    //       throw new Error("Data not found for the provided transaction ID.");
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     setErrorMessage(
+    //       error.message || "An error occurred while fetching data."
+    //     );
+    //   })
+    //   .finally(() => {
+    //     setLoading(false);
+    //   });
   };
   const handleStepFourPrevious = () => {
     setElectionData((prevData) => ({

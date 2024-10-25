@@ -43,7 +43,7 @@ const Navbar = () => {
           <span className="group-hover:opacity-75 text-green">Sequencer</span>
         </>
       ),
-      href: "#",
+      href: "https://github.com/node101-io/zkvot/tree/main/cli",
     },
   ];
 
