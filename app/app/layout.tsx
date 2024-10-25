@@ -12,7 +12,7 @@ const montserrat = Montserrat({
 });
 
 export const metadata = {
-  title: "ZKvote",
+  title: "zkVot",
   description: "A zero-knowledge voting platform",
 };
 
