@@ -129,8 +129,9 @@ const WalletButton = () => {
                 <Image
                   src={getWalletIcon(selectedWallet)}
                   alt={selectedWallet}
-                  width={24}
-                  height={24}
+                  width={26}
+                  height={26}
+                  className="rounded-full"
                 />
                 <div className="text-white">
                   {formatWalletAddress(walletAddress)}

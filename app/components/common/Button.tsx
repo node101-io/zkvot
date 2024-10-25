@@ -12,6 +12,7 @@ interface ButtonProps {
   loading?: boolean;
   TextColor?: string;
   backgroundColor?: string;
+  variant?: string;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -21,6 +22,7 @@ const Button: React.FC<ButtonProps> = ({
   loading = false,
   TextColor = "text-white group-hover:text-black",
   backgroundColor = "bg-white",
+  variant = "front",
 }) => {
   return (
     <button
@@ -42,7 +44,11 @@ const Button: React.FC<ButtonProps> = ({
           loading ? "opacity-0" : backgroundColor
         }`}
       >
-        {!loading && <RightArrow />}
+        {!loading && (
+          <div className={`${variant === "back" && "transform rotate-180"}`}>
+            <RightArrow />
+          </div>
+        )}
       </span>
       <span
         className={`absolute top-1/2 right-8 transform -translate-y-1/2 translate-x-1/2 w-8 h-8 rounded-full transition-all duration-300 ease-in-out group-hover:w-[200%] group-hover:h-[200%] z-[0] ${
