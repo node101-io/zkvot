@@ -370,7 +370,16 @@ const HomePage = () => {
   const handleStepTwoSubmit = (walletsData) => {
     setElectionData((prevData) => ({
       ...prevData,
-      voters_list: walletsData,
+      voters_list: walletsData.sort((_a, _b) => {
+        const a = _a.pubkey;
+        const b = _b.pubkey;
+
+        if (BigInt(a) < BigInt(b))
+          return -1;
+        if (BigInt(a) > BigInt(b))
+          return 1;
+        return 0;
+      }),
     }));
     setStep(3);
   };

@@ -16,9 +16,9 @@ const createMerkleTreeFromLeaves = (leaves: string[]) => {
   let votersTree = new MerkleTree(20);
 
   leaves = leaves.sort((a, b) => {
-    if (BigInt(a[2]) < BigInt(b[2]))
+    if (BigInt(a) < BigInt(b))
       return -1;
-    if (BigInt(a[2]) > BigInt(b[2]))
+    if (BigInt(a) > BigInt(b))
       return 1;
     return 0;
   });
