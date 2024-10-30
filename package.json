@@ -1,0 +1,21 @@
+{
+  "name": "zkvot-monorepo",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev"
+  },
+  "devDependencies": {
+    "turbo": "latest"
+  },
+  "packageManager": "npm@10.8.1",
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "apps/backend",
+    "apps/cli",
+    "apps/webapp",
+    "packages/contracts"
+  ]
+}
