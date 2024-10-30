@@ -45,7 +45,12 @@ const StepTwo = ({ onPrevious, onSubmit }) => {
       </div>
 
       <div className="flex justify-between mt-4">
-        <Button onClick={onPrevious}>Previous</Button>
+        <Button
+          variant="back"
+          onClick={onPrevious}
+        >
+          Previous
+        </Button>
         <Button
           onClick={handleSubmit}
           disabled={!isSubmitEnabled}

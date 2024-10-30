@@ -24,6 +24,38 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={montserrat.className}>
+        <div className="mobile-warning flex flex-col">
+          <div className="icon-container mb-[1rem] animate-pulse">
+            <svg
+              width="80"
+              height="80"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="computer-icon"
+            >
+              <rect
+                x="2"
+                y="4"
+                width="20"
+                height="14"
+                rx="2"
+                fill="#ffffff"
+              />
+              <rect
+                x="5"
+                y="18"
+                width="14"
+                height="2"
+                fill="#ffffff"
+              />
+            </svg>
+          </div>
+          <span>
+            Please use a larger screen for the best experience on zkVot.
+          </span>
+        </div>
+
         <main className="flex flex-col px-4 overflow-hidden">
           <IsCompiledProvider>
             <ToastProvider>

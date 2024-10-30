@@ -8,6 +8,7 @@ import Clock from "../../../assets/ElectionCard/Clock";
 import LearnMoreIcon from "../../../assets/ElectionCard/LearnMoreIcon";
 import CopyButton from "../../../components/common/CopyButton";
 import ToolTip from "../../../components/common/ToolTip";
+import FormattedDate from "../../../components/FormattedDate";
 
 const ElectionCard = ({ electionData, loading }) => {
   if (loading) {
@@ -83,7 +84,7 @@ const ElectionCard = ({ electionData, loading }) => {
               <Clock />
             </span>
             <span className="ml-1 text-sm text-[#B7B7B7]">
-              {electionData.date}
+              <FormattedDate dateString={electionData.start_date} />
             </span>
           </span>
         </div>
@@ -106,7 +107,7 @@ const ElectionCard = ({ electionData, loading }) => {
             />
           </span>
         </div>
-        <h2 className="text-[24px] mb-2">{electionData.name}</h2>
+        <h2 className="text-[24px] mb-2">{electionData.question}</h2>
         <p className="text-[#B7B7B7] italic mb-4">{electionData.description}</p>
         <div className="flex justify-between items-center translate-x-2">
           <button className="relative inline-flex items-center  py-3 font-medium text-gray-300 transition duration-300 ease-out group hover:-translate-y-1 hover:text-white">

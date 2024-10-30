@@ -1,7 +1,6 @@
 import React from "react";
 import { IoClose } from "react-icons/io5";
 import MinaIcon from "../../assets/wallets/Mina.png";
-import KeplrIcon from "../../assets/wallets/Keplr.svg";
 import SubwalletIcon from "../../assets/wallets/Subwallet.svg";
 import MetamaskIcon from "../../assets/wallets/Metamask.svg";
 import Image from "next/image";
@@ -54,20 +53,7 @@ const WalletSelectionModal = ({
               Metamask
             </button>
           )}
-          {availableWallets.includes("Keplr") && (
-            <button
-              className="w-[216px] h-[54px] flex justify-start items-center rounded-3xl bg-[#222222] hover:bg-[#333333] text-white hover:text-[#4493F9] gap-[23px] px-3 transition-colors duration-300"
-              onClick={() => onSelectWallet("Keplr")}
-            >
-              <Image
-                src={KeplrIcon}
-                alt="Keplr Wallet"
-                width={24}
-                height={24}
-              />
-              Keplr Wallet
-            </button>
-          )}
+
           {availableWallets.includes("Subwallet") && (
             <button
               className="w-[216px] h-[54px] flex justify-start items-center rounded-3xl bg-[#222222] hover:bg-[#333333] text-white hover:text-[#4BE8AD] gap-[23px] px-3 transition-colors duration-300"

@@ -11,6 +11,48 @@ html {
   display: none;
 }
 
+.mobile-warning {
+  display: none;
+}
+
+@media (max-width: 1150px) {
+  /* Prevent scrolling on mobile */
+  body {
+    overflow: hidden;
+  }
+
+  .mobile-warning {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #121212; /* Dark background for better contrast */
+    color: #ffffff;
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 1rem;
+    line-height: 1.4;
+  }
+
+  /* Adjust font size for smaller screens */
+  @media (max-width: 600px) {
+    .mobile-warning {
+      font-size: 1.5rem;
+    }
+  }
+
+  /* Hide main content on mobile */
+  .main-content {
+    display: none;
+  }
+}
+
 @keyframes shake {
   0% {
     transform: translateX(0);

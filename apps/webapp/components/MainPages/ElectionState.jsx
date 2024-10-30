@@ -34,37 +34,38 @@ const ElectionState = ({ electionData }) => {
         stepErrors={stepErrors}
         loading={loading}
       />
-
-      {currentStep === 1 && (
-        <StepOne
-          electionData={electionData}
-          selectedOption={selectedOption}
-          setSelectedOption={setSelectedOption}
-          goToNextStep={goToNextStep}
-          loading={loading}
-          errorStep={stepErrors[currentStep]}
-          setLoading={setLoading}
-          setZkProofData={setZkProofData}
-        />
-      )}
-      {currentStep === 2 && (
-        <StepTwo
-          electionData={electionData}
-          selectedOption={selectedOption}
-          selectedDA={selectedDA}
-          setSelectedDA={setSelectedDA}
-          goToNextStep={goToNextStep}
-          zkProofData={zkProofData}
-          loading={loading}
-          setLoading={setLoading}
-        />
-      )}
-      {currentStep === 3 && (
-        <StepThree
-          electionData={electionData}
-          selectedOption={selectedOption}
-        />
-      )}
+      <div className="w-full h-full pb-12">
+        {currentStep === 1 && (
+          <StepOne
+            electionData={electionData}
+            selectedOption={selectedOption}
+            setSelectedOption={setSelectedOption}
+            goToNextStep={goToNextStep}
+            loading={loading}
+            errorStep={stepErrors[currentStep]}
+            setLoading={setLoading}
+            setZkProofData={setZkProofData}
+          />
+        )}
+        {currentStep === 2 && (
+          <StepTwo
+            electionData={electionData}
+            selectedOption={selectedOption}
+            selectedDA={selectedDA}
+            setSelectedDA={setSelectedDA}
+            goToNextStep={goToNextStep}
+            zkProofData={zkProofData}
+            loading={loading}
+            setLoading={setLoading}
+          />
+        )}
+        {currentStep === 3 && (
+          <StepThree
+            electionData={electionData}
+            selectedOption={selectedOption}
+          />
+        )}
+      </div>
     </>
   );
 };
