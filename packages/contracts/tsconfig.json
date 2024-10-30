@@ -14,14 +14,13 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "allowJs": true,
-    "declaration": true,
+    "declaration": false,
     "sourceMap": true,
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true,
     "useDefineForClassFields": false,
     "resolveJsonModule": true,
-    "baseUrl": ".",
-    "composite": true
+    "composite": false
   },
   "include": ["./**/*.ts"]
 }

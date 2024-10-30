@@ -8,7 +8,6 @@ import {
   PublicKey,
   Bool,
   Struct,
-  UInt32,
   Poseidon,
   Signature,
   UInt64,
