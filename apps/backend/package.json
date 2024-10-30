@@ -1,0 +1,29 @@
+{
+  "name": "zkvot-backend",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "build/app.js",
+  "scripts": {
+    "dev": "tsc -w",
+    "build": "tsc",
+    "start": "node build/app.js"
+  },
+  "author": "node101",
+  "license": "ISC",
+  "dependencies": {
+    "avail-js-sdk": "^0.2.18",
+    "body-parser": "^1.20.3",
+    "cluster": "^0.7.7",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "mongoose": "^8.7.2",
+    "o1js": "^1.9.0",
+    "path": "^0.12.7",
+    "zkvot-contracts": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/express": "^5.0.0"
+  }
+}
