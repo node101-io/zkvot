@@ -20,10 +20,7 @@
     "allowSyntheticDefaultImports": true,
     "useDefineForClassFields": false,
     "resolveJsonModule": true,
-    "baseUrl": ".",
-    "paths": {
-      "contracts": ["../contracts"]
-    }
+    "baseUrl": "."
   },
   "include": ["./**/*.ts"]
 }

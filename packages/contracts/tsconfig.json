@@ -4,7 +4,7 @@
     "module": "es2022",
     "lib": ["dom", "esnext"],
     "outDir": "build",
-    "rootDir": ".",
+    "rootDir": "./src",
     "strict": true,
     "strictPropertyInitialization": false, // to enable generic constructors, e.g. on CircuitValue
     "skipLibCheck": true,
@@ -20,7 +20,7 @@
     "allowSyntheticDefaultImports": true,
     "useDefineForClassFields": false,
     "resolveJsonModule": true,
-    "composite": true
+    "baseUrl": "."
   },
-  "include": ["./src"]
+  "include": ["./**/*.ts"]
 }
