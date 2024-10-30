@@ -1,4 +1,4 @@
-import { AggregateProof, InnerNode, LeafNode, RangeAggregationProgram, SegmentTree, Vote, VoteProof } from 'zkvot-contracts';
+import { AggregateProof, InnerNode, LeafNode, RangeAggregationProgram, SegmentTree, Vote, VoteProof } from 'contracts';
 import { Field, JsonProof, PublicKey } from 'o1js';
 import { EntryStream } from 'level-read-stream';
 import { Level } from 'level';
