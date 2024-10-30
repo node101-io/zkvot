@@ -11,10 +11,10 @@ import {
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { MerkleWitnessClass } from '../utils.js';
+import { MerkleWitnessClass } from '../utils';
 
-import { Vote, VotePrivateInputs, VotePublicInputs } from '../VoteProgram.js';
-import { RangeAggregationProgram } from '../RangeAggregationProgram.js';
+import { Vote, VotePrivateInputs, VotePublicInputs } from '../VoteProgram';
+import { RangeAggregationProgram } from '../RangeAggregationProgram';
 
 let Local = await Mina.LocalBlockchain({ proofsEnabled: true });
 Mina.setActiveInstance(Local);

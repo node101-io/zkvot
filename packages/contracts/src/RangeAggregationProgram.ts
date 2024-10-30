@@ -8,7 +8,7 @@ import {
   ZkProgram,
 } from 'o1js';
 
-import { VoteProof } from './VoteProgram.js';
+import { VoteProof } from './VoteProgram';
 
 export function UInt32ToFieldBigEndian(arr: UInt32[]): Field {
   let acc = Field.from(0);

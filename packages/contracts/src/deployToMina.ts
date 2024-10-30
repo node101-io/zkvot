@@ -7,13 +7,13 @@ import {
   Poseidon,
   MerkleTree,
 } from 'o1js';
-import { Vote } from './VoteProgram.js';
+import { Vote } from './VoteProgram';
 import {
   ElectionContract,
   ElectionData,
   setElectionContractConstants,
-} from './ElectionContract.js';
-import { RangeAggregationProgram } from './RangeAggregationProgram.js';
+} from './ElectionContract';
+import { RangeAggregationProgram } from './RangeAggregationProgram';
 
 /**
  * @param startDate start date of the election in unix timestamp

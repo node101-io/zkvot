@@ -13,7 +13,7 @@ import {
   createEcdsaV2,
   Keccak,
 } from 'o1js';
-import { MerkleWitnessClass } from './utils.js';
+import { MerkleWitnessClass } from './utils';
 
 class Secp256k1 extends createForeignCurveV2(Crypto.CurveParams.Secp256k1) {}
 class Ecdsa extends createEcdsaV2(Secp256k1) {}
