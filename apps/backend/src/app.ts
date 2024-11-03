@@ -25,6 +25,8 @@ if (cluster.isPrimary) {
 
     cluster.fork();
   });
+
+  compileZkProgramIfNotCompiledBefore(false);
 } else {
   const app = express();
   const server = http.createServer(app);
@@ -48,7 +50,5 @@ if (cluster.isPrimary) {
 
   server.listen(PORT, () => {
     console.log(`Server is on port ${PORT} as Worker`);
-
-    compileZkProgramIfNotCompiledBefore(false);
   });
 }
