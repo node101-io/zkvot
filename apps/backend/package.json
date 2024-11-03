@@ -12,6 +12,8 @@
   "author": "node101",
   "license": "ISC",
   "dependencies": {
+    "@polkadot/api": "^14.2.2",
+    "@polkadot/util": "^13.2.2",
     "avail-js-sdk": "^0.2.18",
     "body-parser": "^1.20.3",
     "cluster": "^0.7.7",
@@ -23,8 +25,8 @@
     "zkvot-contracts": "*"
   },
   "devDependencies": {
+    "@repo/config": "*",
     "@types/express": "^5.0.0",
-    "typescript": "^5.6.3",
-    "@repo/config": "*"
+    "typescript": "^5.6.3"
   }
 }

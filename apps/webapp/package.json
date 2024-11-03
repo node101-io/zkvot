@@ -11,10 +11,11 @@
   },
   "dependencies": {
     "@heroicons/react": "^1.0.6",
-    "@polkadot/extension-dapp": "^0.54.1",
+    "@polkadot/api": "^14.2.2",
+    "@polkadot/extension-dapp": "^0.56.1",
+    "@polkadot/util": "^13.2.2",
     "avail-js-sdk": "^0.2.18",
     "comlink": "^4.4.1",
-    "zkvot-contracts": "*",
     "copy-to-clipboard": "^3.3.3",
     "date-fns": "^4.1.0",
     "framer-motion": "^11.11.9",
@@ -23,15 +24,16 @@
     "react": "^18",
     "react-dom": "^18",
     "react-icons": "^5.3.0",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "zkvot-contracts": "*"
   },
   "devDependencies": {
+    "@repo/config": "*",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5.6.3",
-    "@repo/config": "*"
+    "typescript": "^5.6.3"
   },
   "type": "module"
 }
