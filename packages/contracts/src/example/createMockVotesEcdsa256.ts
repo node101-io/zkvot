@@ -11,14 +11,14 @@ import {
   createEcdsaV2,
 } from 'o1js';
 
-import { MerkleWitnessClass } from '../utils';
+import { MerkleWitnessClass } from '../utils.js';
 
 import {
   Vote,
   VotePublicInputs,
   VoteWithSecp256k1PrivateInputs,
 } from '../VoteProgram.js';
-import { RangeAggregationProgram } from '../RangeAggregationProgram';
+import { RangeAggregationProgram } from '../RangeAggregationProgram.js';
 import { Wallet } from 'ethers';
 import dotenv from 'dotenv';
 dotenv.config();

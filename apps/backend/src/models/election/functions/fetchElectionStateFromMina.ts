@@ -1,6 +1,6 @@
 import { Field, fetchAccount, Account } from 'o1js';
 
-import { FetchError, State } from '../../../types/mina';
+import { FetchError, State } from '../../../types/mina.js';
 
 const MINA_MAINNET_NODE_GRAPHQL = 'https://api.minascan.io/node/mainnet/v1/graphql';
 

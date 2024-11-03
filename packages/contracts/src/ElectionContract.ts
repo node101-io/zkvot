@@ -12,7 +12,7 @@ import {
   Signature,
   UInt64,
 } from 'o1js';
-import { AggregateProof } from './RangeAggregationProgram';
+import { AggregateProof } from './RangeAggregationProgram.js';
 
 export const ElectionContractErrors = {};
 

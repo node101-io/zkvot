@@ -1,10 +1,10 @@
 import "../styles/globals.css";
 
 import { Montserrat } from "next/font/google";
-import Navbar from "../components/NavBar/NavBar";
-import { WalletProvider } from "../components/providers";
-import ToastProvider from "../components/ToastProvider";
-import { IsCompiledProvider } from "../contexts/IsCompiledContext";
+import Navbar from "../components/NavBar/NavBar.jsx";
+import { WalletProvider } from "../components/providers.jsx";
+import ToastProvider from "../components/ToastProvider.jsx";
+import { IsCompiledProvider } from "../contexts/IsCompiledContext.js";
 
 const montserrat = Montserrat({
   subsets: ["latin"],

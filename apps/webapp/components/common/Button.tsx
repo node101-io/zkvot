@@ -1,5 +1,5 @@
 import React from "react";
-import RightArrow from "../../assets/RightArrow";
+import RightArrow from "../../assets/RightArrow.jsx";
 
 const Spinner = () => (
   <div className="w-6 h-6 border-4 border-t-transparent border-white rounded-full animate-spin" />

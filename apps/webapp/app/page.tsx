@@ -1,6 +1,6 @@
 "use server";
 import React from "react";
-import HomeState from "../components/MainPages/HomeState";
+import HomeState from "../components/MainPages/HomeState.jsx";
 
 const Home = () => {
   return (

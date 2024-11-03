@@ -2,7 +2,7 @@ import * as Comlink from "comlink";
 
 export default class ZkappWorkerClient {
   worker: Worker;
-  remoteApi: Comlink.Remote<typeof import("./zkappWorker").api>;
+  remoteApi: Comlink.Remote<typeof import("./zkappWorker.js").api>;
 
   constructor() {
     const worker = new Worker(new URL("./zkappWorker.ts", import.meta.url), {

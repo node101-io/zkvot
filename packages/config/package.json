@@ -1,0 +1,11 @@
+{
+  "name": "@repo/config",
+  "author": "node101",
+  "version": "1.0.0",
+  "description": "config",
+  "license": "ISC",
+  "type": "module",
+  "exports": {
+    "./typescript/*.json": "./typescript/*.json"
+  }
+}

@@ -5,7 +5,7 @@
   "type": "module",
   "main": "build/app.js",
   "scripts": {
-    "dev": "tsc -w",
+    "dev": "node build/app.js",
     "build": "tsc",
     "start": "node build/app.js"
   },
@@ -23,7 +23,8 @@
     "zkvot-contracts": "*"
   },
   "devDependencies": {
+    "@types/express": "^5.0.0",
     "typescript": "^5.6.3",
-    "@types/express": "^5.0.0"
+    "@repo/config": "*"
   }
 }

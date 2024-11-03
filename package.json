@@ -13,9 +13,7 @@
     "node": ">=20"
   },
   "workspaces": [
-    "apps/backend",
-    "apps/cli",
-    "apps/webapp",
-    "packages/contracts"
+    "apps/*",
+    "packages/*"
   ]
 }

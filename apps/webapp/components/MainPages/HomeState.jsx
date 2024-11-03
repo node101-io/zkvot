@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Hero from "../hero/Hero";
-import InitialLoadingPage from "../InitialLoadingPage";
+import InitialLoadingPage from "../InitialLoadingPage.jsx";
 
 const HomeState = () => {
   const [exiting, setExiting] = useState(false);

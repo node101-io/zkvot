@@ -1,16 +1,16 @@
 {
   "compilerOptions": {
     "target": "es2020",
-    "module": "es2022",
+    "module": "NodeNext",
     "lib": ["dom", "esnext"],
-    "outDir": "./build",
+    "outDir": "build",
     "rootDir": "./src",
     "strict": true,
     "strictPropertyInitialization": false,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "allowJs": true,
@@ -19,6 +19,7 @@
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true,
     "useDefineForClassFields": false,
+    "resolveJsonModule": true,
     "baseUrl": "."
   },
   "include": ["./**/*.ts"]

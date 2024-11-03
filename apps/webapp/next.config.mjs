@@ -16,6 +16,9 @@ const nextConfig = {
       config.externals.push("o1js"); // https://nextjs.org/docs/app/api-reference/next-config-js/serverExternalPackages
     }
     config.experiments = { ...config.experiments, topLevelAwait: true };
+    config.resolve.extensionAlias = {
+      '.js': ['.ts', '.js']
+    }
     return config;
   },
   // To enable o1js for the web, we must set the COOP and COEP headers.

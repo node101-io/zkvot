@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server.js';
 
 export async function GET(req: NextRequest) {
   const election_id = req.nextUrl.searchParams.get('election_id');

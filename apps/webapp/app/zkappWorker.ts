@@ -6,7 +6,7 @@ import {
   VotePrivateInputs,
   VotePublicInputs
 } from "zkvot-contracts";
-import { encodeDataToBase64String } from "../utils/encodeDataToBase64String";
+import { encodeDataToBase64String } from "../utils/encodeDataToBase64String.js";
 
 const state = {
   Program: null as null | typeof Vote,

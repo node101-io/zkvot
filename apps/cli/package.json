@@ -32,7 +32,8 @@
     "@babel/preset-env": "^7.16.4",
     "@babel/preset-typescript": "^7.16.0",
     "@types/async": "^3.2.24",
-    "@types/readable-stream": "^4.0.15"
+    "@types/readable-stream": "^4.0.15",
+    "@repo/config": "*"
   },
   "engines": {
     "node": ">=18.14.0"
