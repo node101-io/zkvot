@@ -1,10 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es2020",
+    "target": "es2022",
     "module": "NodeNext",
     "lib": ["dom", "esnext"],
-    "outDir": "build",
-    "rootDir": "./src",
     "strict": true,
     "strictPropertyInitialization": false,
     "skipLibCheck": true,
@@ -19,8 +17,6 @@
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true,
     "useDefineForClassFields": false,
-    "resolveJsonModule": true,
-    "baseUrl": "."
-  },
-  "include": ["./**/*.ts"]
+    "resolveJsonModule": true
+  }
 }
