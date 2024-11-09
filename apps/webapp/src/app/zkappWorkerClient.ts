@@ -24,4 +24,27 @@ export default class ZkappWorkerClient {
 
     return result;
   }
+
+  async deployElection(
+    electionDeployer: string,
+    electionStartTimestamp: number,
+    electionFinalizeTimestamp: number,
+    votersRoot: bigint,
+    electionData: {
+      first: bigint;
+      last: bigint;
+    },
+    settlementReward: number
+  ) {
+    const result = await this.remoteApi.deployElection(
+      electionDeployer,
+      electionStartTimestamp,
+      electionFinalizeTimestamp,
+      votersRoot,
+      electionData,
+      settlementReward
+    );
+
+    return result;
+  }
 }
