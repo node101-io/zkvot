@@ -1,0 +1,15 @@
+{
+  "name": "zkvot-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "build": "rm -rf ../webapp/.next/cache && node installBinary.js && cargo tauri build"
+  },
+  "devDependencies": {
+    "next": "14.2.12",
+    "tar": "^7.4.3"
+  }
+}

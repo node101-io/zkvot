@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Hero from "../hero/Hero";
+import Hero from "../hero/Hero.jsx";
 import InitialLoadingPage from "../InitialLoadingPage.jsx";
 
 const HomeState = () => {
