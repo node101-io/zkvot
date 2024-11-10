@@ -1,8 +1,7 @@
 use reqwest::{Client, RequestBuilder};
 use rocket::{
-    fairing::AdHoc, fs::FileServer, get, http::Header, post, routes, serde::json::Json, Config
+    fairing::AdHoc, fs::FileServer, get, http::Header, post, routes, serde::json::Json, Config,
 };
-use url::Url;
 use serde_json::{json, Value};
 use std::{env, path::PathBuf};
 use tauri::{
@@ -10,6 +9,7 @@ use tauri::{
     tray::TrayIconBuilder,
     App, Manager,
 };
+use url::Url;
 use webbrowser;
 
 fn get_url(url: PathBuf) -> String {
@@ -90,7 +90,10 @@ fn start_server(app: &mut App) {
             port: 10101,
             ..Config::default()
         })
-        .mount("/", FileServer::from(app.path().resource_dir().unwrap().join("static")))
+        .mount(
+            "/",
+            FileServer::from(app.path().resource_dir().unwrap().join("static")),
+        )
         .mount("/proxy", routes![proxy_get, proxy_post])
         .attach(cors_fairing)
         .launch(),
