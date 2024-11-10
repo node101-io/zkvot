@@ -1,15 +1,20 @@
 {
   "name": "zkvot-cli",
-  "version": "1.0.0",
-  "main": "app.js",
+  "version": "0.1.0",
+  "description": "",
+  "homepage": "https://github.com/node101-io/zkvot/tree/main/apps/cli#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/node101-io/zkvot.git"
+  },
+  "license": "ISC",
+  "author": "node101",
   "type": "module",
+  "main": "build/app.js",
   "scripts": {
     "build": "tsc",
     "start": "node --disable-warning=ExperimentalWarning build/app.js"
   },
-  "author": "node101",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
     "@babel/preset-env": "^7.16.4",
     "@babel/preset-typescript": "^7.16.0",
@@ -31,12 +36,15 @@
   "devDependencies": {
     "@babel/preset-env": "^7.16.4",
     "@babel/preset-typescript": "^7.16.0",
+    "@repo/config": "*",
     "@types/async": "^3.2.24",
-    "@types/readable-stream": "^4.0.15",
-    "@repo/config": "*"
+    "@types/readable-stream": "^4.0.15"
   },
   "engines": {
     "node": ">=18.14.0"
   },
-  "engineStrict": true
+  "engineStrict": true,
+  "publishConfig": {
+    "access": "public"
+  }
 }
