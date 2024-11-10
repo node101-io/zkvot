@@ -9,6 +9,7 @@ import {
 } from "o1js";
 import * as Comlink from "comlink";
 import {
+  ElectionData,
   ElectionContract,
   MerkleWitnessClass,
   Vote,
@@ -16,7 +17,6 @@ import {
   VotePublicInputs,
 } from "zkvot-contracts";
 import { encodeDataToBase64String } from "../utils/encodeDataToBase64String.js";
-import { ElectionData } from "zkvot-contracts/src/ElectionContract.js";
 
 const state = {
   Program: null as null | typeof Vote,
