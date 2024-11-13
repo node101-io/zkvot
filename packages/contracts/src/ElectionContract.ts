@@ -11,22 +11,23 @@ import {
   Poseidon,
   Signature,
   UInt64,
-} from 'o1js';
-import { AggregateProof } from './RangeAggregationProgram.js';
+  UInt32,
+} from "o1js";
+import { AggregateProof } from "./RangeAggregationProgram.js";
 
 export const ElectionContractErrors = {};
 
-let ELECTION_START_TIMESTAMP: number;
-let ELECTION_FINALIZE_TIMESTAMP: number;
+let ELECTION_START_BLOCK: number;
+let ELECTION_FINALIZE_BLOCK: number;
 let VOTERS_ROOT: bigint;
 
 export const setElectionContractConstants = (data: {
-  electionStartTimestamp: number;
-  electionFinalizeTimestamp: number;
+  electionStartBlock: number;
+  electionFinalizeBlock: number;
   votersRoot: bigint;
 }) => {
-  ELECTION_START_TIMESTAMP = data.electionStartTimestamp;
-  ELECTION_FINALIZE_TIMESTAMP = data.electionFinalizeTimestamp;
+  ELECTION_START_BLOCK = data.electionStartBlock;
+  ELECTION_FINALIZE_BLOCK = data.electionFinalizeBlock;
   VOTERS_ROOT = data.votersRoot;
 };
 
@@ -94,11 +95,10 @@ export class ElectionContract extends SmartContract {
     aggregateProof.publicInput.electionId.assertEquals(this.address);
     aggregateProof.publicInput.votersRoot.assertEquals(Field.from(VOTERS_ROOT));
 
-    // this.network.timestamp.getAndRequireEquals();
-
-    this.network.timestamp.requireBetween(
-      UInt64.from(ELECTION_START_TIMESTAMP),
-      UInt64.from(ELECTION_FINALIZE_TIMESTAMP)
+    this.network.timestamp.getAndRequireEquals();
+    this.network.blockchainLength.requireBetween(
+      UInt32.from(ELECTION_START_BLOCK),
+      UInt32.from(ELECTION_FINALIZE_BLOCK)
     );
 
     let currentMaximumCountedVotes =
@@ -126,7 +126,7 @@ export class ElectionContract extends SmartContract {
     );
 
     this.emitEvent(
-      'Settlement',
+      "Settlement",
       new NewSettlementEvent({
         aggregatorPubKey: lastAggregatorPubKey,
         voteCount: aggregateProof.publicOutput.totalAggregatedCount,
@@ -137,10 +137,10 @@ export class ElectionContract extends SmartContract {
   @method.returns(VoteOptions)
   async getFinalizedResults() {
     this.account.provedState.requireEquals(Bool(true));
-    this.network.timestamp.getAndRequireEquals();
-    this.network.timestamp.requireBetween(
-      UInt64.from(ELECTION_FINALIZE_TIMESTAMP),
-      UInt64.MAXINT()
+    this.network.blockchainLength.getAndRequireEquals();
+    this.network.blockchainLength.requireBetween(
+      UInt32.from(ELECTION_FINALIZE_BLOCK),
+      UInt32.MAXINT()
     );
     return this.voteOptions.getAndRequireEquals();
   }
@@ -153,10 +153,10 @@ export class ElectionContract extends SmartContract {
     amount: UInt64
   ) {
     this.account.provedState.requireEquals(Bool(true));
-    this.network.timestamp.getAndRequireEquals();
-    this.network.timestamp.requireBetween(
-      UInt64.from(ELECTION_FINALIZE_TIMESTAMP),
-      UInt64.MAXINT()
+    this.network.blockchainLength.getAndRequireEquals();
+    this.network.blockchainLength.requireBetween(
+      UInt32.from(ELECTION_FINALIZE_BLOCK),
+      UInt32.MAXINT()
     );
 
     const lastAggregatorPubKeyHash =
