@@ -2,7 +2,8 @@
 
 import React, { useContext, useEffect, useState } from "react";
 import { FaImage } from "react-icons/fa";
-import confetti from 'canvas-confetti';
+import confetti from "canvas-confetti";
+import { IsCompiledContext } from "../../../../contexts/IsCompiledContext";
 
 import Button from "../../../../components/common/Button";
 import Clock from "../../../../assets/ElectionCard/Clock";
@@ -26,47 +27,49 @@ const StepSeven = ({ electionData }) => {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async (
+    startBlockHeight,
+    endBlockHeight,
+    votersRoot,
+    electionData
+  ) => {
     setLoading(true);
-    setTimeout(() => {
 
-      confetti({
-        particleCount: 100,
-        spread: 180,
-        origin: { y: 0.6 }
-      });
-      setLoading(false);
-      setSubmitted(true);
+    console.log(electionData);
+    const { zkappWorkerClient, hasBeenSetup, isSettingUp } =
+      useContext(IsCompiledContext);
 
-    }, 5000);
+    console.log("compile election starting");
+    console.time("compile election");
+    await zkappWorkerClient.loadAndCompileContracts();
+    console.timeEnd("compile election");
 
+    console.log("deploy election starting");
+    console.time("deploy election");
+    const txJson = await zkappWorkerClient.deployElection(
+      startBlockHeight,
+      endBlockHeight,
+      votersRoot,
+      electionData
+    );
+    console.timeEnd("deploy election");
+
+    // confetti({
+    //   particleCount: 100,
+    //   spread: 180,
+    //   origin: { y: 0.6 },
+    // });
+    // setLoading(false);
+    // setSubmitted(true);
   };
-
 
   const storageLayerLogos = {
     arweave: (
-      <Image
-        src={ArweaveLogo}
-        alt="Arweave Logo"
-        width={48}
-        height={48}
-      />
+      <Image src={ArweaveLogo} alt="Arweave Logo" width={48} height={48} />
     ),
-    ipfs: (
-      <Image
-        src={IPFSLogo}
-        alt="IPFS Logo"
-        width={48}
-        height={48}
-      />
-    ),
+    ipfs: <Image src={IPFSLogo} alt="IPFS Logo" width={48} height={48} />,
     filecoin: (
-      <Image
-        src={FileCoinLogo}
-        alt="Filecoin Logo"
-        width={48}
-        height={48}
-      />
+      <Image src={FileCoinLogo} alt="Filecoin Logo" width={48} height={48} />
     ),
   };
 
@@ -79,8 +82,8 @@ const StepSeven = ({ electionData }) => {
   const optionalFields =
     electionData.voters_list && electionData.voters_list.length > 0
       ? Object.keys(electionData.voters_list[0]).filter(
-        (key) => key !== "pubkey"
-      )
+          (key) => key !== "pubkey"
+        )
       : [];
 
   const [showAllVoters, setShowAllVoters] = useState(false);
@@ -302,7 +305,6 @@ const StepSeven = ({ electionData }) => {
         )}
       </div>
       <div className="w-full flex justify-end mt-4">
-
         <Button
           onClick={handleSubmit}
           disabled={submitted}

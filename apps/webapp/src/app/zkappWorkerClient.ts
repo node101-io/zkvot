@@ -47,4 +47,16 @@ export default class ZkappWorkerClient {
 
     return result;
   }
+
+  async loadAndCompileContracts(
+    electionStartTimestamp: number,
+    electionFinalizeTimestamp: number,
+    votersRoot: bigint
+  ) {
+    return this.remoteApi.loadAndCompileContracts(
+      electionStartTimestamp,
+      electionFinalizeTimestamp,
+      votersRoot
+    );
+  }
 }
