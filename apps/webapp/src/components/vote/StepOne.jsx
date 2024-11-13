@@ -266,7 +266,7 @@ const StepOne = ({
 
   return (
     <div className="flex flex-col items-center px-4 sm:px-6 md:px-8">
-      {loading && <LoadingOverlay />}
+      {loading && <LoadingOverlay text="Generating zk Proof..." />}
 
       <div className="py-4 w-full text-start">
         Already voted?{" "}
@@ -378,11 +378,10 @@ const StepOne = ({
             <button
               key={index}
               className={`p-4 text-center bg-[#222222] rounded-2xl  
-        ${
-          selectedOption === index
-            ? "border-primary border-[1px] shadow-lg"
-            : "hover:bg-[#333333]"
-        }
+        ${selectedOption === index
+                  ? "border-primary border-[1px] shadow-lg"
+                  : "hover:bg-[#333333]"
+                }
         ${eligibilityStatus !== "eligible" ? "cursor-not-allowed" : ""}`}
               onClick={() => setSelectedOption(index)}
               disabled={loading || eligibilityStatus !== "eligible"}
@@ -401,8 +400,8 @@ const StepOne = ({
           {eligibilityStatus === "eligible"
             ? "Vote"
             : eligibilityStatus === "not_eligible"
-            ? "Switch Wallet"
-            : "Connect wallet to check eligibility"}
+              ? "Switch Wallet"
+              : "Connect wallet to check eligibility"}
         </Button>
 
         {isWalletModalOpen && (

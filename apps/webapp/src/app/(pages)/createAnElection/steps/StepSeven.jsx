@@ -2,6 +2,9 @@
 
 import React, { useContext, useEffect, useState } from "react";
 import { FaImage } from "react-icons/fa";
+import confetti from 'canvas-confetti';
+
+import Button from "../../../../components/common/Button";
 import Clock from "../../../../assets/ElectionCard/Clock";
 import AvailLogo from "../../../../assets/DaLogos/Avail";
 import CelestiaLogo from "../../../../assets/DaLogos/Celestia";
@@ -10,6 +13,7 @@ import IPFSLogo from "../../../../assets/StorageLayers/IPFS.svg";
 import FileCoinLogo from "../../../../assets/StorageLayers/FileCoin.svg";
 
 import Image from "next/image";
+import LoadingOverlay from "../../../../components/common/LoadingOverlay";
 // import { MinaWalletContext } from "../../../../contexts/MinaWalletContext";
 // import { useToast } from "../../../../components/ToastProvider";
 
@@ -18,6 +22,26 @@ const StepSeven = ({ electionData }) => {
     avail: <AvailLogo className="w-12 h-12" />,
     celestia: <CelestiaLogo className="w-12 h-12" />,
   };
+
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = () => {
+    setLoading(true);
+    setTimeout(() => {
+
+      confetti({
+        particleCount: 100,
+        spread: 180,
+        origin: { y: 0.6 }
+      });
+      setLoading(false);
+      setSubmitted(true);
+
+    }, 5000);
+
+  };
+
 
   const storageLayerLogos = {
     arweave: (
@@ -55,8 +79,8 @@ const StepSeven = ({ electionData }) => {
   const optionalFields =
     electionData.voters_list && electionData.voters_list.length > 0
       ? Object.keys(electionData.voters_list[0]).filter(
-          (key) => key !== "pubkey"
-        )
+        (key) => key !== "pubkey"
+      )
       : [];
 
   const [showAllVoters, setShowAllVoters] = useState(false);
@@ -185,6 +209,7 @@ const StepSeven = ({ electionData }) => {
 
   return (
     <div className="flex flex-col items-center px-4 sm:px-6 md:px-8 h-full">
+      {loading && <LoadingOverlay text="Submitting election" />}
       <div className="pb-4 pt-8 w-full text-start">Result</div>
       <div className="flex flex-col items-start w-full h-fit text-white mb-6 bg-[#222222] p-5 rounded-[30px] ">
         <div className="flex flex-col md:flex-row w-full h-fit">
@@ -275,6 +300,16 @@ const StepSeven = ({ electionData }) => {
         ) : (
           <p className="text-gray-500">No voters have participated yet.</p>
         )}
+      </div>
+      <div className="w-full flex justify-end mt-4">
+
+        <Button
+          onClick={handleSubmit}
+          disabled={submitted}
+          className={`${submitted ? "bg-gray-500 cursor-not-allowed" : ""}`}
+        >
+          {submitted ? "Submitted" : "Submit"}
+        </Button>
       </div>
     </div>
   );
