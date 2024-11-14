@@ -5,7 +5,6 @@
   "type": "module",
   "main": "build/app.js",
   "scripts": {
-    "dev": "node build/app.js",
     "build": "tsc",
     "start": "node build/app.js"
   },

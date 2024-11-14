@@ -6,10 +6,9 @@
   "type": "module",
   "scripts": {
     "start": "node app.js",
-    "build": "cargo tauri build"
+    "dist": "tauri build"
   },
   "devDependencies": {
-    "next": "14.2.12",
-    "tar": "^7.4.3"
+    "@tauri-apps/cli": "^2.0.6"
   }
 }
