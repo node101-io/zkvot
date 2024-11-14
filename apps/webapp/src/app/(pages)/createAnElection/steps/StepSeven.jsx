@@ -39,10 +39,11 @@ const StepSeven = ({ electionData }) => {
       console.error("zkappWorkerClient is still setting up");
       return;
     }
-    if (hasBeenSetup) {
+    if (!hasBeenSetup) {
+      console.error("zkappWorkerClient has not been setup");
+      return;
+    }
       setLoading(true);
-
-      console.log(electionData);
 
       try {
         console.log("deploy election starting");
@@ -80,7 +81,6 @@ const StepSeven = ({ electionData }) => {
       }
       setLoading(false);
       // setSubmitted(true);
-    }
   };
 
   const storageLayerLogos = {

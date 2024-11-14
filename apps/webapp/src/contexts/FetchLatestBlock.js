@@ -1,4 +1,5 @@
 export const fetchAvailBlockHeight = async () => {
+  return 0;
   try {
     const response = await fetch("https://backend.zkvot.io/api/block-info/avail");
 
@@ -21,6 +22,10 @@ export const fetchAvailBlockHeight = async () => {
 };
 
 export const fetchCelestiaBlockInfo = async () => {
+  return {
+    blockHeight: 0,
+    blockHash: ''
+  }
   try {
     const response = await fetch("https://backend.zkvot.io/api/block-info/celestia");
 

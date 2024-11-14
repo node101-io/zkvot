@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256 } from 'js-sha256';
 
 export default () => {
   const seed = Math.random().toString();
@@ -6,8 +6,8 @@ export default () => {
 
   const leadingZeroBytes = Buffer.alloc(18, 0);
 
-  const votingIdHash = createHash('sha256').update(seed).digest();
-  const slicedVotingIdHash = votingIdHash.subarray(0, 10);
+  const votingIdHash = sha256(seed);
+  const slicedVotingIdHash = Buffer.from(votingIdHash).subarray(0, 10);
 
   const namespaceIdentifier = Buffer.concat([
     namespaceVersionByte,

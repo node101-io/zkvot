@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import Button from "../../../..//components/common/Button";
-import IPFSLogo from "../../../..//assets/StorageLayers/IPFS.svg";
-import FileCoinLogo from "../../../..//assets/StorageLayers/FileCoin.svg";
-import ArweaveLogo from "../../../..//assets/StorageLayers/FileCoin.svg";
+import Button from "../../../../components/common/Button";
+import IPFSLogo from "../../../../assets/StorageLayers/IPFS.svg";
+import FileCoinLogo from "../../../../assets/StorageLayers/FileCoin.svg";
+import ArweaveLogo from "../../../../assets/StorageLayers/FileCoin.svg";
 import Image from "next/image";
 
 const storageLayersNames = [
@@ -95,11 +95,11 @@ const StepFive = ({ electionData, onPrevious, onSubmit }) => {
                   {storageLayer.name}
                 </h3>
                 <p className="text-[16px] mb-2">{storageLayer.description}</p>
-                <div className="flex items-center justify-between">
+                {/* <div className="flex items-center justify-between">
                   <span className="text-[16px]">
                     Fee: {storageLayer.fee} {storageLayer.currency}
                   </span>
-                </div>
+                </div> */}
               </div>
             </div>
           ))}
