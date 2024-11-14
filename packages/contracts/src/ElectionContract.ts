@@ -92,14 +92,14 @@ export class ElectionContract extends SmartContract {
     // this.account.provedState.requireEquals(Bool(true));
 
     aggregateProof.verify();
+
     aggregateProof.publicInput.electionId.assertEquals(this.address);
     aggregateProof.publicInput.votersRoot.assertEquals(Field.from(VOTERS_ROOT));
 
-    this.network.timestamp.getAndRequireEquals();
-    this.network.blockchainLength.requireBetween(
-      UInt32.from(ELECTION_START_BLOCK),
-      UInt32.from(ELECTION_FINALIZE_BLOCK)
-    );
+    // this.network.globalSlotSinceGenesis.requireBetween(
+    //   UInt32.from(ELECTION_START_BLOCK),
+    //   UInt32.from(ELECTION_FINALIZE_BLOCK)
+    // );
 
     let currentMaximumCountedVotes =
       this.maximumCountedVotes.getAndRequireEquals();
@@ -137,11 +137,11 @@ export class ElectionContract extends SmartContract {
   @method.returns(VoteOptions)
   async getFinalizedResults() {
     this.account.provedState.requireEquals(Bool(true));
-    this.network.blockchainLength.getAndRequireEquals();
-    this.network.blockchainLength.requireBetween(
-      UInt32.from(ELECTION_FINALIZE_BLOCK),
-      UInt32.MAXINT()
-    );
+    // this.network.blockchainLength.getAndRequireEquals();
+    // this.network.blockchainLength.requireBetween(
+    //   UInt32.from(ELECTION_FINALIZE_BLOCK),
+    //   UInt32.MAXINT()
+    // );
     return this.voteOptions.getAndRequireEquals();
   }
 
@@ -153,11 +153,11 @@ export class ElectionContract extends SmartContract {
     amount: UInt64
   ) {
     this.account.provedState.requireEquals(Bool(true));
-    this.network.blockchainLength.getAndRequireEquals();
-    this.network.blockchainLength.requireBetween(
-      UInt32.from(ELECTION_FINALIZE_BLOCK),
-      UInt32.MAXINT()
-    );
+    // this.network.blockchainLength.getAndRequireEquals();
+    // this.network.blockchainLength.requireBetween(
+    //   UInt32.from(ELECTION_FINALIZE_BLOCK),
+    //   UInt32.MAXINT()
+    // );
 
     const lastAggregatorPubKeyHash =
       this.lastAggregatorPubKeyHash.getAndRequireEquals();
