@@ -1,11 +1,13 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import Button from "../../../../components/common/Button";
-import CreateAppId from "../../../../components/CreateAppId";
+
 import {
   fetchAvailBlockHeight,
   fetchCelestiaBlockInfo,
 } from "../../../../contexts/FetchLatestBlock";
+
+import React, { useState, useEffect } from "react";
+import Button from "../../../../components/common/Button";
+import CreateAppId from "../../../../components/CreateAppId";
 import { useToast } from "../../../../components/ToastProvider";
 
 const StepFour = ({
