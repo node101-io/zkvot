@@ -1,4 +1,7 @@
 "use client";
+
+import generateRandomCelestiaNamespace from "../../utils/generateRandomCelestiaNamespace";
+
 import React, { useState } from "react";
 import StepOne from "../../app/(pages)/createAnElection/steps/StepOne";
 import StepTwo from "../../app/(pages)/createAnElection/steps/StepTwo";
@@ -392,39 +395,27 @@ const HomePage = () => {
 
     try {
       if (selectedLayer.type === "celestia") {
-        const response = await fetch(
-          `api/celestia/generate-namespace?election_id=${encodeURIComponent(
-            electionData.question
-          )}`
-        );
-        const result = await response.json();
+        const updatedCommunicationLayer = {
+          ...selectedLayer,
+          namespace: generateRandomCelestiaNamespace(),
+        };
+        setElectionData((prevData) => ({
+          ...prevData,
+          communication_layers: [updatedCommunicationLayer],
+        }));
 
-        if (result.success) {
-          const namespaceIdentifier = result.data;
-          const updatedCommunicationLayer = {
-            ...selectedLayer,
-            namespace: namespaceIdentifier,
-          };
-          setElectionData((prevData) => ({
-            ...prevData,
-            communication_layers: [updatedCommunicationLayer],
-          }));
-
-          const data = await fetchCelestiaBlockInfo();
-          setBlockHeight(data.blockHeight);
-          setBlockHash(data.blockHash);
-          setElectionData((prevData) => {
-            const updatedData = { ...prevData };
-            if (updatedData.communication_layers[0]) {
-              updatedData.communication_layers[0].block_height =
-                data.blockHeight;
-              updatedData.communication_layers[0].block_hash = data.blockHash;
-            }
-            return updatedData;
-          });
-        } else {
-          throw new Error("Error generating namespace.");
-        }
+        const data = await fetchCelestiaBlockInfo();
+        setBlockHeight(data.blockHeight);
+        setBlockHash(data.blockHash);
+        setElectionData((prevData) => {
+          const updatedData = { ...prevData };
+          if (updatedData.communication_layers[0]) {
+            updatedData.communication_layers[0].block_height =
+              data.blockHeight;
+            updatedData.communication_layers[0].block_hash = data.blockHash;
+          }
+          return updatedData;
+        });
       } else if (selectedLayer.type === "avail") {
         const height = await fetchAvailBlockHeight();
         setBlockHeight(height);
