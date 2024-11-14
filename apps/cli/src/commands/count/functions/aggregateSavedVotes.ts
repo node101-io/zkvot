@@ -1,4 +1,12 @@
-import { AggregateProof, InnerNode, LeafNode, RangeAggregationProgram, SegmentTree, Vote, VoteProof } from 'zkvot-contracts';
+import {
+  AggregateProof,
+  InnerNode,
+  LeafNode,
+  RangeAggregationProgram,
+  SegmentTree,
+  Vote,
+  VoteProof,
+} from 'zkvot-contracts';
 import { Field, JsonProof, PublicKey } from 'o1js';
 import { EntryStream } from 'level-read-stream';
 import { Level } from 'level';
@@ -10,17 +18,14 @@ const buildTheSegmentTreeOfVoteProofs = (
   voteProofs: JsonProof[],
   callback: (
     err: Error | string | null,
-    segmentTree?: SegmentTree<bigint, unknown, VoteProof>,
+    segmentTree?: SegmentTree<bigint, unknown, VoteProof>
   ) => void
 ) => {
   const segmentTreeLeaves: LeafNode<bigint, VoteProof>[] = [];
 
   async.each(
     voteProofs,
-    (
-      voteProofJson: JsonProof,
-      next: (err: Error | string | null) => void
-    ) => {
+    (voteProofJson: JsonProof, next: (err: Error | string | null) => void) => {
       VoteProof.fromJSON(voteProofJson)
         .then((voteProof: VoteProof) => {
           const nullifier = voteProof.publicOutput.nullifier.toBigInt();
@@ -29,11 +34,10 @@ const buildTheSegmentTreeOfVoteProofs = (
           segmentTreeLeaves.push(segmentTreeLeaf);
           next(null);
         })
-        .catch(err => next(err));
+        .catch((err) => next(err));
     },
-    err => {
-      if (err)
-        return callback(err);
+    (err) => {
+      if (err) return callback(err);
 
       return callback(null, SegmentTree.build(segmentTreeLeaves));
     }
@@ -44,24 +48,24 @@ const loadCachedAggregatorProofs = (
   segmentTree: SegmentTree<bigint, unknown, VoteProof>,
   callback: (err: Error | string | null) => void
 ) => {
-  const cachedAggregatorProofs: { includedVotesHash: bigint; proof: string }[] = [];
+  const cachedAggregatorProofs: { includedVotesHash: bigint; proof: string }[] =
+    [];
 
-  (new EntryStream(db))
-    .on('data', entry => {
+  new EntryStream(db)
+    .on('data', (entry) => {
       cachedAggregatorProofs.push({
         includedVotesHash: BigInt(entry.key),
         proof: entry.value,
       });
     })
-    .on('error', err => callback(err))
+    .on('error', (err) => callback(err))
     .on('end', () => {
-      if (cachedAggregatorProofs.length === 0)
-        return callback(null);
+      if (cachedAggregatorProofs.length === 0) return callback(null);
 
       async.each(
         cachedAggregatorProofs,
         (
-          cachedAggregatorProof: { includedVotesHash: bigint, proof: string },
+          cachedAggregatorProof: { includedVotesHash: bigint; proof: string },
           next: (err: Error | string | null) => void
         ) => {
           const includedVotesHash = cachedAggregatorProof.includedVotesHash;
@@ -69,15 +73,17 @@ const loadCachedAggregatorProofs = (
 
           AggregateProof.fromJSON(voteProofJson)
             .then((aggregatedProof: AggregateProof) => {
-              segmentTree.cachedAggregatorProofs.set(includedVotesHash, aggregatedProof);
+              segmentTree.cachedAggregatorProofs.set(
+                includedVotesHash,
+                aggregatedProof
+              );
 
               next(null);
             })
-            .catch(err => next(err));
+            .catch((err) => next(err));
         },
-        err => {
-          if (err)
-            return callback(err);
+        (err) => {
+          if (err) return callback(err);
 
           return callback(null);
         }
@@ -87,10 +93,10 @@ const loadCachedAggregatorProofs = (
 
 const aggregateNodeProofs = (
   data: {
-    node: any,
-    votersRoot: Field,
-    electionId: PublicKey,
-    segmentTree: SegmentTree<bigint, unknown, VoteProof>
+    node: any;
+    votersRoot: Field;
+    electionId: PublicKey;
+    segmentTree: SegmentTree<bigint, unknown, VoteProof>;
   },
   callback: (
     err: Error | string | null,
@@ -99,7 +105,9 @@ const aggregateNodeProofs = (
 ) => {
   const leftChild = data.node.leftChild;
   const rightChild = data.node.rightChild;
-  const includedVotesHash = SegmentTree.includedVotesHash(data.node.includedVotes);
+  const includedVotesHash = SegmentTree.includedVotesHash(
+    data.node.includedVotes
+  );
 
   if (data.segmentTree.cachedAggregatorProofs.has(includedVotesHash))
     return callback('duplicated_aggregate_proof');
@@ -117,99 +125,120 @@ const aggregateNodeProofs = (
         rightChild.voteProof
       )
         .then((proof: AggregateProof) => callback(null, proof))
-        .catch(err => callback(err));
-    } else if (leftChild instanceof LeafNode && rightChild instanceof InnerNode && leftChild.voteProof instanceof VoteProof) {
-      const rightChildAggregatorProof = data.segmentTree.getCachedAggregatorProof(
-        SegmentTree.includedVotesHash(rightChild.includedVotes) as bigint
-      );
+        .catch((err) => callback(err));
+    } else if (
+      leftChild instanceof LeafNode &&
+      rightChild instanceof InnerNode &&
+      leftChild.voteProof instanceof VoteProof
+    ) {
+      const rightChildAggregatorProof =
+        data.segmentTree.getCachedAggregatorProof(
+          SegmentTree.includedVotesHash(rightChild.includedVotes) as bigint
+        );
 
       return RangeAggregationProgram.append_left(
         {
           votersRoot: data.votersRoot,
-          electionId: data.electionId
+          electionId: data.electionId,
         },
         rightChildAggregatorProof as AggregateProof,
         leftChild.voteProof
       )
         .then((proof: AggregateProof) => callback(null, proof))
-        .catch(err => callback(err));
-    } else if (leftChild instanceof InnerNode && rightChild instanceof LeafNode && rightChild.voteProof instanceof VoteProof) {
-      const leftChildAggregatorProof = data.segmentTree.getCachedAggregatorProof(
-        SegmentTree.includedVotesHash(leftChild.includedVotes) as bigint
-      );
+        .catch((err) => callback(err));
+    } else if (
+      leftChild instanceof InnerNode &&
+      rightChild instanceof LeafNode &&
+      rightChild.voteProof instanceof VoteProof
+    ) {
+      const leftChildAggregatorProof =
+        data.segmentTree.getCachedAggregatorProof(
+          SegmentTree.includedVotesHash(leftChild.includedVotes) as bigint
+        );
 
       return RangeAggregationProgram.append_right(
         {
           votersRoot: data.votersRoot,
-          electionId: data.electionId
+          electionId: data.electionId,
         },
         leftChildAggregatorProof as AggregateProof,
         rightChild.voteProof
       )
         .then((proof: AggregateProof) => callback(null, proof))
-        .catch(err => callback(err));
-    } else if (leftChild instanceof InnerNode && rightChild instanceof InnerNode) {
-      const leftChildAggregatorProof = data.segmentTree.getCachedAggregatorProof(
-        SegmentTree.includedVotesHash(leftChild.includedVotes) as bigint
-      );
+        .catch((err) => callback(err));
+    } else if (
+      leftChild instanceof InnerNode &&
+      rightChild instanceof InnerNode
+    ) {
+      const leftChildAggregatorProof =
+        data.segmentTree.getCachedAggregatorProof(
+          SegmentTree.includedVotesHash(leftChild.includedVotes) as bigint
+        );
 
-      const rightChildAggregatorProof = data.segmentTree.getCachedAggregatorProof(
-        SegmentTree.includedVotesHash(rightChild.includedVotes) as bigint
-      );
+      const rightChildAggregatorProof =
+        data.segmentTree.getCachedAggregatorProof(
+          SegmentTree.includedVotesHash(rightChild.includedVotes) as bigint
+        );
 
       return RangeAggregationProgram.merge(
         {
           votersRoot: data.votersRoot,
-          electionId: data.electionId
+          electionId: data.electionId,
         },
         leftChildAggregatorProof as AggregateProof,
         rightChildAggregatorProof as AggregateProof
       )
         .then((proof: AggregateProof) => callback(null, proof))
-        .catch(err => callback(err));
+        .catch((err) => callback(err));
     }
   } else if (leftChild) {
     if (leftChild instanceof InnerNode) {
       aggregateProof = data.segmentTree.getCachedAggregatorProof(
         SegmentTree.includedVotesHash(leftChild.includedVotes) as bigint
       ) as AggregateProof;
-    } else if (leftChild instanceof LeafNode && leftChild.voteProof instanceof VoteProof) {
+    } else if (
+      leftChild instanceof LeafNode &&
+      leftChild.voteProof instanceof VoteProof
+    ) {
       return RangeAggregationProgram.base_one(
         {
           votersRoot: data.votersRoot,
-          electionId: data.electionId
+          electionId: data.electionId,
         },
         leftChild.voteProof
       )
         .then((proof: AggregateProof) => callback(null, proof))
-        .catch(err => callback(err));
+        .catch((err) => callback(err));
     }
   } else if (rightChild) {
     if (rightChild instanceof InnerNode) {
       aggregateProof = data.segmentTree.getCachedAggregatorProof(
         SegmentTree.includedVotesHash(rightChild.includedVotes) as bigint
       ) as AggregateProof;
-    } else if (rightChild instanceof LeafNode && rightChild.voteProof instanceof VoteProof) {
+    } else if (
+      rightChild instanceof LeafNode &&
+      rightChild.voteProof instanceof VoteProof
+    ) {
       return RangeAggregationProgram.base_one(
         {
           votersRoot: data.votersRoot,
-          electionId: data.electionId
+          electionId: data.electionId,
         },
         rightChild.voteProof
       )
         .then((proof: AggregateProof) => callback(null, proof))
-        .catch(err => callback(err));
+        .catch((err) => callback(err));
     }
-  };
+  }
 
   return callback('aggregate_error');
 };
 
 const saveAggregateVoteProofToCache = (
   data: {
-    includedVotesHash: bigint,
-    aggregateProof: AggregateProof,
-    segmentTree: SegmentTree<bigint, unknown, VoteProof>
+    includedVotesHash: bigint;
+    aggregateProof: AggregateProof;
+    segmentTree: SegmentTree<bigint, unknown, VoteProof>;
   },
   callback: (err: Error | string | null) => void
 ) => {
@@ -222,9 +251,8 @@ const saveAggregateVoteProofToCache = (
   const aggregateProofJson = data.aggregateProof.toJSON();
   const aggregateProofString = JSON.stringify(aggregateProofJson);
 
-  db.put(includedVotesHashString, aggregateProofString, err => {
-    if (err)
-      return callback(err);
+  db.put(includedVotesHashString, aggregateProofString, (err) => {
+    if (err) return callback(err);
 
     return callback(null);
   });
@@ -232,13 +260,14 @@ const saveAggregateVoteProofToCache = (
 
 const processSegmentTreeForAggregation = (
   data: {
-    segmentTree: SegmentTree<bigint, unknown, VoteProof>,
-    votersRoot: Field,
-    electionId: PublicKey
+    segmentTree: SegmentTree<bigint, unknown, VoteProof>;
+    votersRoot: Field;
+    electionId: PublicKey;
   },
   callback: (err: Error | string | null) => void
 ) => {
-  const aggregateOrder: InnerNode<bigint, VoteProof>[] = data.segmentTree.traverse();
+  const aggregateOrder: InnerNode<bigint, VoteProof>[] =
+    data.segmentTree.traverse();
 
   async.eachSeries(
     aggregateOrder,
@@ -251,24 +280,23 @@ const processSegmentTreeForAggregation = (
           node,
           votersRoot: data.votersRoot,
           electionId: data.electionId,
-          segmentTree: data.segmentTree
+          segmentTree: data.segmentTree,
         },
         (err, aggregateProof) => {
-          if (err)
-            return next(err);
+          if (err) return next(err);
 
-          if (!aggregateProof)
-            return next('aggregate_error');
+          if (!aggregateProof) return next('aggregate_error');
 
           saveAggregateVoteProofToCache(
             {
-              includedVotesHash: SegmentTree.includedVotesHash(node.includedVotes),
+              includedVotesHash: SegmentTree.includedVotesHash(
+                node.includedVotes
+              ),
               aggregateProof,
-              segmentTree: data.segmentTree
+              segmentTree: data.segmentTree,
             },
-            err => {
-              if (err)
-                return next(err);
+            (err) => {
+              if (err) return next(err);
 
               return next(null);
             }
@@ -276,9 +304,8 @@ const processSegmentTreeForAggregation = (
         }
       );
     },
-    err => {
-      if (err)
-        return callback(err);
+    (err) => {
+      if (err) return callback(err);
 
       return callback(null);
     }
@@ -305,9 +332,9 @@ const getRootAggregatorProof = (
 
 export default async (
   data: {
-    electionId: PublicKey,
-    voteProofs: JsonProof[],
-    votersRoot: Field
+    electionId: PublicKey;
+    voteProofs: JsonProof[];
+    votersRoot: Field;
   },
   callback: (err: Error | string | null, aggregateProof?: JsonProof) => void
 ) => {
@@ -315,34 +342,39 @@ export default async (
   await RangeAggregationProgram.compile();
 
   buildTheSegmentTreeOfVoteProofs(data.voteProofs, (err, segmentTree) => {
-    if (err)
-      return callback(err);
+    if (err) return callback(err);
 
-    if (!segmentTree)
-      return callback('segment_tree_error');
+    if (!segmentTree) return callback('segment_tree_error');
 
-    loadCachedAggregatorProofs(segmentTree, err => {
-      if (err)
-        return callback(err);
+    loadCachedAggregatorProofs(segmentTree, (err) => {
+      if (err) return callback(err);
 
-      processSegmentTreeForAggregation({
-        segmentTree,
-        votersRoot: data.votersRoot,
-        electionId: data.electionId
-      }, err => {
-        if (err)
-          return callback(err);
+      processSegmentTreeForAggregation(
+        {
+          segmentTree,
+          votersRoot: data.votersRoot,
+          electionId: data.electionId,
+        },
+        (err) => {
+          if (err) return callback(err);
 
-        getRootAggregatorProof(segmentTree, (err, rootAggregatorProof) => {
-          if (err)
-            return callback(err);
+          getRootAggregatorProof(segmentTree, (err, rootAggregatorProof) => {
+            if (err) return callback(err);
 
-          if (!rootAggregatorProof)
-            return callback('root_error');
+            if (!rootAggregatorProof) return callback('root_error');
 
-          return callback(null, rootAggregatorProof.toJSON());
-        });
-      });
+            db.put(
+              `${data.electionId.toBase58()}.aggregatorProof`,
+              JSON.stringify(rootAggregatorProof.toJSON()),
+              (err) => {
+                if (err) return callback(err);
+
+                return callback(null, rootAggregatorProof.toJSON());
+              }
+            );
+          });
+        }
+      );
     });
   });
 };

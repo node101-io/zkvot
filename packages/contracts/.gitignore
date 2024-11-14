@@ -23,6 +23,8 @@ voteProofsRandomEcdsa256.json
 env.json
 cachedProofsDb
 
+aggregateProof.json
+
 .env
 
 local
@@ -31,3 +33,5 @@ local-mock
 *.tgz
 
 *.tsbuildinfo
+
+mock.*
