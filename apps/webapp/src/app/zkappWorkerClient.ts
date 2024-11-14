@@ -27,8 +27,8 @@ export default class ZkappWorkerClient {
 
   async deployElection(
     electionDeployer: string,
-    electionStartTimestamp: number,
-    electionFinalizeTimestamp: number,
+    electionStartBlock: number,
+    electionFinalizeBlelectionStartBlock: number,
     votersRoot: bigint,
     electionData: {
       first: bigint;
@@ -38,8 +38,8 @@ export default class ZkappWorkerClient {
   ) {
     const result = await this.remoteApi.deployElection(
       electionDeployer,
-      electionStartTimestamp,
-      electionFinalizeTimestamp,
+      electionStartBlock,
+      electionFinalizeBlelectionStartBlock,
       votersRoot,
       electionData,
       settlementReward
@@ -49,13 +49,13 @@ export default class ZkappWorkerClient {
   }
 
   async loadAndCompileContracts(
-    electionStartTimestamp: number,
-    electionFinalizeTimestamp: number,
+    electionStartBlock: number,
+    electionFinalizeBlock: number,
     votersRoot: bigint
   ) {
     return this.remoteApi.loadAndCompileContracts(
-      electionStartTimestamp,
-      electionFinalizeTimestamp,
+      electionStartBlock,
+      electionFinalizeBlock,
       votersRoot
     );
   }

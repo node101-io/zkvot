@@ -49,21 +49,31 @@ export const api = {
     await state.Program?.compile({ proofsEnabled: true });
   },
   async loadAndCompileContracts(
-    electionStartTimestamp: number,
-    electionFinalizeTimestamp: number,
+    electionStartBlock: number,
+    electionFinalizeBlock: number,
     votersRoot: bigint
   ) {
     if (!state.ElectionContract) {
       const { ElectionContract } = await import("zkvot-contracts");
+      console.log(
+        "electionStartBlock",
+        electionStartBlock,
+        "electionFinalizeBlock",
+        electionFinalizeBlock,
+        "votersRoot",
+        votersRoot
+      );
       const { setElectionContractConstants } = await import("zkvot-contracts");
       setElectionContractConstants({
-        electionStartTimestamp,
-        electionFinalizeTimestamp,
+        electionStartBlock,
+        electionFinalizeBlock,
         votersRoot,
       });
       state.ElectionContract = ElectionContract;
     }
+    console.log("Compiling ElectionContract");
     await state.ElectionContract.compile();
+    console.log("ElectionContract compiled");
   },
   getElectionContractInstance(contractAddress: string) {
     if (!state.ElectionContract) {
@@ -148,8 +158,8 @@ export const api = {
 
   async deployElection(
     electionDeployer: string,
-    electionStartTimestamp: number,
-    electionFinalizeTimestamp: number,
+    electionStartBlock: number,
+    electionFinalizeBlock: number,
     votersRoot: bigint,
     electionData: {
       first: bigint;
@@ -162,8 +172,8 @@ export const api = {
       const electionContractPubKey = electionContractPrivKey.toPublicKey();
 
       await this.loadAndCompileContracts(
-        electionStartTimestamp,
-        electionFinalizeTimestamp,
+        electionStartBlock,
+        electionFinalizeBlock,
         votersRoot
       );
       const electionContract = api.getElectionContractInstance(

@@ -17,6 +17,8 @@ import Image from "next/image";
 import LoadingOverlay from "../../../../components/common/LoadingOverlay";
 // import { MinaWalletContext } from "../../../../contexts/MinaWalletContext";
 // import { useToast } from "../../../../components/ToastProvider";
+import calculateBlockHeight from "../../../../utils/calculateBlockHeightAtTimestamp.js";
+import generateMerkleRootFromVotersList from "../../../../utils/generateMerkleRootFromVotersList";
 
 const StepSeven = ({ electionData }) => {
   const communicationLayerLogos = {
@@ -26,41 +28,59 @@ const StepSeven = ({ electionData }) => {
 
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { zkappWorkerClient, hasBeenSetup, isSettingUp } =
+    useContext(IsCompiledContext);
+  const handleSubmit = async () => {
+    if (!zkappWorkerClient) {
+      console.error("zkappWorkerClient not found");
+      return;
+    }
+    if (isSettingUp) {
+      console.error("zkappWorkerClient is still setting up");
+      return;
+    }
+    if (hasBeenSetup) {
+      setLoading(true);
 
-  const handleSubmit = async (
-    startBlockHeight,
-    endBlockHeight,
-    votersRoot,
-    electionData
-  ) => {
-    setLoading(true);
+      console.log(electionData);
 
-    console.log(electionData);
-    const { zkappWorkerClient, hasBeenSetup, isSettingUp } =
-      useContext(IsCompiledContext);
+      try {
+        console.log("deploy election starting");
+        console.time("deploy election tx");
+        const txJson = await zkappWorkerClient.deployElection(
+          // Add deployer public key
+          calculateBlockHeight(electionData.start_date),
+          calculateBlockHeight(electionData.end_date),
+          // generateMerkleRootFromVotersList(electionData.voters_list), // TODO: uncomment this line
+          {
+            first: 1n,
+            second: 2n,
+          },
+          0
+        );
+        console.timeEnd("deploy election tx");
 
-    console.log("compile election starting");
-    console.time("compile election");
-    await zkappWorkerClient.loadAndCompileContracts();
-    console.timeEnd("compile election");
+        const { hash } = await window.mina.sendTransaction({
+          transaction: txJson,
+          feePayer: {
+            fee: 0.1,
+            memo: "",
+          },
+        });
 
-    console.log("deploy election starting");
-    console.time("deploy election");
-    const txJson = await zkappWorkerClient.deployElection(
-      startBlockHeight,
-      endBlockHeight,
-      votersRoot,
-      electionData
-    );
-    console.timeEnd("deploy election");
+        console.log(`https://minascan.io/devnet/tx/${hash}`);
 
-    // confetti({
-    //   particleCount: 100,
-    //   spread: 180,
-    //   origin: { y: 0.6 },
-    // });
-    // setLoading(false);
-    // setSubmitted(true);
+        confetti({
+          particleCount: 100,
+          spread: 180,
+          origin: { y: 0.6 },
+        });
+      } catch (error) {
+        console.error(error);
+      }
+      setLoading(false);
+      // setSubmitted(true);
+    }
   };
 
   const storageLayerLogos = {
@@ -307,7 +327,7 @@ const StepSeven = ({ electionData }) => {
       <div className="w-full flex justify-end mt-4">
         <Button
           onClick={handleSubmit}
-          disabled={submitted}
+          // disabled={submitted}
           className={`${submitted ? "bg-gray-500 cursor-not-allowed" : ""}`}
         >
           {submitted ? "Submitted" : "Submit"}
