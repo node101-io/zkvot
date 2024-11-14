@@ -20,12 +20,14 @@ import { RangeAggregationProgram } from "./RangeAggregationProgram.js";
  * @param endBlock end Block of the election
  * @param votersList pubkey list of the voters
  * @param fileCoinDatas filecoin data of the election give 2 fields
+ * @param publisherPrivateKey private key of the publisher
  */
 export default async function deploy(
   startBlock: number,
   endBlock: number,
   votersList: PublicKey[],
-  fileCoinDatas: Field[]
+  fileCoinDatas: Field[],
+  publisherPrivateKey: PrivateKey
 ) {
   const Network = Mina.Network({
     mina: "https://api.minascan.io/node/devnet/v1/graphql",
@@ -59,9 +61,6 @@ export default async function deploy(
   let votersRoot = votersTree.getRoot();
   console.log(`Voters root: ${votersRoot.toString()}`);
 
-  const publisherPrivateKey = PrivateKey.fromBase58(
-    "BURAYA ICINDE MINA OLAN PRIV KEY GIRIN"
-  );
   const publisherPubKey = publisherPrivateKey.toPublicKey();
 
   setElectionContractConstants({
@@ -124,4 +123,6 @@ export default async function deploy(
   await pendingTransaction.wait();
 
   console.log("Contract deployed at", electionContractPubKey.toBase58());
+
+  return electionContractPk;
 }

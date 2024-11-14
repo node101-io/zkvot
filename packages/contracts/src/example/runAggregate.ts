@@ -1,53 +1,53 @@
-import { Field, PublicKey, PrivateKey, verify } from 'o1js';
+import { Field, PublicKey, PrivateKey, verify } from "o1js";
 import {
   AggregateProof,
   fieldToUInt32BigEndian,
   RangeAggregationProgram,
-} from '../RangeAggregationProgram.js';
-import { Vote, VoteProof } from '../VoteProgram.js';
-import fs from 'fs/promises';
-import { InnerNode, LeafNode, SegmentTree } from '../SegmentTree.js';
-import dotenv from 'dotenv';
-import { Level } from 'level';
+} from "../RangeAggregationProgram.js";
+import { Vote, VoteProof } from "../VoteProgram.js";
+import fs from "fs/promises";
+import { InnerNode, LeafNode, SegmentTree } from "../SegmentTree.js";
+import dotenv from "dotenv";
+import { Level } from "level";
 
-const db = new Level('./cachedProofsDb', { valueEncoding: 'json' });
+const db = new Level("./cachedProofsDb", { valueEncoding: "json" });
 
 dotenv.config();
 
 const addRandom = false;
 
 export const runAggregate = async (electionId: PublicKey) => {
-  console.time('Compiling vote program');
+  console.time("Compiling vote program");
   let { verificationKey } = await Vote.compile();
-  console.timeEnd('Compiling vote program');
+  console.timeEnd("Compiling vote program");
 
-  console.time('Compiling range aggregation program');
+  console.time("Compiling range aggregation program");
   await RangeAggregationProgram.compile();
-  console.timeEnd('Compiling range aggregation program');
+  console.timeEnd("Compiling range aggregation program");
 
-  console.log('Reading vote proofs');
+  console.log("Reading vote proofs");
 
-  const voteProofsJson = await fs.readFile('voteProofsEcdsa256.json');
+  const voteProofsJson = await fs.readFile("voteProofs.json");
   const voteProofs = JSON.parse(voteProofsJson.toString());
-  console.log('Vote proofs read, there are', voteProofs.length, 'proofs found');
+  console.log("Vote proofs read, there are", voteProofs.length, "proofs found");
 
-  const voteProofsRandomJson = await fs.readFile('voteProofsRandom.json');
-  const voteProofsRandom = JSON.parse(voteProofsRandomJson.toString());
-  console.log(
-    'Random vote proofs read, there are',
-    voteProofsRandom.length,
-    'proofs found'
-  );
+  // const voteProofsRandomJson = await fs.readFile("voteProofsRandom.json");
+  // const voteProofsRandom = JSON.parse(voteProofsRandomJson.toString());
+  // console.log(
+  //   "Random vote proofs read, there are",
+  //   voteProofsRandom.length,
+  //   "proofs found"
+  // );
 
-  console.log('Reading voters root');
-  const votersRootJson = await fs.readFile('votersRootEcdsa256.json');
+  console.log("Reading voters root");
+  const votersRootJson = await fs.readFile("votersRoot.json");
   const votersRoot = Field.from(JSON.parse(votersRootJson.toString()));
-  console.log('Voters root read, voters root:', votersRoot.toString());
+  console.log("Voters root read, voters root:", votersRoot.toString());
 
-  console.log('Checking votes');
+  console.log("Checking votes");
   const leaves: LeafNode<bigint, VoteProof>[] = [];
 
-  let expectedResults = new Array(43).fill(0);
+  let expectedResults = new Array(28).fill(0);
 
   for (let i = 0; i < voteProofs.length; i++) {
     const voteProof = await VoteProof.fromJSON(voteProofs[i]);
@@ -62,53 +62,53 @@ export const runAggregate = async (electionId: PublicKey) => {
       leaves.push(leaf);
       expectedResults[Number(voteProof.publicOutput.vote.toString())]++;
       console.log(
-        'Vote proof',
+        "Vote proof",
         leaf.voteProof.publicOutput.nullifier.toString(),
-        ' is valid, vote for:',
+        " is valid, vote for:",
         leaf.voteProof.publicOutput.vote.toString()
       );
     } else {
-      console.log('Vote proof is invalid skipping');
+      console.log("Vote proof is invalid skipping");
       continue;
     }
   }
 
   console.log(
-    'Expected results:',
+    "Expected results:",
     expectedResults.map((x, i) => [i, x])
   );
 
-  if (addRandom) {
-    console.log('Adding random votes');
-    for (let i = 0; i < voteProofsRandom.length; i++) {
-      const voteProof = await VoteProof.fromJSON(voteProofsRandom[i]);
+  // if (addRandom) {
+  //   console.log("Adding random votes");
+  //   for (let i = 0; i < voteProofsRandom.length; i++) {
+  //     const voteProof = await VoteProof.fromJSON(voteProofsRandom[i]);
 
-      const nullifier = voteProof.publicOutput.nullifier.toBigInt();
+  //     const nullifier = voteProof.publicOutput.nullifier.toBigInt();
 
-      const leaf = new LeafNode(nullifier, voteProof);
+  //     const leaf = new LeafNode(nullifier, voteProof);
 
-      const ok = await verify(leaf.voteProof, verificationKey);
+  //     const ok = await verify(leaf.voteProof, verificationKey);
 
-      if (ok) {
-        leaves.push(leaf);
-        console.log(
-          'Vote proof is valid, vote for:',
-          leaf.voteProof.publicOutput.vote.toString()
-        );
-      } else {
-        console.log('Vote proof is invalid skipping');
-        continue;
-      }
-    }
-  }
+  //     if (ok) {
+  //       leaves.push(leaf);
+  //       console.log(
+  //         "Vote proof is valid, vote for:",
+  //         leaf.voteProof.publicOutput.vote.toString()
+  //       );
+  //     } else {
+  //       console.log("Vote proof is invalid skipping");
+  //       continue;
+  //     }
+  //   }
+  // }
 
   const segmentTree = SegmentTree.build(leaves);
-  console.log('Votes tree built');
+  console.log("Votes tree built");
 
-  console.log('Connecting to database');
+  console.log("Connecting to database");
 
   try {
-    console.log('Loading cached aggregator proofs');
+    console.log("Loading cached aggregator proofs");
 
     const mappings = [];
 
@@ -117,9 +117,9 @@ export const runAggregate = async (electionId: PublicKey) => {
     }
 
     if (mappings.length === 0) {
-      console.log('No cached aggregator proofs found');
+      console.log("No cached aggregator proofs found");
     } else {
-      console.log('Cached aggregator proofs found:', mappings.length);
+      console.log("Cached aggregator proofs found:", mappings.length);
     }
 
     for (let i = 0; i < mappings.length; i++) {
@@ -130,7 +130,7 @@ export const runAggregate = async (electionId: PublicKey) => {
       segmentTree.cachedAggregatorProofs.set(includedVotesHash, proof);
     }
   } catch (e) {
-    console.log('Error loading cached aggregator proofs', e);
+    console.log("Error loading cached aggregator proofs", e);
   }
 
   const aggregateOrder = segmentTree.traverse();
@@ -145,7 +145,7 @@ export const runAggregate = async (electionId: PublicKey) => {
     let aggregateProof;
 
     if (segmentTree.cachedAggregatorProofs.has(includedVotesHash)) {
-      console.log('Cache hit!');
+      console.log("Cache hit!");
       console.log(node.includedVotes);
       const cachedProof = segmentTree.getCachedAggregatorProof(
         includedVotesHash
@@ -279,9 +279,9 @@ export const runAggregate = async (electionId: PublicKey) => {
 
     try {
       await db.put(includedVotesHashString, proofString);
-      console.log('Cached proof saved to LevelDB');
+      console.log("Cached proof saved to LevelDB");
     } catch (e) {
-      console.log('Error saving cached proof to LevelDB', e);
+      console.log("Error saving cached proof to LevelDB", e);
     }
     console.timeEnd(`Aggregating node ${i} of ${aggregateOrder.length}`);
   }
@@ -292,15 +292,15 @@ export const runAggregate = async (electionId: PublicKey) => {
     ) as AggregateProof;
 
     console.log(
-      'Total aggregated count:',
+      "Total aggregated count:",
       rootAggregatorProof.publicOutput.totalAggregatedCount.toString()
     );
     console.log(
-      'Range lower bound:',
+      "Range lower bound:",
       rootAggregatorProof.publicOutput.rangeLowerBound.toString()
     );
     console.log(
-      'Range upper bound:',
+      "Range upper bound:",
       rootAggregatorProof.publicOutput.rangeUpperBound.toString()
     );
     let arr = fieldToUInt32BigEndian(
@@ -334,13 +334,11 @@ export const runAggregate = async (electionId: PublicKey) => {
     for (let i = 0; i < 7; i++) {
       console.log(`voteOptions_${i + 22}:`, arr[i].toString());
     }
+
+    await fs.writeFile(
+      "aggregateProof.json",
+      JSON.stringify(rootAggregatorProof, null, 2)
+    );
   }
   return;
 };
-
-const electionPrivateKey = PrivateKey.fromBase58(
-  // @ts-ignore
-  process.env.ELECTION_PRIVATE_KEY
-);
-const electionId = electionPrivateKey.toPublicKey();
-await runAggregate(electionId);
