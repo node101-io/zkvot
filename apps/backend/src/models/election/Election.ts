@@ -2,6 +2,8 @@ import { model, Model, Schema } from 'mongoose';
 
 import { ElectionModel } from '../../types/election.js';
 
+import convertStorageInfoToFields from './functions/convertStorageInfoToFields.js';
+import deployElection from './functions/deployElection.js';
 import fetchDataFromStorageLayer from './functions/fetchDataFromStorageLayer.js';
 import fetchElectionStateFromMina from './functions/fetchElectionStateFromMina.js';
 import generateMerkleRootFromVotersList from './functions/generateMerkleRootFromVotersList.js';
@@ -187,7 +189,7 @@ ElectionSchema.statics.createElection = function (
         const storage_layer_id = storageInfo.id;
         const storage_layer_platform = storageInfo.platform;
 
-        fetchDataFromStorageLayer(storage_layer_id, storage_layer_platform, (error, data) => {
+        fetchDataFromStorageLayer(storage_layer_platform, storage_layer_id, (error, data) => {
           if (error)
             return callback('bad_request');
           if (!data)
@@ -225,6 +227,79 @@ ElectionSchema.statics.createElection = function (
     });
   })
   .catch((err: any) => callback('database_error'));
+};
+
+ElectionSchema.statics.deployAndCreateElection = function (
+  data: {
+    startBlock: number,
+    endBlock: number,
+    votersRoot: bigint,
+    storageLayerPlatform: 'A' | 'F' | 'P',
+    storageLayerID: string,
+    image_raw: string
+  },
+  callback: (
+    error: string | null,
+    election?: ElectionModel
+  ) => any
+) {
+  const Election = this;
+
+  const storageLayerID = data.storageLayerID;
+  const storageLayerPlatform = data.storageLayerPlatform;
+
+  convertStorageInfoToFields({
+    storageLayerPlatform,
+    storageLayerID
+  }, (err, storageLayerFieldEncoding) => {
+    if (err || !storageLayerFieldEncoding)
+      return callback(err);
+
+    deployElection({
+      startBlock: data.startBlock,
+      endBlock: data.endBlock,
+      votersRoot: data.votersRoot,
+      storageLayerFieldEncoding
+    }, (err, deployResult) => {
+      if (err || !deployResult)
+        return callback(err);
+
+      fetchDataFromStorageLayer(storageLayerPlatform, storageLayerID, (error, data) => {
+        if (error)
+          return callback('bad_request');
+        if (!data)
+          return callback('bad_request');
+    
+        const voters_merkle_root = generateMerkleRootFromVotersList(data.voters_list);
+    
+        uploadImageRaw(data.image_raw, (error, url) => {
+          if (error)
+            return callback(error);
+    
+          const electionData = {
+            mina_contract_id: deployResult.contractPublicKey,
+            storage_layer_id: storageLayerID,
+            storage_layer_platform: storageLayerPlatform,
+            image_url: url,
+            voters_merkle_root,
+            ...data
+          };
+    
+          const election = new Election(electionData);
+    
+          election.save((error: { code: number; }, election: any) => {
+            if (error) {
+              if (error.code == DUPLICATED_UNIQUE_FIELD_ERROR_CODE)
+                return callback('duplicated_unique_field');
+              return callback('database_error');
+            }
+    
+            return callback(null, election);
+          });
+        });
+      });
+    });
+  });
 };
 
 ElectionSchema.statics.findElectionByContractId = function (
