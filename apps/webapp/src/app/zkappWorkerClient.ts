@@ -24,4 +24,39 @@ export default class ZkappWorkerClient {
 
     return result;
   }
+
+  async deployElection(
+    electionDeployer: string,
+    electionStartBlock: number,
+    electionFinalizeBlelectionStartBlock: number,
+    votersRoot: bigint,
+    electionData: {
+      first: bigint;
+      last: bigint;
+    },
+    settlementReward: number
+  ) {
+    const result = await this.remoteApi.deployElection(
+      electionDeployer,
+      electionStartBlock,
+      electionFinalizeBlelectionStartBlock,
+      votersRoot,
+      electionData,
+      settlementReward
+    );
+
+    return result;
+  }
+
+  async loadAndCompileContracts(
+    electionStartBlock: number,
+    electionFinalizeBlock: number,
+    votersRoot: bigint
+  ) {
+    return this.remoteApi.loadAndCompileContracts(
+      electionStartBlock,
+      electionFinalizeBlock,
+      votersRoot
+    );
+  }
 }

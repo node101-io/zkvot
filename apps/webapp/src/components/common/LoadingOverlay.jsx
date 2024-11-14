@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 
-const LoadingOverlay = () => {
+const LoadingOverlay = ({ text }) => {
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-50">
       <div className="w-fit px-24 bg-[#222] rounded-[40px] p-6 flex flex-col items-center">
@@ -26,7 +26,7 @@ const LoadingOverlay = () => {
               d="M4 12a8 8 0 018-8v8H4z"
             ></path>
           </svg>
-          Generating zk Proof...
+          {text}
         </h2>
         {/* <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
           <div className="w-full h-full bg-primary animate-progress"></div>

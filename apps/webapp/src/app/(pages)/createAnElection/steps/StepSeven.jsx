@@ -2,6 +2,10 @@
 
 import React, { useContext, useEffect, useState } from "react";
 import { FaImage } from "react-icons/fa";
+import confetti from "canvas-confetti";
+import { IsCompiledContext } from "../../../../contexts/IsCompiledContext";
+
+import Button from "../../../../components/common/Button";
 import Clock from "../../../../assets/ElectionCard/Clock";
 import AvailLogo from "../../../../assets/DaLogos/Avail";
 import CelestiaLogo from "../../../../assets/DaLogos/Celestia";
@@ -10,8 +14,11 @@ import IPFSLogo from "../../../../assets/StorageLayers/IPFS.svg";
 import FileCoinLogo from "../../../../assets/StorageLayers/FileCoin.svg";
 
 import Image from "next/image";
+import LoadingOverlay from "../../../../components/common/LoadingOverlay";
 // import { MinaWalletContext } from "../../../../contexts/MinaWalletContext";
 // import { useToast } from "../../../../components/ToastProvider";
+import calculateBlockHeight from "../../../../utils/calculateBlockHeightAtTimestamp.js";
+import generateMerkleRootFromVotersList from "../../../../utils/generateMerkleRootFromVotersList";
 
 const StepSeven = ({ electionData }) => {
   const communicationLayerLogos = {
@@ -19,30 +26,70 @@ const StepSeven = ({ electionData }) => {
     celestia: <CelestiaLogo className="w-12 h-12" />,
   };
 
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { zkappWorkerClient, hasBeenSetup, isSettingUp } =
+    useContext(IsCompiledContext);
+  const handleSubmit = async () => {
+    if (!zkappWorkerClient) {
+      console.error("zkappWorkerClient not found");
+      return;
+    }
+    if (isSettingUp) {
+      console.error("zkappWorkerClient is still setting up");
+      return;
+    }
+    if (hasBeenSetup) {
+      setLoading(true);
+
+      console.log(electionData);
+
+      try {
+        console.log("deploy election starting");
+        console.time("deploy election tx");
+        const txJson = await zkappWorkerClient.deployElection(
+          // Add deployer public key
+          calculateBlockHeight(electionData.start_date),
+          calculateBlockHeight(electionData.end_date),
+          // generateMerkleRootFromVotersList(electionData.voters_list), // TODO: uncomment this line
+          {
+            first: 1n,
+            second: 2n,
+          },
+          0
+        );
+        console.timeEnd("deploy election tx");
+
+        const { hash } = await window.mina.sendTransaction({
+          transaction: txJson,
+          feePayer: {
+            fee: 0.1,
+            memo: "",
+          },
+        });
+
+        console.log(`https://minascan.io/devnet/tx/${hash}`);
+
+        confetti({
+          particleCount: 100,
+          spread: 180,
+          origin: { y: 0.6 },
+        });
+      } catch (error) {
+        console.error(error);
+      }
+      setLoading(false);
+      // setSubmitted(true);
+    }
+  };
+
   const storageLayerLogos = {
     arweave: (
-      <Image
-        src={ArweaveLogo}
-        alt="Arweave Logo"
-        width={48}
-        height={48}
-      />
+      <Image src={ArweaveLogo} alt="Arweave Logo" width={48} height={48} />
     ),
-    ipfs: (
-      <Image
-        src={IPFSLogo}
-        alt="IPFS Logo"
-        width={48}
-        height={48}
-      />
-    ),
+    ipfs: <Image src={IPFSLogo} alt="IPFS Logo" width={48} height={48} />,
     filecoin: (
-      <Image
-        src={FileCoinLogo}
-        alt="Filecoin Logo"
-        width={48}
-        height={48}
-      />
+      <Image src={FileCoinLogo} alt="Filecoin Logo" width={48} height={48} />
     ),
   };
 
@@ -185,6 +232,7 @@ const StepSeven = ({ electionData }) => {
 
   return (
     <div className="flex flex-col items-center px-4 sm:px-6 md:px-8 h-full">
+      {loading && <LoadingOverlay text="Submitting election" />}
       <div className="pb-4 pt-8 w-full text-start">Result</div>
       <div className="flex flex-col items-start w-full h-fit text-white mb-6 bg-[#222222] p-5 rounded-[30px] ">
         <div className="flex flex-col md:flex-row w-full h-fit">
@@ -275,6 +323,15 @@ const StepSeven = ({ electionData }) => {
         ) : (
           <p className="text-gray-500">No voters have participated yet.</p>
         )}
+      </div>
+      <div className="w-full flex justify-end mt-4">
+        <Button
+          onClick={handleSubmit}
+          // disabled={submitted}
+          className={`${submitted ? "bg-gray-500 cursor-not-allowed" : ""}`}
+        >
+          {submitted ? "Submitted" : "Submit"}
+        </Button>
       </div>
     </div>
   );

@@ -1,25 +1,35 @@
-import { MerkleTree, Poseidon, Field, PublicKey, Signature } from "o1js";
+import {
+  MerkleTree,
+  Poseidon,
+  Field,
+  PublicKey,
+  Signature,
+  PrivateKey,
+  Mina,
+} from "o1js";
 import * as Comlink from "comlink";
 import {
+  ElectionData,
+  ElectionContract,
   MerkleWitnessClass,
   Vote,
   VotePrivateInputs,
-  VotePublicInputs
+  VotePublicInputs,
 } from "zkvot-contracts";
 import { encodeDataToBase64String } from "../utils/encodeDataToBase64String.js";
 
 const state = {
   Program: null as null | typeof Vote,
+  ElectionContract: null as null | typeof ElectionContract,
+  ElectionContractInstance: null as null | ElectionContract,
 };
 
 const createMerkleTreeFromLeaves = (leaves: string[]) => {
   let votersTree = new MerkleTree(20);
 
   leaves = leaves.sort((a, b) => {
-    if (BigInt(a) < BigInt(b))
-      return -1;
-    if (BigInt(a) > BigInt(b))
-      return 1;
+    if (BigInt(a) < BigInt(b)) return -1;
+    if (BigInt(a) > BigInt(b)) return 1;
     return 0;
   });
 
@@ -37,6 +47,46 @@ export const api = {
   },
   async compileProgram() {
     await state.Program?.compile({ proofsEnabled: true });
+  },
+  async loadAndCompileContracts(
+    electionStartBlock: number,
+    electionFinalizeBlock: number,
+    votersRoot: bigint
+  ) {
+    if (!state.ElectionContract) {
+      const { ElectionContract } = await import("zkvot-contracts");
+      console.log(
+        "electionStartBlock",
+        electionStartBlock,
+        "electionFinalizeBlock",
+        electionFinalizeBlock,
+        "votersRoot",
+        votersRoot
+      );
+      const { setElectionContractConstants } = await import("zkvot-contracts");
+      setElectionContractConstants({
+        electionStartBlock,
+        electionFinalizeBlock,
+        votersRoot,
+      });
+      state.ElectionContract = ElectionContract;
+    }
+    console.log("Compiling ElectionContract");
+    await state.ElectionContract.compile();
+    console.log("ElectionContract compiled");
+  },
+  getElectionContractInstance(contractAddress: string) {
+    if (!state.ElectionContract) {
+      throw new Error(
+        "ElectionContract not loaded. Call loadAndCompileContracts() first."
+      );
+    }
+    if (!state.ElectionContractInstance) {
+      state.ElectionContractInstance = new state.ElectionContract(
+        PublicKey.fromBase58(contractAddress)
+      );
+    }
+    return state.ElectionContractInstance;
   },
   async createVote(data: any): Promise<string> {
     if (!state.Program)
@@ -103,6 +153,52 @@ export const api = {
     } catch (error) {
       console.error("Error generating zk-proof:", error);
       throw error;
+    }
+  },
+
+  async deployElection(
+    electionDeployer: string,
+    electionStartBlock: number,
+    electionFinalizeBlock: number,
+    votersRoot: bigint,
+    electionData: {
+      first: bigint;
+      last: bigint;
+    },
+    settlementReward: number
+  ) {
+    try {
+      const electionContractPrivKey = PrivateKey.random();
+      const electionContractPubKey = electionContractPrivKey.toPublicKey();
+
+      await this.loadAndCompileContracts(
+        electionStartBlock,
+        electionFinalizeBlock,
+        votersRoot
+      );
+      const electionContract = api.getElectionContractInstance(
+        electionContractPubKey.toBase58()
+      );
+
+      const deployTx = await Mina.transaction(
+        {
+          sender: PublicKey.fromBase58(electionDeployer),
+          fee: 1e8,
+        },
+        async () => {
+          await electionContract.deploy();
+          await electionContract.initialize(
+            new ElectionData({
+              first: Field.from(electionData.first),
+              last: Field.from(electionData.last),
+            })
+          );
+        }
+      );
+      await deployTx.prove();
+      return deployTx.toJSON();
+    } catch (error) {
+      console.error("Error deploying election contract:", error);
     }
   },
 };
