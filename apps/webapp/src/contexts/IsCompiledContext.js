@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, createContext, useState } from "react";
-import ZkappWorkerClient from "../app/zkappWorkerClient";
+import ZkappWorkerClient from "../app/(zkAppWorker)/zkappWorkerClient";
 
 export const IsCompiledContext = createContext();
 

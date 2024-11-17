@@ -1,15 +1,17 @@
 import "../styles/globals.css";
 
-import { Montserrat } from "next/font/google";
-import Navbar from "../components/NavBar/NavBar.jsx";
-import { WalletProvider } from "../components/providers.jsx";
-import ToastProvider from "../components/ToastProvider.jsx";
-import { IsCompiledProvider } from "../contexts/IsCompiledContext.js";
+// import { Montserrat } from "next/font/google";
+import Navbar from "@/app/(partials)/NavBar";
 
-const montserrat = Montserrat({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
+import { WalletProvider } from "@/components/Providers";
+import ToastProvider from "@/app/(partials)/ToastProvider";
+import { IsCompiledProvider } from "@/contexts/IsCompiledContext.js";
+
+// TODO: uncomment
+// const montserrat = Montserrat({
+//   subsets: ["latin"],
+//   weight: ["400", "700"],
+// });
 
 export const metadata = {
   title: "zkVot",
@@ -23,7 +25,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={montserrat.className}>
+    <body>
+      {/* <body className={montserrat.className}> */}
         <div className="mobile-warning flex flex-col">
           <div className="icon-container mb-[1rem] animate-pulse">
             <svg

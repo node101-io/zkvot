@@ -1,5 +1,5 @@
 "use client";
-import { useToast } from "../components/ToastProvider";
+import { useToast } from "@/app/(partials)/ToastProvider";
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { IsCompiledContext } from "./IsCompiledContext";
 

@@ -1,9 +1,10 @@
 {
   "extends": "@repo/config/typescript/tsconfig.webapp.json",
   "compilerOptions": {
+    "baseUrl": "src/",
     "paths": {
-      "@/*": ["./*"]
-    },
+      "@/*": ["*"]
+    }
   },
   "include": [
     "next-env.d.ts",
