@@ -18,7 +18,7 @@ import {
   Vote,
   VotePrivateInputs,
   VotePublicInputs
-} from 'zkvot-contracts';
+} from 'zkvot-core';
 
 import encodeDataToBase64String from '@/utils/encodeDataToBase64String.js';
 
@@ -30,7 +30,7 @@ const state = {
 
 export const api = {
   async loadProgram() {
-    const { Vote } = await import('zkvot-contracts');
+    const { Vote } = await import('zkvot-core');
     state.Program = Vote;
   },
   async compileProgram() {
@@ -43,7 +43,7 @@ export const api = {
     votersRoot: bigint
   ) {
     if (!state.ElectionContract) {
-      const { ElectionContract } = await import('zkvot-contracts');
+      const { ElectionContract } = await import('zkvot-core');
       console.log(
         'electionStartBlock',
         electionStartBlock,
@@ -52,7 +52,7 @@ export const api = {
         'votersRoot',
         votersRoot
       );
-      const { setElectionContractConstants } = await import('zkvot-contracts');
+      const { setElectionContractConstants } = await import('zkvot-core');
       setElectionContractConstants({
         electionStartBlock,
         electionFinalizeBlock,

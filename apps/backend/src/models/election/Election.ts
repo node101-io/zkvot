@@ -5,7 +5,7 @@ import {
   MerkleTree,
   types,
   utils
-} from 'zkvot-contracts';
+} from 'zkvot-core';
 
 import uploadImageRaw from './functions/uploadImageRaw.js';
 

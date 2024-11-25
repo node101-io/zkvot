@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { Vote } from 'zkvot-contracts';
+import { Vote } from 'zkvot-core';
 import { VerificationKey } from 'o1js';
 
 let verificationKey: VerificationKey | void;

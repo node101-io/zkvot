@@ -1,5 +1,5 @@
 import { JsonProof, verify } from 'o1js';
-import { VoteProof } from 'zkvot-contracts';
+import { VoteProof } from 'zkvot-core';
 import { getVerificationKey } from '../../../utils/compileZkProgram.js';
 
 export default (

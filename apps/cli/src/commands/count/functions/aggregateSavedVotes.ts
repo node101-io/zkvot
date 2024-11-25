@@ -6,7 +6,7 @@ import {
   SegmentTree,
   Vote,
   VoteProof,
-} from 'zkvot-contracts';
+} from 'zkvot-core';
 import { Field, JsonProof, PublicKey } from 'o1js';
 import { EntryStream } from 'level-read-stream';
 import { Level } from 'level';

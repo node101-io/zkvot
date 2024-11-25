@@ -1,7 +1,7 @@
 import async from 'async';
 import { JsonProof, VerificationKey, verify } from 'o1js';
 
-import { Vote, VoteProof } from 'zkvot-contracts';
+import { Vote, VoteProof } from 'zkvot-core';
 
 import { AvailDaLayerInfo, AvailDataTx, CelestiaDaLayerInfo, CelestiaDataTx } from '../../../types/daLayers.js';
 import { Election } from '../../../types/election.js';

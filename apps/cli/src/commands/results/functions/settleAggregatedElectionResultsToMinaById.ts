@@ -8,7 +8,7 @@ import {
   RangeAggregationProgram,
   setElectionContractConstants,
   Vote,
-} from "zkvot-contracts";
+} from "zkvot-core";
 
 import logger from "../../../utils/logger.js";
 import { Level } from "level";
