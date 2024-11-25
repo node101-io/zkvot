@@ -13,7 +13,7 @@ interface ButtonProps {
   TextColor?: string;
   backgroundColor?: string;
   variant?: string;
-}
+};
 
 const Button: React.FC<ButtonProps> = ({
   onClick,

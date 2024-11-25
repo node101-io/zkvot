@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 import Button from "@/app/(partials)/Button";
 import { useToast } from "@/app/(partials)/ToastProvider";
 
-import CreateAppId from "../(partials)/CreateAppId";
+import CreateAppId from "@/app/elections/create/(partials)/CreateAppId";
 
 import {
   fetchAvailBlockHeight,

@@ -1,10 +1,12 @@
-"use client";
-import React, { useEffect, createContext, useState } from "react";
-import ZkappWorkerClient from "../app/(zkAppWorker)/zkappWorkerClient";
+'use client';
 
-export const IsCompiledContext = createContext();
+import { ReactNode, useEffect, createContext, useState } from 'react';
 
-export const IsCompiledProvider = ({ children }) => {
+import ZkappWorkerClient from '@/app/(zkAppWorker)/zkappWorkerClient.js';
+
+export const ZKProgramCompileContext = createContext(false);
+
+export const ZKProgramCompileProvider = (children: ReactNode) => {
   const [zkappWorkerClient, setZkappWorkerClient] = useState(null);
   const [hasBeenSetup, setHasBeenSetup] = useState(false);
   const [isSettingUp, setIsSettingUp] = useState(false);
@@ -21,10 +23,10 @@ export const IsCompiledProvider = ({ children }) => {
 
           await zkappWorkerClient.loadProgram();
 
-          console.log("compileProgram starting");
-          console.time("compileProgram");
+          console.log('compileProgram starting');
+          console.time('compileProgram');
           await zkappWorkerClient.compileProgram();
-          console.timeEnd("compileProgram");
+          console.timeEnd('compileProgram');
 
           setHasBeenSetup(true);
           setIsSettingUp(false);

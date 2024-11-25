@@ -1,29 +1,29 @@
-import * as Comlink from "comlink";
+import * as Comlink from 'comlink';
 
-export default class ZkappWorkerClient {
+export default class {
   worker: Worker;
-  remoteApi: Comlink.Remote<typeof import("./zkappWorker.js").api>;
+  remoteApi: Comlink.Remote<typeof import('@/utils/zkProgram/zkProgramWorker.js').api>;
 
   constructor() {
-    const worker = new Worker(new URL("./zkappWorker.ts", import.meta.url), {
-      type: "module",
+    const worker = new Worker(new URL('@/utils/zkProgram/zkProgramWorker.js', import.meta.url), {
+      type: 'module',
     });
     this.remoteApi = Comlink.wrap(worker);
-  }
+  };
 
   async loadProgram() {
     return this.remoteApi.loadProgram();
-  }
+  };
 
   async compileProgram() {
     return this.remoteApi.compileProgram();
-  }
+  };
 
   async createVote(data: any) {
     const result = await this.remoteApi.createVote(data);
 
     return result;
-  }
+  };
 
   async deployElection(
     electionDeployer: string,
@@ -46,7 +46,7 @@ export default class ZkappWorkerClient {
     );
 
     return result;
-  }
+  };
 
   async loadAndCompileContracts(
     electionStartBlock: number,
@@ -58,5 +58,5 @@ export default class ZkappWorkerClient {
       electionFinalizeBlock,
       votersRoot
     );
-  }
-}
+  };
+};

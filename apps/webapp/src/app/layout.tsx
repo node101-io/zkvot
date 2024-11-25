@@ -1,21 +1,21 @@
-import "../styles/globals.css";
+import '../styles/globals.css';
 
-// import { Montserrat } from "next/font/google";
-import Navbar from "@/app/(partials)/NavBar";
+import WalletProvider from '@/components/WalletProvider.jsx';
 
-import { WalletProvider } from "@/components/Providers";
-import ToastProvider from "@/app/(partials)/ToastProvider";
-import { IsCompiledProvider } from "@/contexts/IsCompiledContext.js";
+import { IsCompiledProvider } from '@/contexts/IsCompiledContext.js';
+
+import Navbar from '@/app/(partials)/NavBar.jsx';
+import ToastProvider from '@/app/(partials)/ToastProvider.jsx';
 
 // TODO: uncomment
 // const montserrat = Montserrat({
-//   subsets: ["latin"],
-//   weight: ["400", "700"],
+//   subsets: ['latin'],
+//   weight: ['400', '700'],
 // });
 
 export const metadata = {
-  title: "zkVot",
-  description: "A zero-knowledge voting platform",
+  title: 'zkVot',
+  description: 'A zero-knowledge voting platform',
 };
 
 export default function RootLayout({
@@ -24,33 +24,33 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang='en'>
     <body>
       {/* <body className={montserrat.className}> */}
-        <div className="mobile-warning flex flex-col">
-          <div className="icon-container mb-[1rem] animate-pulse">
+        <div className='mobile-warning flex flex-col'>
+          <div className='icon-container mb-[1rem] animate-pulse'>
             <svg
-              width="80"
-              height="80"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="computer-icon"
+              width='80'
+              height='80'
+              viewBox='0 0 24 24'
+              fill='none'
+              xmlns='http://www.w3.org/2000/svg'
+              className='computer-icon'
             >
               <rect
-                x="2"
-                y="4"
-                width="20"
-                height="14"
-                rx="2"
-                fill="#ffffff"
+                x='2'
+                y='4'
+                width='20'
+                height='14'
+                rx='2'
+                fill='#ffffff'
               />
               <rect
-                x="5"
-                y="18"
-                width="14"
-                height="2"
-                fill="#ffffff"
+                x='5'
+                y='18'
+                width='14'
+                height='2'
+                fill='#ffffff'
               />
             </svg>
           </div>
@@ -59,7 +59,7 @@ export default function RootLayout({
           </span>
         </div>
 
-        <main className="flex flex-col px-4 overflow-hidden">
+        <main className='flex flex-col px-4 overflow-hidden'>
           <IsCompiledProvider>
             <ToastProvider>
               <WalletProvider>

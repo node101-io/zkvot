@@ -1,19 +1,16 @@
 import {
-  PrivateKey,
-  Mina,
-  Field,
   AccountUpdate,
-  PublicKey,
+  Field,
+  Mina,
   Poseidon,
-  MerkleTree,
-} from "o1js";
-import { Vote } from "./VoteProgram.js";
-import {
-  ElectionContract,
-  ElectionData,
-  setElectionContractConstants,
-} from "./ElectionContract.js";
-import { RangeAggregationProgram } from "./RangeAggregationProgram.js";
+  PrivateKey,
+  PublicKey
+} from 'o1js';
+
+import Aggregation from '../Aggregation.js';
+import Election from '../Election.js';
+import MerkleTree from '../MerkleTree.js';
+import Vote from '../Vote.js';
 
 /**
  * @param startBlock start Block of the election
@@ -30,8 +27,8 @@ export default async function deploy(
   publisherPrivateKey: PrivateKey
 ) {
   const Network = Mina.Network({
-    mina: "https://api.minascan.io/node/devnet/v1/graphql",
-    archive: "https://api.minascan.io/archive/devnet/v1/graphql",
+    mina: 'https://api.minascan.io/node/devnet/v1/graphql',
+    archive: 'https://api.minascan.io/archive/devnet/v1/graphql',
   });
   Mina.setActiveInstance(Network);
 
@@ -51,44 +48,42 @@ export default async function deploy(
     return 0;
   });
 
-  let votersTree = new MerkleTree(20);
+  let votersTree = MerkleTree.createFromFieldsArray(votersList.map(voter => voter.toFields()));
 
-  for (let i = 0; i < votersList.length; i++) {
-    let leaf = Poseidon.hash(votersList[i].toFields());
-    votersTree.setLeaf(BigInt(i), leaf);
-  }
+  if (!votersTree)
+    throw new Error('Error creating voters tree');
 
   let votersRoot = votersTree.getRoot();
   console.log(`Voters root: ${votersRoot.toString()}`);
 
   const publisherPubKey = publisherPrivateKey.toPublicKey();
 
-  setElectionContractConstants({
+  Election.setContractConstants({
     electionStartBlock: startBlock,
     electionFinalizeBlock: endBlock,
     votersRoot: votersRoot.toBigInt(),
   });
 
-  console.time("Compile Vote Program");
-  await Vote.compile();
-  console.timeEnd("Compile Vote Program");
+  console.time('Compile Vote Program');
+  await Vote.Program.compile();
+  console.timeEnd('Compile Vote Program');
 
-  console.time("Compile Aggregate Program");
-  await RangeAggregationProgram.compile();
-  console.timeEnd("Compile Aggregate Program");
+  console.time('Compile Aggregate Program');
+  await Aggregation.Program.compile();
+  console.timeEnd('Compile Aggregate Program');
 
-  console.time("Compile Election Contract");
-  await ElectionContract.compile();
-  console.timeEnd("Compile Election Contract");
+  console.time('Compile Election Contract');
+  await Election.Contract.compile();
+  console.timeEnd('Compile Election Contract');
 
   const electionContractPk = PrivateKey.random();
   console.log(electionContractPk.toBase58());
   const electionContractPubKey = electionContractPk.toPublicKey();
   console.log(electionContractPubKey.toBase58());
 
-  const electionContractInstance = new ElectionContract(electionContractPubKey);
+  const electionContractInstance = new Election.Contract(electionContractPubKey);
 
-  const electionData = new ElectionData({
+  const electionData = new Election.ElectionData({
     first: fileCoinDatas[0],
     last: fileCoinDatas[1],
   });
@@ -111,8 +106,8 @@ export default async function deploy(
 
   let pendingTransaction = await deployTx.send();
 
-  if (pendingTransaction.status === "rejected") {
-    console.log("error sending transaction (see above)");
+  if (pendingTransaction.status === 'rejected') {
+    console.log('error sending transaction (see above)');
     process.exit(0);
   }
 
@@ -122,7 +117,7 @@ export default async function deploy(
 
   await pendingTransaction.wait();
 
-  console.log("Contract deployed at", electionContractPubKey.toBase58());
+  console.log('Contract deployed at', electionContractPubKey.toBase58());
 
   return electionContractPk;
 }

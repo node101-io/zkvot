@@ -4,14 +4,15 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-import Button from "../../../../components/common/Button";
-import SignUpImage from "@/public/StepFiveTutroial/AkordSignUp.svg";
-import SetUpVaultImage from "@/public/StepFiveTutroial/AkordSetUpVault.svg";
-import CreateVaultImage from "@/public/StepFiveTutroial/AkordCreateVault.svg";
-import UploadFileImage from "@/public/StepFiveTutroial/AkordUploadFile.svg";
-import DownloadFileImage from "@/public/StepFiveTutroial/AkordDownloadUploadFile.svg";
-import FileContentImage from "@/public/StepFiveTutroial/AkordFileContent.svg";
-import CopyFromFileImage from "@/public/StepFiveTutroial/AkordCopyFromFile.svg";
+import Button from "@/app/(partials)/Button";
+
+import SignUpImage from "@/public/StepFiveTutorial/AkordSignUp.svg";
+import SetUpVaultImage from "@/public/StepFiveTutorial/AkordSetUpVault.svg";
+import CreateVaultImage from "@/public/StepFiveTutorial/AkordCreateVault.svg";
+import UploadFileImage from "@/public/StepFiveTutorial/AkordUploadFile.svg";
+import DownloadFileImage from "@/public/StepFiveTutorial/AkordDownloadUploadFile.svg";
+import FileContentImage from "@/public/StepFiveTutorial/AkordFileContent.svg";
+import CopyFromFileImage from "@/public/StepFiveTutorial/AkordCopyFromFile.svg";
 
 const StepSix = ({ electionData, onPrevious, onSubmit, onDownload }) => {
   const [transactionId, setTransactionId] = useState("");

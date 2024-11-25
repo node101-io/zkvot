@@ -1,6 +1,6 @@
 import { format, parseISO, isToday, isYesterday } from "date-fns";
 
-export const formatDate = (dateString) => {
+export default (dateString: string) => {
   try {
     const date = parseISO(dateString);
     if (isToday(date)) {

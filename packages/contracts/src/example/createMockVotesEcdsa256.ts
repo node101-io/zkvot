@@ -3,25 +3,21 @@ import {
   Field,
   Crypto,
   Mina,
-  MerkleTree,
   PrivateKey,
   Poseidon,
   createForeignCurveV2,
   Provable,
   createEcdsaV2,
 } from 'o1js';
-
-import { MerkleWitnessClass } from '../utils.js';
-
-import {
-  Vote,
-  VotePublicInputs,
-  VoteWithSecp256k1PrivateInputs,
-} from '../VoteProgram.js';
-import { RangeAggregationProgram } from '../RangeAggregationProgram.js';
-import { Wallet } from 'ethers';
 import dotenv from 'dotenv';
+import { Wallet } from 'ethers';
+
+import Aggregation from '../Aggregation.js';
+import MerkleTree from '../MerkleTree.js';
+import Vote from '../Vote.js';
+
 dotenv.config();
+
 class Secp256k1 extends createForeignCurveV2(Crypto.CurveParams.Secp256k1) {}
 
 class EthSignature {
@@ -30,7 +26,7 @@ class EthSignature {
   fromHex(hex: string) {
     return this.ecdsaSignature.fromHex(hex);
   }
-}
+};
 
 const ecdsaSignature = new EthSignature();
 
@@ -44,7 +40,7 @@ function bigintToUint8Array32BigEndian(input: bigint): Uint8Array {
   }
 
   return bytes;
-}
+};
 
 let Local = await Mina.LocalBlockchain({ proofsEnabled: true });
 Mina.setActiveInstance(Local);
@@ -72,18 +68,12 @@ votersArray.sort((a, b) => {
   return 0;
 });
 
-console.log(
-  votersArray.map((voter) => {
-    return voter[2];
-  })
-);
+console.log(votersArray.map((voter) => voter[2]));
 
-let votersTree = new MerkleTree(20);
+let votersTree = MerkleTree.createFromStringArray(votersArray.map((voter) => voter[2]));
 
-for (let i = 0; i < 40; i++) {
-  let leaf = Field.from(BigInt(votersArray[i][2]));
-  votersTree.setLeaf(BigInt(i), leaf);
-}
+if (!votersTree)
+  throw new Error('votersTree is not defined');
 
 let votersRoot = votersTree.getRoot();
 console.log(`Voters root: ${votersRoot.toString()}`);
@@ -93,10 +83,10 @@ await fs.writeFile(
   JSON.stringify(votersRoot, null, 2)
 );
 
-console.log(await Vote.analyzeMethods());
+console.log(await Vote.Program.analyzeMethods());
 
 console.time('compiling vote program');
-let { verificationKey } = await Vote.compile();
+let { verificationKey } = await Vote.Program.compile();
 console.timeEnd('compiling vote program');
 console.log('verification key', verificationKey.data.slice(0, 10) + '..');
 
@@ -115,13 +105,13 @@ for (let i = 0; i < 20; i++) {
   let address = votersArray[i][2];
   let pubkey = votersArray[i][3];
   let merkleTreeWitness = votersTree.getWitness(BigInt(i));
-  let witness = new MerkleWitnessClass(merkleTreeWitness);
+  let witness = new MerkleTree.Witness(merkleTreeWitness);
 
   console.log(`voter ${i} voting for ${vote}`);
   console.log(`voter ${i} address: ${address}`);
   console.log(`voter ${i} address in bigint: ${BigInt(address)}`);
 
-  let votePublicInputs = new VotePublicInputs({
+  let votePublicInputs = new Vote.PublicInputs({
     electionId: electionId,
     vote: Field.from(vote),
     votersRoot: votersRoot,
@@ -139,7 +129,7 @@ for (let i = 0; i < 20; i++) {
 
   const signedElectionIdEcdsa = ecdsaSignature.fromHex(signedElectionId);
 
-  let votePrivateInputs = new VoteWithSecp256k1PrivateInputs({
+  let votePrivateInputs = new Vote.VoteWithSecp256k1PrivateInputs({
     voterAddress: Field.from(BigInt(address)),
     voterPubKey: pubkey,
     signedElectionId: signedElectionIdEcdsa,
@@ -149,7 +139,7 @@ for (let i = 0; i < 20; i++) {
   console.log(`voter ${i} address: ${Field.from(BigInt(address)).toString()}`);
 
   console.time(`vote ${i} proof`);
-  let voteProof = await Vote.voteWithSecp256k1(
+  let voteProof = await Vote.Program.voteWithSecp256k1(
     votePublicInputs,
     votePrivateInputs
   );
@@ -184,9 +174,9 @@ for (let i = 20; i < 40; i++) {
   let address = votersArray[i][2];
   let pubkey = votersArray[i][3];
   let merkleTreeWitness = votersTree.getWitness(BigInt(i));
-  let witness = new MerkleWitnessClass(merkleTreeWitness);
+  let witness = new MerkleTree.Witness(merkleTreeWitness);
 
-  let votePublicInputs = new VotePublicInputs({
+  let votePublicInputs = new Vote.PublicInputs({
     electionId: electionId,
     vote: Field.from(vote),
     votersRoot: votersRoot,
@@ -204,7 +194,7 @@ for (let i = 20; i < 40; i++) {
 
   const signedElectionIdEcdsa = ecdsaSignature.fromHex(signedElectionId);
 
-  let votePrivateInputs = new VoteWithSecp256k1PrivateInputs({
+  let votePrivateInputs = new Vote.VoteWithSecp256k1PrivateInputs({
     voterAddress: Field.from(BigInt(address)),
     voterPubKey: pubkey,
     signedElectionId: signedElectionIdEcdsa,
@@ -212,7 +202,7 @@ for (let i = 20; i < 40; i++) {
   });
 
   console.time(`vote ${i} proof`);
-  let voteProof = await Vote.voteWithSecp256k1(
+  let voteProof = await Vote.Program.voteWithSecp256k1(
     votePublicInputs,
     votePrivateInputs
   );
@@ -227,7 +217,7 @@ await fs.writeFile(
 );
 
 let { verificationKey: voteAggregatorVerificationKey } =
-  await RangeAggregationProgram.compile();
+  await Aggregation.Program.compile();
 
 await fs.writeFile(
   'voteAggregatorVerificationKeyEcdsa256.json',

@@ -27,11 +27,8 @@ aggregateProof.json
 
 .env
 
-local
-local-mock
+src/local/mock.js
 
 *.tgz
 
 *.tsbuildinfo
-
-mock.*
