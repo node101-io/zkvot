@@ -1,29 +1,62 @@
 "use client";
 
-import React, { createContext, useState, useEffect } from "react";
+import { Dispatch, SetStateAction, createContext, useState, useEffect, PropsWithChildren } from "react";
 import { Buffer } from "buffer";
-import { useToast } from "@/app/(partials)/ToastProvider";
-export const SubwalletContext = createContext();
+import { initialize as initAvailAPI, ApiPromise } from 'avail-js-sdk';
 
-export const SubwalletProvider = ({ children }) => {
+export interface SubWalletContextInterface {
+  accounts: string[];
+  setAccounts: Dispatch<
+    SetStateAction<SubWalletContextInterface['accounts']>
+  >;
+  selectedAccount: string;
+  setSelectedAccount: Dispatch<
+    SetStateAction<SubWalletContextInterface['selectedAccount']>
+  >;
+  api: ApiPromise | null;
+  setApi: Dispatch<
+    SetStateAction<SubWalletContextInterface['api']>
+  >;
+  isSubmitting: boolean;
+  setIsSubmitting: Dispatch<
+    SetStateAction<SubWalletContextInterface['isSubmitting']>
+  >;
+  generatedAppId: number;
+  setGeneratedAppId: Dispatch<
+    SetStateAction<SubWalletContextInterface['generatedAppId']>
+  >;
+};
+
+export const SubwalletContext = createContext({
+  accounts: [],
+  setAccounts: () => {},
+  selectedAccount: '',
+  setSelectedAccount: () => {},
+  api: null,
+  setApi: () => {},
+  isSubmitting: false,
+  setIsSubmitting: () => {},
+  generatedAppId: -1,
+  setGeneratedAppId: () => {},
+});
+
+export const SubwalletProvider = ({
+  children
+}: PropsWithChildren<{}>) => {
   const [accounts, setAccounts] = useState([]);
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [api, setApi] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [generatedAppId, setGeneratedAppId] = useState(null);
-
-  const showToast = useToast();
+  const [generatedAppId, setGeneratedAppId] = useState(-1);
 
   useEffect(() => {
-    const initializeApi = async () => {
+    const initializeApi = async (): Promise<void> => {
       try {
-        const { initialize } = await import("avail-js-sdk");
-        const newApi = await initialize("wss://turing-rpc.avail.so/ws");
+        const newApi = await initAvailAPI("wss://turing-rpc.avail.so/ws");
+
         setApi(newApi);
-        console.log("API initialized");
       } catch (error) {
-        console.error("Failed to initialize API:", error);
-        showToast("Failed to initialize API.", "error");
+        throw new Error("Failed to initialize API.");
       }
     };
 

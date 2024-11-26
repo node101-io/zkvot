@@ -2,7 +2,31 @@
 import { useToast } from "@/app/(partials)/ToastProvider";
 import React, { createContext, useState } from "react";
 
-export const MetamaskWalletContext = createContext();
+interface MetamaskWalletWalletContextInterface {
+  minaWalletAddress: string;
+  setMetamaskWalletWalletAddress: Dispatch<
+    SetStateAction<MetamaskWalletWalletContextInterface['minaWalletAddress']>
+  >;
+  connectMetamaskWalletWallet: () => Promise<void>;
+  signElectionId: (electionId: string) => Promise<string | Error>;
+  generateEncodedVoteProof: (vote: {
+    electionId: string;
+    signedElectionId: string;
+    vote: number;
+    votersArray: string[];
+    publicKey: string;
+  }) => Promise<string | Error>;
+  disconnectMetamaskWalletWallet: () => void;
+};
+
+export const MetamaskWalletWalletContext = createContext<MetamaskWalletWalletContextInterface>({
+  minaWalletAddress: '',
+  setMetamaskWalletWalletAddress: () => {},
+  connectMetamaskWalletWallet: async () => {},
+  signElectionId: async () => '',
+  generateEncodedVoteProof: async () => '',
+  disconnectMetamaskWalletWallet: () => {},
+});
 
 export const MetamaskWalletProvider = ({ children }) => {
   const [metamaskWalletAddress, setMetamaskWalletAddress] = useState(null);

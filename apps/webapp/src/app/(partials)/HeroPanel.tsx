@@ -1,6 +1,7 @@
 import React, { forwardRef, useState } from "react";
 
-import Button from "@/app/(partials)/Button";
+import Button from "@/app/(partials)/Button.jsx";
+
 import blueFrame from "@/public/blueframe.png";
 
 const Panel = forwardRef(

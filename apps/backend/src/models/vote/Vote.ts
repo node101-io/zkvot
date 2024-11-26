@@ -1,10 +1,12 @@
 import { model, Model, Schema } from 'mongoose';
 
-import Election from '../election/Election.js';
-import verifyVote from './functions/verifyVote.js';
-import submitVote from './functions/submitVote.js';
 import isBase64String from '../../utils/isBase64String.js';
 import decodeFromBase64String from '../../utils/decodeFromBase64String.js';
+
+import Election from '../election/Election.js';
+
+import verifyVote from './functions/verifyVote.js';
+import submitVote from './functions/submitVote.js';
 
 const DUPLICATED_UNIQUE_FIELD_ERROR_CODE = 11000;
 const MAX_DATABASE_TEXT_FIELD_LENGTH = 1e4;
@@ -16,7 +18,10 @@ interface VoteStatics {
       election_contract_id: string;
       da_layer: 'avail' | 'celestia';
     },
-    callback: (error: string | null, vote?: any) => any
+    callback: (error: string | null, result?: {
+      block_height: number,
+      tx_hash: string
+    }) => any
   ) => any;
 };
 
@@ -65,7 +70,7 @@ VoteSchema.statics.createAndSubmitVote = function (
     if (!election)
       return callback('bad_request');
 
-    if (!election.communication_layers.find(layer => layer.type == data.da_layer))
+    if (!election.communication_layers.find(layer => layer.name == data.da_layer))
       return callback('bad_request');
 
     decodeFromBase64String(data.vote, (err, jsonProof) => {
@@ -94,9 +99,9 @@ VoteSchema.statics.createAndSubmitVote = function (
             };
 
             if (data.da_layer == 'avail')
-              submitVoteData.app_id = election.communication_layers.find(layer => layer.type == data.da_layer)?.app_id;
+              submitVoteData.app_id = election.communication_layers.find(layer => layer.name == data.da_layer)?.app_id;
             else if (data.da_layer == 'celestia')
-              submitVoteData.namespace = election.communication_layers.find(layer => layer.type == data.da_layer)?.namespace;
+              submitVoteData.namespace = election.communication_layers.find(layer => layer.name == data.da_layer)?.namespace;
             else
               return callback('not_possible_error');
 

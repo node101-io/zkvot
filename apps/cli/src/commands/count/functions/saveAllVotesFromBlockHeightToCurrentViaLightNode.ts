@@ -1,10 +1,7 @@
 import async from 'async';
 import { JsonProof, VerificationKey, verify } from 'o1js';
 
-import { Vote, VoteProof } from 'zkvot-core';
-
-import { AvailDaLayerInfo, AvailDataTx, CelestiaDaLayerInfo, CelestiaDataTx } from '../../../types/daLayers.js';
-import { Election } from '../../../types/election.js';
+import { Vote, types } from 'zkvot-core';
 
 import Avail from '../../../da-layers/avail/Avail.js';
 import Celestia from '../../../da-layers/celestia/Celestia.js';
@@ -15,7 +12,7 @@ import isBase64String from '../../../utils/isBase64String.js';
 import logger from '../../../utils/logger.js';
 
 const compileVoteProgramAndGetVerificationKey = (callback: (err: Error | string | null, verificationKey?: VerificationKey) => void) => {
-  Vote.compile({ forceRecompile: true })
+  Vote.Program.compile({ forceRecompile: true })
     .then(program => callback(null, program.verificationKey))
     .catch(err => {
       logger.log('error', `Failed to compile vote program: ${err}`);
@@ -29,7 +26,7 @@ const verifyVoteProofAndGetNullifier = (
   verificationKey: VerificationKey,
   callback: (err: string | null, nullifier?: string) => void
 ) => {
-  VoteProof.fromJSON(jsonVoteProof)
+  Vote.Proof.fromJSON(jsonVoteProof)
     .then(voteProof => {
       verify(voteProof, verificationKey)
         .then(isVerified => {
@@ -52,14 +49,14 @@ const verifyVoteProofAndGetNullifier = (
 };
 
 const checkEachVoteAndReturnWithNullifier = (
-  blockData: (CelestiaDataTx | AvailDataTx)[],
+  blockData: (types.CelestiaDataTx | types.AvailDataTx)[],
   verificationKey: VerificationKey,
   callback: (err: string | null, vote?: { nullifier: string, vote_proof: JsonProof }[]) => void
 ) => {
   async.mapSeries(
     blockData,
     (
-      dataTx: CelestiaDataTx | AvailDataTx,
+      dataTx: types.CelestiaDataTx | types.AvailDataTx,
       next: (
         err: string | null,
         vote?: { nullifier: string, vote_proof: JsonProof }
@@ -181,11 +178,12 @@ const getAndVerifyVotesFromAvailByBlockHeight = (
 };
 
 const readAvailBlocksFromStartBlockHeightToCurrent = (
-  election: Election,
+  mina_contract_id: string,
+  election: types.ElectionStaticData,
   verificationKey: VerificationKey,
   callback: (err: Error | string | null) => void
 ) => {
-  const availInfo: AvailDaLayerInfo | undefined = (election.da_layers as AvailDaLayerInfo[]).find(daLayer => daLayer.name === 'avail');
+  const availInfo: types.AvailDaLayerInfo | undefined = (election.communication_layers as types.AvailDaLayerInfo[]).find(daLayer => daLayer.name === 'avail');
 
   if (!availInfo)
     return callback(null);
@@ -193,7 +191,7 @@ const readAvailBlocksFromStartBlockHeightToCurrent = (
   logger.log('info', 'Reading Avail blocks from start block height to current...');
 
   getAndVerifyVotesFromAvailByBlockHeight({
-    electionId: election.mina_contract_id,
+    electionId: mina_contract_id,
     blockHeight: availInfo.start_block_height,
     verificationKey: verificationKey
   }, err => {
@@ -249,11 +247,12 @@ const getAndVerifyVotesFromCelestiaByBlockHeightAndNamespace = (
 };
 
 const readCelestiaBlocksFromStartBlockHeightToCurrent = (
-  election: Election,
+  mina_contract_id: string,
+  election: types.ElectionStaticData,
   verificationKey: VerificationKey,
   callback: (err: Error | string | null) => void
 ) => {
-  const celestiaInfo: CelestiaDaLayerInfo | undefined = (election.da_layers as CelestiaDaLayerInfo[]).find(daLayer => daLayer.name === 'celestia');
+  const celestiaInfo: types.CelestiaDaLayerInfo | undefined = (election.communication_layers as types.CelestiaDaLayerInfo[]).find(daLayer => daLayer.name === 'celestia');
 
   if (!celestiaInfo)
     return callback(null);
@@ -261,7 +260,7 @@ const readCelestiaBlocksFromStartBlockHeightToCurrent = (
   logger.log('info', 'Reading Celestia blocks from start block height to current...');
 
   getAndVerifyVotesFromCelestiaByBlockHeightAndNamespace({
-    electionId: election.mina_contract_id,
+    electionId: mina_contract_id,
     blockHeight: celestiaInfo.start_block_height,
     namespace: celestiaInfo.namespace,
     verificationKey: verificationKey
@@ -274,7 +273,8 @@ const readCelestiaBlocksFromStartBlockHeightToCurrent = (
 };
 
 export default (
-  election: Election,
+  mina_contract_id: string,
+  election: types.ElectionStaticData,
   callback: (err: Error | string | null) => void
 ) => {
   compileVoteProgramAndGetVerificationKey((err, verificationKey) => {
@@ -283,11 +283,11 @@ export default (
 
     logger.log('info', 'Compiled vote program and got verification key.');
 
-    readAvailBlocksFromStartBlockHeightToCurrent(election, verificationKey, err => {
+    readAvailBlocksFromStartBlockHeightToCurrent(mina_contract_id, election, verificationKey, err => {
       if (err)
         return callback(err);
 
-      readCelestiaBlocksFromStartBlockHeightToCurrent(election, verificationKey, err => {
+      readCelestiaBlocksFromStartBlockHeightToCurrent(mina_contract_id, election, verificationKey, err => {
         if (err)
           return callback(err);
 

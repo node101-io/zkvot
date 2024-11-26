@@ -1,7 +1,8 @@
 import fs from 'fs';
-import path from 'path';
-import { Vote } from 'zkvot-core';
 import { VerificationKey } from 'o1js';
+import path from 'path';
+
+import { Vote } from 'zkvot-core';
 
 let verificationKey: VerificationKey | void;
 
@@ -16,11 +17,9 @@ const compile = async (force_compile: boolean) => {
       return typeof value === 'string' && value.startsWith('0x') ? BigInt(value) : value;
     }));
   } catch (error) {
-    console.log(error);
+    console.log('Verification key not found, recompiling...');
 
-    console.time('Vote compile');
-
-    verificationKey = await Vote.compile()
+    verificationKey = await Vote.Program.compile()
       .then(compiled => {
         console.timeEnd('Vote compile');
 
@@ -49,8 +48,6 @@ const callFunctionOnce = (fn: Function) => {
   };
 };
 
-export const getVerificationKey = () => {
-  return verificationKey;
-};
+export const getVerificationKey = () => verificationKey;
 
 export const compileZkProgramIfNotCompiledBefore = callFunctionOnce(compile);

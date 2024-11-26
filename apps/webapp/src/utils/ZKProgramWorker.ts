@@ -1,6 +1,5 @@
 import {
   Field,
-  MerkleTree,
   Mina,
   Poseidon,
   PublicKey,
@@ -10,32 +9,28 @@ import {
 import * as Comlink from 'comlink';
 
 import {
-  createMerkleTreeFromLeaves,
-  ElectionContract,
-  ElectionData,
-  MerkleWitnessClass,
-  RangeAggregationProgram,
-  Vote,
-  VotePrivateInputs,
-  VotePublicInputs
+  Aggregation,
+  Election,
+  MerkleTree,
+  Vote
 } from 'zkvot-core';
 
 import encodeDataToBase64String from '@/utils/encodeDataToBase64String.js';
 
 const state = {
-  Program: null as null | typeof Vote,
-  ElectionContract: null as null | typeof ElectionContract,
-  ElectionContractInstance: null as null | ElectionContract,
+  Program: null as null | typeof Vote.Program,
+  ElectionContract: null as null | typeof Election.Contract,
+  ElectionContractInstance: null as null | Election.Contract,
 };
 
 export const api = {
   async loadProgram() {
     const { Vote } = await import('zkvot-core');
-    state.Program = Vote;
+    state.Program = Vote.Program;
   },
   async compileProgram() {
     await state.Program?.compile();
-    await RangeAggregationProgram.compile();
+    await Aggregation.Program.compile();
   },
   async loadAndCompileContracts(
     electionStartBlock: number,
@@ -43,7 +38,7 @@ export const api = {
     votersRoot: bigint
   ) {
     if (!state.ElectionContract) {
-      const { ElectionContract } = await import('zkvot-core');
+      const { Election } = await import('zkvot-core');
       console.log(
         'electionStartBlock',
         electionStartBlock,
@@ -52,13 +47,13 @@ export const api = {
         'votersRoot',
         votersRoot
       );
-      const { setElectionContractConstants } = await import('zkvot-core');
-      setElectionContractConstants({
+
+      Election.setContractConstants({
         electionStartBlock,
         electionFinalizeBlock,
         votersRoot,
       });
-      state.ElectionContract = ElectionContract;
+      state.ElectionContract = Election.Contract;
     }
     console.log('Compiling ElectionContract');
 
@@ -78,7 +73,13 @@ export const api = {
     }
     return state.ElectionContractInstance;
   },
-  async createVote(data: any): Promise<string> {
+  async createVote(data: {
+    electionId: string;
+    signedElectionId: string;
+    vote: number;
+    votersArray: string[];
+    publicKey: string;
+  }): Promise<string> {
     if (!state.Program)
       throw new Error('Program not loaded. Call loadProgram() first.');
 
@@ -86,8 +87,11 @@ export const api = {
 
     const { electionId, signedElectionId, vote, votersArray, publicKey } = data;
 
-    const votersTree = createMerkleTreeFromLeaves(votersArray);
+    const votersTree = MerkleTree.createFromStringArray(votersArray);
     console.log('votersTree', votersTree);
+
+    if (!votersTree)
+      throw new Error('Error creating voters tree from voters array.');
 
     const voterIndex = votersArray.indexOf(publicKey);
     if (voterIndex === -1) {
@@ -97,17 +101,17 @@ export const api = {
     const witness = votersTree.getWitness(BigInt(voterIndex));
     console.log('witness', witness);
 
-    const votePublicInputs = new VotePublicInputs({
+    const votePublicInputs = new Vote.PublicInputs({
       electionId: PublicKey.fromJSON(electionId),
       vote: Field.from(vote),
       votersRoot: votersTree.getRoot(),
     });
     console.log('votePublicInputs', votePublicInputs);
 
-    const votePrivateInputs = new VotePrivateInputs({
+    const votePrivateInputs = new Vote.PrivateInputs({
       voterKey: PublicKey.fromJSON(publicKey),
-      signedElectionId: Signature.fromJSON(signedElectionId),
-      votersMerkleWitness: new MerkleWitnessClass(witness),
+      signedElectionId: Signature.fromBase58(signedElectionId),
+      votersMerkleWitness: new MerkleTree.Witness(witness),
     });
     console.log('votePrivateInputs', votePrivateInputs);
 
@@ -178,7 +182,7 @@ export const api = {
         async () => {
           await electionContract.deploy();
           await electionContract.initialize(
-            new ElectionData({
+            new Election.StorageLayerInfoEncoding({
               first: Field.from(electionData.first),
               last: Field.from(electionData.last),
             })

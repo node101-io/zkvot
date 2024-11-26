@@ -1,11 +1,21 @@
-"use client";
+'use client';
 
-import React, { createContext, useState } from "react";
+import { PropsWithChildren, Dispatch, createContext, useState, SetStateAction } from 'react';
 
-export const SelectedWalletContext = createContext();
+export interface SelectedWalletContextInterface {
+  selectedWallet: string;
+  setSelectedWallet: Dispatch<
+    SetStateAction<SelectedWalletContextInterface['selectedWallet']>
+  >;
+};
 
-export const SelectedWalletProvider = ({ children }) => {
-  const [selectedWallet, setSelectedWallet] = useState(null);
+export const SelectedWalletContext = createContext<SelectedWalletContextInterface | null>(null);
+
+export const SelectedWalletProvider = ({
+  children
+}: PropsWithChildren<{}>) => {
+  const [selectedWallet, setSelectedWallet] = useState<SelectedWalletContextInterface['selectedWallet']>('');
+
   return (
     <SelectedWalletContext.Provider
       value={{ selectedWallet, setSelectedWallet }}

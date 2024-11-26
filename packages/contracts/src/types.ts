@@ -1,8 +1,30 @@
-import { Field } from 'o1js';
-
-import Election from './Election.js';
-
 namespace typesNamespace {
+  export interface DaLayerInfo {
+    name: 'avail' | 'celestia',
+    start_block_height: number
+  };
+  
+  export interface AvailDaLayerInfo extends DaLayerInfo {
+    app_id: number
+  };
+  
+  export type AvailDataTx = {
+    data: string
+  };
+  
+  export interface CelestiaDaLayerInfo extends DaLayerInfo {
+    namespace: string,
+    start_block_hash: string
+  };
+  
+  export type CelestiaDataTx = {
+    namespace: string,
+    data: string,
+    share_version: number,
+    commitment: string,
+    index: number
+  };
+  
   export type ElectionStaticData = {
     start_date: Date;
     end_date: Date;
@@ -13,13 +35,7 @@ namespace typesNamespace {
     voters_list: {
       public_key: string;
     }[];
-    communication_layers: {
-      type: 'avail' | 'celestia';
-      start_block: number;
-      namespace: string;
-      block_hash: string;
-      app_id: number;
-    }[]
+    communication_layers: (AvailDaLayerInfo | CelestiaDaLayerInfo)[]
   };
   export type ElectionBackendData = {
     mina_contract_id: string;
@@ -35,13 +51,7 @@ namespace typesNamespace {
       public_key: string;
     }[];
     voters_merkle_root: bigint;
-    communication_layers: {
-      type: 'avail' | 'celestia';
-      start_block: number;
-      namespace: string;
-      block_hash: string;
-      app_id: number;
-    }[]
+    communication_layers: (AvailDaLayerInfo | CelestiaDaLayerInfo)[]
   };
 };
 

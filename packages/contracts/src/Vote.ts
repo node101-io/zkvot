@@ -50,18 +50,18 @@ namespace VoteNamespace {
     electionId: PublicKey,
     vote: Field,
     votersRoot: Field,
-  }) {}
-
-  export class PublicOutputs extends Struct({
-    vote: Field,
-    nullifier: Field,
-  }) {}
+  }) {};
 
   export class PrivateInputs extends Struct({
     voterKey: PublicKey,
     signedElectionId: Signature,
     votersMerkleWitness: MerkleTree.Witness,
-  }) {}
+  }) {};
+
+  export class PublicOutputs extends Struct({
+    vote: Field,
+    nullifier: Field,
+  }) {};
 
   export class VoteWithSecp256k1PrivateInputs extends Struct({
     voterAddress: Field,

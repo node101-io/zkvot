@@ -1,17 +1,22 @@
 import { EntryStream } from 'level-read-stream';
+import { JsonProof } from 'o1js';
 
 import db from '../../../utils/db.js';
-
-import { AggregatedElectionResult } from '../../../types/election.js';
 
 export default (
   electionResultsSublevelIdentifier: string,
   callback: (
     err: Error | string | null,
-    aggregatedElectionResultsArray?: AggregatedElectionResult[]
+    aggregatedElectionResultsArray?: {
+      electionId: string,
+      result: JsonProof
+    }[]
   ) => void
 ) => {
-  const aggregatedElectionResultsArray: AggregatedElectionResult[] = [];
+  const aggregatedElectionResultsArray: {
+    electionId: string,
+    result: JsonProof
+  }[] = [];
 
   const electionResultsSublevel = db.sublevel(electionResultsSublevelIdentifier, { valueEncoding: 'json' });
 

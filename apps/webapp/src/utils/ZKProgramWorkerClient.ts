@@ -2,7 +2,7 @@ import * as Comlink from 'comlink';
 
 export default class {
   worker: Worker;
-  remoteApi: Comlink.Remote<typeof import('@/utils/zkProgram/zkProgramWorker.js').api>;
+  remoteApi: Comlink.Remote<typeof import('@/utils/ZKProgramWorker.js').api>;
 
   constructor() {
     const worker = new Worker(new URL('@/utils/zkProgram/zkProgramWorker.js', import.meta.url), {
@@ -19,7 +19,13 @@ export default class {
     return this.remoteApi.compileProgram();
   };
 
-  async createVote(data: any) {
+  async createVote(data: {
+    electionId: string;
+    signedElectionId: string;
+    vote: number;
+    votersArray: string[];
+    publicKey: string;
+  }) {
     const result = await this.remoteApi.createVote(data);
 
     return result;
