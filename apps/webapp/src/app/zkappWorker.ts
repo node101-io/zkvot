@@ -15,12 +15,12 @@ import {
   Vote,
   VotePrivateInputs,
   VotePublicInputs,
-  RangeAggregationProgram
+  RangeAggregationProgram,
 } from "zkvot-contracts";
 import { encodeDataToBase64String } from "../utils/encodeDataToBase64String.js";
 
 const state = {
-  Program: null as null | typeof Vote,
+  VoteProgram: null as null | typeof Vote,
   ElectionContract: null as null | typeof ElectionContract,
   ElectionContractInstance: null as null | ElectionContract,
 };
@@ -44,11 +44,18 @@ const createMerkleTreeFromLeaves = (leaves: string[]) => {
 export const api = {
   async loadProgram() {
     const { Vote } = await import("zkvot-contracts");
-    state.Program = Vote;
+    state.VoteProgram = Vote;
   },
   async compileProgram() {
-    await state.Program?.compile();
+    console.log("Compiling VoteProgram");
+    console.time("VoteProgram compilation");
+    await state.VoteProgram?.compile();
+    console.timeEnd("VoteProgram compilation");
+
+    console.log("Compiling RangeAggregationProgram");
+    console.time("RangeAggregationProgram compilation");
     await RangeAggregationProgram.compile();
+    console.timeEnd("RangeAggregationProgram compilation");
   },
   async loadAndCompileContracts(
     electionStartBlock: number,
@@ -92,8 +99,8 @@ export const api = {
     return state.ElectionContractInstance;
   },
   async createVote(data: any): Promise<string> {
-    if (!state.Program)
-      throw new Error("Program not loaded. Call loadProgram() first.");
+    if (!state.VoteProgram)
+      throw new Error("VoteProgram not loaded. Call loadProgram() first.");
 
     console.log("data", data);
 
@@ -127,10 +134,9 @@ export const api = {
     console.time("vote proof generation");
 
     try {
-      const voteProof = await state.Program.vote(
-        votePublicInputs,
-        votePrivateInputs
-      );
+      const voteProof = (
+        await state.VoteProgram.vote(votePublicInputs, votePrivateInputs)
+      ).proof;
       console.log("voteProof", voteProof);
 
       console.timeEnd("vote proof generation");
