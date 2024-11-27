@@ -43,44 +43,55 @@ const StepSeven = ({ electionData }) => {
       console.error("zkappWorkerClient has not been setup");
       return;
     }
-      setLoading(true);
+    setLoading(true);
 
-      try {
-        console.log("deploy election starting");
-        console.time("deploy election tx");
-        const txJson = await zkappWorkerClient.deployElection(
-          // Add deployer public key
-          calculateBlockHeight(electionData.start_date),
-          calculateBlockHeight(electionData.end_date),
-          // generateMerkleRootFromVotersList(electionData.voters_list), // TODO: uncomment this line
-          {
-            first: 1n,
-            second: 2n,
-          },
-          0
-        );
-        console.timeEnd("deploy election tx");
+    try {
+      console.log("deploy election starting");
+      console.time("deploy election tx");
 
-        const { hash } = await window.mina.sendTransaction({
-          transaction: txJson,
-          feePayer: {
-            fee: 0.1,
-            memo: "",
-          },
-        });
+      console.log("electionData", electionData);
+      const startBlock = await calculateBlockHeight(Date.now());
+      const endBlock = await calculateBlockHeight(electionData.end_date);
+      const merkleRoot = generateMerkleRootFromVotersList(
+        electionData.voters_list
+      );
+      console.log("startBlock", startBlock);
+      console.log("endBlock", endBlock);
+      console.log("merkleRoot", merkleRoot);
+      const txJson = await zkappWorkerClient.deployElection(
+        // Add deployer public key
+        "B62qk5sunym3zRih83JroVF3X8AoNnCJJ3yKfsxyj5VCcitZphqmQ5p",
+        371110,
+        371600,
+        merkleRoot,
+        {
+          first: 1n,
+          second: 2n,
+        },
+        0
+      );
+      console.timeEnd("deploy election tx");
 
-        console.log(`https://minascan.io/devnet/tx/${hash}`);
+      const { hash } = await window.mina.sendTransaction({
+        transaction: txJson,
+        feePayer: {
+          fee: 0.1,
+          memo: "",
+        },
+      });
 
-        confetti({
-          particleCount: 100,
-          spread: 180,
-          origin: { y: 0.6 },
-        });
-      } catch (error) {
-        console.error(error);
-      }
-      setLoading(false);
-      // setSubmitted(true);
+      console.log(`https://minascan.io/devnet/tx/${hash}`);
+
+      confetti({
+        particleCount: 100,
+        spread: 180,
+        origin: { y: 0.6 },
+      });
+    } catch (error) {
+      console.error(error);
+    }
+    setLoading(false);
+    // setSubmitted(true);
   };
 
   const storageLayerLogos = {

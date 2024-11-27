@@ -19,6 +19,7 @@ export const IsCompiledProvider = ({ children }) => {
           setZkappWorkerClient(zkappWorkerClient);
           await new Promise((resolve) => setTimeout(resolve, 5000));
 
+          zkappWorkerClient.setActiveInstanceToDevnet();
           await zkappWorkerClient.loadProgram();
 
           console.log("compileProgram starting");
@@ -41,7 +42,10 @@ export const IsCompiledProvider = ({ children }) => {
     <IsCompiledContext.Provider
       value={{
         zkappWorkerClient,
-        hasBeenSetup, setHasBeenSetup, isSettingUp }}
+        hasBeenSetup,
+        setHasBeenSetup,
+        isSettingUp,
+      }}
     >
       {children}
     </IsCompiledContext.Provider>

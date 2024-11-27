@@ -42,6 +42,14 @@ const createMerkleTreeFromLeaves = (leaves: string[]) => {
 };
 
 export const api = {
+  setActiveInstanceToDevnet() {
+    const Network = Mina.Network({
+      mina: "https://api.minascan.io/node/devnet/v1/graphql",
+      archive: "https://api.minascan.io/archive/devnet/v1/graphql",
+    });
+    console.log("Devnet network instance configured.");
+    Mina.setActiveInstance(Network);
+  },
   async loadProgram() {
     const { Vote } = await import("zkvot-contracts");
     state.VoteProgram = Vote;
@@ -91,11 +99,11 @@ export const api = {
         "ElectionContract not loaded. Call loadAndCompileContracts() first."
       );
     }
-    if (!state.ElectionContractInstance) {
-      state.ElectionContractInstance = new state.ElectionContract(
-        PublicKey.fromBase58(contractAddress)
-      );
-    }
+
+    state.ElectionContractInstance = new state.ElectionContract(
+      PublicKey.fromBase58(contractAddress)
+    );
+
     return state.ElectionContractInstance;
   },
   async createVote(data: any): Promise<string> {
@@ -189,6 +197,11 @@ export const api = {
         electionContractPubKey.toBase58()
       );
 
+      const first = Field.from(10);
+      const last = Field.from(20);
+
+      console.log(first.toBigInt(), last.toBigInt());
+
       const deployTx = await Mina.transaction(
         {
           sender: PublicKey.fromBase58(electionDeployer),
@@ -196,15 +209,14 @@ export const api = {
         },
         async () => {
           await electionContract.deploy();
-          await electionContract.initialize(
-            new ElectionData({
-              first: Field.from(electionData.first),
-              last: Field.from(electionData.last),
-            })
-          );
+          await electionContract.initialize({
+            first,
+            last,
+          });
         }
       );
       await deployTx.prove();
+      deployTx.sign([electionContractPrivKey]);
       return deployTx.toJSON();
     } catch (error) {
       console.error("Error deploying election contract:", error);

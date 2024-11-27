@@ -1,8 +1,8 @@
 import { fetchLastBlock, Mina } from "o1js";
 
 export default async function calculateBlockHeight(
-  startTimeStamp: Date,
-  endTimeStamp: Date
+  startTimeStamp: number,
+  endTimeStamp: number
 ) {
   // const Network = Mina.Network({
   //   mina:,
@@ -17,24 +17,21 @@ export default async function calculateBlockHeight(
 
   let startBlockHeight;
   let endBlockHeight;
-  if (startTimeStamp.valueOf() > Date.now()) {
+  if (startTimeStamp > Date.now()) {
     startBlockHeight =
-      Math.ceil((startTimeStamp.valueOf() - Date.now()) / blockTime) +
-      currentBlockHeight;
+      Math.ceil((startTimeStamp - Date.now()) / blockTime) + currentBlockHeight;
   } else {
     startBlockHeight =
-      Math.floor((startTimeStamp.valueOf() - Date.now()) / blockTime) +
+      Math.floor((startTimeStamp - Date.now()) / blockTime) +
       currentBlockHeight;
   }
 
-  if (endTimeStamp.valueOf() > Date.now()) {
+  if (endTimeStamp > Date.now()) {
     endBlockHeight =
-      Math.ceil((endTimeStamp.valueOf() - Date.now()) / blockTime) +
-      currentBlockHeight;
+      Math.ceil((endTimeStamp - Date.now()) / blockTime) + currentBlockHeight;
   } else {
     endBlockHeight =
-      Math.floor((endTimeStamp.valueOf() - Date.now()) / blockTime) +
-      currentBlockHeight;
+      Math.floor((endTimeStamp - Date.now()) / blockTime) + currentBlockHeight;
   }
 
   return {
