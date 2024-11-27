@@ -6,9 +6,9 @@ import {
   Struct,
   UInt32,
   ZkProgram,
-} from 'o1js';
+} from "o1js";
 
-import { VoteProof } from './VoteProgram.js';
+import { VoteProof } from "./VoteProgram.js";
 
 export function UInt32ToFieldBigEndian(arr: UInt32[]): Field {
   let acc = Field.from(0);
@@ -51,7 +51,7 @@ export class RangeAggregationPublicOutputs extends Struct({
 }) {}
 
 export const RangeAggregationProgram = ZkProgram({
-  name: 'RangeAggregationProgram',
+  name: "RangeAggregationProgram",
   publicInput: RangeAggregationPublicInputs,
   publicOutput: RangeAggregationPublicOutputs,
 
@@ -64,13 +64,15 @@ export const RangeAggregationProgram = ZkProgram({
         upperBound: Field
       ) {
         return {
-          totalAggregatedCount: Field.from(0),
-          rangeLowerBound: lowerBound,
-          rangeUpperBound: upperBound,
-          voteOptions_1: Field.from(0),
-          voteOptions_2: Field.from(0),
-          voteOptions_3: Field.from(0),
-          voteOptions_4: Field.from(0),
+          publicOutput: {
+            totalAggregatedCount: Field.from(0),
+            rangeLowerBound: lowerBound,
+            rangeUpperBound: upperBound,
+            voteOptions_1: Field.from(0),
+            voteOptions_2: Field.from(0),
+            voteOptions_3: Field.from(0),
+            voteOptions_4: Field.from(0),
+          },
         };
       },
     },
@@ -98,13 +100,15 @@ export const RangeAggregationProgram = ZkProgram({
         }
 
         return {
-          totalAggregatedCount: Field.from(1),
-          rangeLowerBound: nullifier,
-          rangeUpperBound: nullifier,
-          voteOptions_1: batchOptionsArray[0],
-          voteOptions_2: batchOptionsArray[1],
-          voteOptions_3: batchOptionsArray[2],
-          voteOptions_4: batchOptionsArray[3],
+          publicOutput: {
+            totalAggregatedCount: Field.from(1),
+            rangeLowerBound: nullifier,
+            rangeUpperBound: nullifier,
+            voteOptions_1: batchOptionsArray[0],
+            voteOptions_2: batchOptionsArray[1],
+            voteOptions_3: batchOptionsArray[2],
+            voteOptions_4: batchOptionsArray[3],
+          },
         };
       },
     },
@@ -148,13 +152,15 @@ export const RangeAggregationProgram = ZkProgram({
         }
 
         return {
-          totalAggregatedCount: Field.from(2),
-          rangeLowerBound: lowerNullifier,
-          rangeUpperBound: upperNullifier,
-          voteOptions_1: batchOptionsArray[0],
-          voteOptions_2: batchOptionsArray[1],
-          voteOptions_3: batchOptionsArray[2],
-          voteOptions_4: batchOptionsArray[3],
+          publicOutput: {
+            totalAggregatedCount: Field.from(2),
+            rangeLowerBound: lowerNullifier,
+            rangeUpperBound: upperNullifier,
+            voteOptions_1: batchOptionsArray[0],
+            voteOptions_2: batchOptionsArray[1],
+            voteOptions_3: batchOptionsArray[2],
+            voteOptions_4: batchOptionsArray[3],
+          },
         };
       },
     },
@@ -201,22 +207,24 @@ export const RangeAggregationProgram = ZkProgram({
           batchOptionsArray[i] = UInt32ToFieldBigEndian(optionsArray);
         }
         return {
-          totalAggregatedCount:
-            previousProof.publicOutput.totalAggregatedCount.add(1),
-          rangeLowerBound: nullifier,
-          rangeUpperBound: previousUpperBound,
-          voteOptions_1: batchOptionsArray[0].add(
-            previousProof.publicOutput.voteOptions_1
-          ),
-          voteOptions_2: batchOptionsArray[1].add(
-            previousProof.publicOutput.voteOptions_2
-          ),
-          voteOptions_3: batchOptionsArray[2].add(
-            previousProof.publicOutput.voteOptions_3
-          ),
-          voteOptions_4: batchOptionsArray[3].add(
-            previousProof.publicOutput.voteOptions_4
-          ),
+          publicOutput: {
+            totalAggregatedCount:
+              previousProof.publicOutput.totalAggregatedCount.add(1),
+            rangeLowerBound: nullifier,
+            rangeUpperBound: previousUpperBound,
+            voteOptions_1: batchOptionsArray[0].add(
+              previousProof.publicOutput.voteOptions_1
+            ),
+            voteOptions_2: batchOptionsArray[1].add(
+              previousProof.publicOutput.voteOptions_2
+            ),
+            voteOptions_3: batchOptionsArray[2].add(
+              previousProof.publicOutput.voteOptions_3
+            ),
+            voteOptions_4: batchOptionsArray[3].add(
+              previousProof.publicOutput.voteOptions_4
+            ),
+          },
         };
       },
     },
@@ -263,22 +271,24 @@ export const RangeAggregationProgram = ZkProgram({
         }
 
         return {
-          totalAggregatedCount:
-            previousProof.publicOutput.totalAggregatedCount.add(1),
-          rangeLowerBound: previousLowerBound,
-          rangeUpperBound: nullifier,
-          voteOptions_1: batchOptionsArray[0].add(
-            previousProof.publicOutput.voteOptions_1
-          ),
-          voteOptions_2: batchOptionsArray[1].add(
-            previousProof.publicOutput.voteOptions_2
-          ),
-          voteOptions_3: batchOptionsArray[2].add(
-            previousProof.publicOutput.voteOptions_3
-          ),
-          voteOptions_4: batchOptionsArray[3].add(
-            previousProof.publicOutput.voteOptions_4
-          ),
+          publicOutput: {
+            totalAggregatedCount:
+              previousProof.publicOutput.totalAggregatedCount.add(1),
+            rangeLowerBound: previousLowerBound,
+            rangeUpperBound: nullifier,
+            voteOptions_1: batchOptionsArray[0].add(
+              previousProof.publicOutput.voteOptions_1
+            ),
+            voteOptions_2: batchOptionsArray[1].add(
+              previousProof.publicOutput.voteOptions_2
+            ),
+            voteOptions_3: batchOptionsArray[2].add(
+              previousProof.publicOutput.voteOptions_3
+            ),
+            voteOptions_4: batchOptionsArray[3].add(
+              previousProof.publicOutput.voteOptions_4
+            ),
+          },
         };
       },
     },
@@ -326,15 +336,18 @@ export const RangeAggregationProgram = ZkProgram({
         );
 
         return {
-          totalAggregatedCount: leftProof.publicOutput.totalAggregatedCount.add(
-            rightProof.publicOutput.totalAggregatedCount
-          ),
-          rangeLowerBound: leftLowerBound,
-          rangeUpperBound: rightUpperBound,
-          voteOptions_1: voteOptions_1,
-          voteOptions_2: voteOptions_2,
-          voteOptions_3: voteOptions_3,
-          voteOptions_4: voteOptions_4,
+          publicOutput: {
+            totalAggregatedCount:
+              leftProof.publicOutput.totalAggregatedCount.add(
+                rightProof.publicOutput.totalAggregatedCount
+              ),
+            rangeLowerBound: leftLowerBound,
+            rangeUpperBound: rightUpperBound,
+            voteOptions_1: voteOptions_1,
+            voteOptions_2: voteOptions_2,
+            voteOptions_3: voteOptions_3,
+            voteOptions_4: voteOptions_4,
+          },
         };
       },
     },

@@ -1,4 +1,4 @@
-import fs from 'fs/promises';
+import fs from "fs/promises";
 import {
   Field,
   Crypto,
@@ -6,26 +6,26 @@ import {
   MerkleTree,
   PrivateKey,
   Poseidon,
-  createForeignCurveV2,
+  createForeignCurve,
   Provable,
-  createEcdsaV2,
-} from 'o1js';
+  createEcdsa,
+} from "o1js";
 
-import { MerkleWitnessClass } from '../utils.js';
+import { MerkleWitnessClass } from "../utils.js";
 
 import {
   Vote,
   VotePublicInputs,
   VoteWithSecp256k1PrivateInputs,
-} from '../VoteProgram.js';
-import { RangeAggregationProgram } from '../RangeAggregationProgram.js';
-import { Wallet } from 'ethers';
-import dotenv from 'dotenv';
+} from "../VoteProgram.js";
+import { RangeAggregationProgram } from "../RangeAggregationProgram.js";
+import { Wallet } from "ethers";
+import dotenv from "dotenv";
 dotenv.config();
-class Secp256k1 extends createForeignCurveV2(Crypto.CurveParams.Secp256k1) {}
+class Secp256k1 extends createForeignCurve(Crypto.CurveParams.Secp256k1) {}
 
 class EthSignature {
-  public ecdsaSignature = createEcdsaV2(Secp256k1);
+  public ecdsaSignature = createEcdsa(Secp256k1);
 
   fromHex(hex: string) {
     return this.ecdsaSignature.fromHex(hex);
@@ -89,18 +89,18 @@ let votersRoot = votersTree.getRoot();
 console.log(`Voters root: ${votersRoot.toString()}`);
 
 await fs.writeFile(
-  'votersRootEcdsa256.json',
+  "votersRootEcdsa256.json",
   JSON.stringify(votersRoot, null, 2)
 );
 
 console.log(await Vote.analyzeMethods());
 
-console.time('compiling vote program');
+console.time("compiling vote program");
 let { verificationKey } = await Vote.compile();
-console.timeEnd('compiling vote program');
-console.log('verification key', verificationKey.data.slice(0, 10) + '..');
+console.timeEnd("compiling vote program");
+console.log("verification key", verificationKey.data.slice(0, 10) + "..");
 
-console.log('casting votes');
+console.log("casting votes");
 
 const electionPrivateKey = PrivateKey.fromBase58(
   // @ts-ignore
@@ -160,12 +160,14 @@ for (let i = 0; i < 20; i++) {
 
 voteProofs.sort((a, b) => {
   if (
-    a.publicOutput.nullifier.toBigInt() < b.publicOutput.nullifier.toBigInt()
+    a.proof.publicOutput.nullifier.toBigInt() <
+    b.proof.publicOutput.nullifier.toBigInt()
   ) {
     return -1;
   }
   if (
-    a.publicOutput.nullifier.toBigInt() > b.publicOutput.nullifier.toBigInt()
+    a.proof.publicOutput.nullifier.toBigInt() >
+    b.proof.publicOutput.nullifier.toBigInt()
   ) {
     return 1;
   }
@@ -173,7 +175,7 @@ voteProofs.sort((a, b) => {
 });
 
 await fs.writeFile(
-  'voteProofsEcdsa256.json',
+  "voteProofsEcdsa256.json",
   JSON.stringify(voteProofs, null, 2)
 );
 
@@ -222,7 +224,7 @@ for (let i = 20; i < 40; i++) {
 }
 
 await fs.writeFile(
-  'voteProofsRandomEcdsa256.json',
+  "voteProofsRandomEcdsa256.json",
   JSON.stringify(voteProofs, null, 2)
 );
 
@@ -230,7 +232,7 @@ let { verificationKey: voteAggregatorVerificationKey } =
   await RangeAggregationProgram.compile();
 
 await fs.writeFile(
-  'voteAggregatorVerificationKeyEcdsa256.json',
+  "voteAggregatorVerificationKeyEcdsa256.json",
   JSON.stringify(
     {
       data: voteAggregatorVerificationKey.data,

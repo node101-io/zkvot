@@ -15,7 +15,7 @@ import {
   Vote,
   VotePrivateInputs,
   VotePublicInputs,
-  RangeAggregationProgram
+  RangeAggregationProgram,
 } from "zkvot-contracts";
 import { encodeDataToBase64String } from "../utils/encodeDataToBase64String.js";
 
@@ -47,8 +47,13 @@ export const api = {
     state.Program = Vote;
   },
   async compileProgram() {
+    console.log("Compiling Program");
     await state.Program?.compile();
+    console.log("Program compiled");
+
+    console.log("Compiling RangeAggregationProgram");
     await RangeAggregationProgram.compile();
+    console.log("RangeAggregationProgram compiled");
   },
   async loadAndCompileContracts(
     electionStartBlock: number,
@@ -127,10 +132,9 @@ export const api = {
     console.time("vote proof generation");
 
     try {
-      const voteProof = await state.Program.vote(
-        votePublicInputs,
-        votePrivateInputs
-      );
+      const voteProof = (
+        await state.Program.vote(votePublicInputs, votePrivateInputs)
+      ).proof;
       console.log("voteProof", voteProof);
 
       console.timeEnd("vote proof generation");

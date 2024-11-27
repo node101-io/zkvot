@@ -1,7 +1,7 @@
 import {
   Bytes,
   Crypto,
-  createForeignCurveV2,
+  createForeignCurve,
   Field,
   Poseidon,
   Provable,
@@ -10,13 +10,13 @@ import {
   Struct,
   UInt8,
   ZkProgram,
-  createEcdsaV2,
+  createEcdsa,
   Keccak,
-} from 'o1js';
-import { MerkleWitnessClass } from './utils.js';
+} from "o1js";
+import { MerkleWitnessClass } from "./utils.js";
 
-class Secp256k1 extends createForeignCurveV2(Crypto.CurveParams.Secp256k1) {}
-class Ecdsa extends createEcdsaV2(Secp256k1) {}
+class Secp256k1 extends createForeignCurve(Crypto.CurveParams.Secp256k1) {}
+class Ecdsa extends createEcdsa(Secp256k1) {}
 class Bytes64 extends Bytes(64) {}
 
 function bytesToFieldBigEndian(wordBytes: UInt8[], toManyBytes: number): Field {
@@ -69,7 +69,7 @@ export class VoteWithSecp256k1PrivateInputs extends Struct({
 }) {}
 
 export const Vote = ZkProgram({
-  name: 'Vote',
+  name: "Vote",
   publicInput: VotePublicInputs,
   publicOutput: VotePublicOutputs,
 
@@ -93,8 +93,10 @@ export const Vote = ZkProgram({
         let nullifier = Poseidon.hash(privateInput.signedElectionId.toFields());
 
         return {
-          vote: publicInput.vote,
-          nullifier: nullifier,
+          publicOutput: {
+            vote: publicInput.vote,
+            nullifier: nullifier,
+          },
         };
       },
     },
@@ -153,11 +155,13 @@ export const Vote = ZkProgram({
           .assertTrue();
 
         return {
-          vote: publicInput.vote,
-          nullifier: Poseidon.hash([
-            ...privateInput.signedElectionId.r.value,
-            ...privateInput.signedElectionId.s.value,
-          ]),
+          publicOutput: {
+            vote: publicInput.vote,
+            nullifier: Poseidon.hash([
+              ...privateInput.signedElectionId.r.value,
+              ...privateInput.signedElectionId.s.value,
+            ]),
+          },
         };
       },
     },
