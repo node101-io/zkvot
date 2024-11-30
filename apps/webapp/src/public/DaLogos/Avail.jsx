@@ -1,8 +1,11 @@
 import React from "react";
 
-function Icon() {
+function Icon({
+  className,
+}) {
   return (
     <svg
+      className={className}
       xmlns="http://www.w3.org/2000/svg"
       xmlnsXlink="http://www.w3.org/1999/xlink"
       width="160"
