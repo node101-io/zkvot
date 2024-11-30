@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useEffect, useState } from 'react';
+import { Dispatch, useContext, useEffect, useState , SetStateAction } from 'react';
 import Image from 'next/image.js';
 import { FaImage } from 'react-icons/fa';
 
@@ -24,22 +24,18 @@ import { sendVoteViaBackend } from '@/utils/backend.js';
 
 const daDetails = {
   avail: {
-    description:
-      'It is a long established fact that a reader will be distracted.',
-    fee: 1.2593,
+    description: 'It is a long established fact that a reader will be distracted.',
     currency: '$AVAIL',
   },
   celestia: {
-    description:
-      'It is a long established fact that a reader will be distracted.',
-    fee: 1.4212,
-    currency: '$CELE',
+    description: 'It is a long established fact that a reader will be distracted.',
+    currency: '$TIA',
   },
 };
 
 const ModeSelection = ({ selectionMode, setSelectionMode }: {
   selectionMode: string;
-  setSelectionMode: (mode: string) => void;
+  setSelectionMode: Dispatch<SetStateAction<'direct' | 'backend'>>;
 }) => {
   return (
     <div className='flex mb-6 w-full space-x-4'>
@@ -61,7 +57,7 @@ const ModeSelection = ({ selectionMode, setSelectionMode }: {
             : 'text-[#B7B7B7]'
         }`}
       >
-        Thru Our Backends
+        Through Our Backends
       </button>
     </div>
   );
@@ -76,9 +72,9 @@ const DASelection = ({
   isSubmitting,
 }: {
   communicationLayers: types.DaLayerInfo[];
-  selectedDA: string;
+  selectedDA: types.DaLayerInfo['name'];
   setSelectedDA: (da: string) => void;
-  daDetails: Record<string, { description: string; fee: number; currency: string }>;
+  daDetails: Record<string, { description: string, currency: string }>;
   daLogos: Record<string, JSX.Element>;
   isSubmitting: boolean;
 }) => {
@@ -90,33 +86,33 @@ const DASelection = ({
     >
       {communicationLayers.map((layer) => (
         <div
-          key={layer._id}
+          key={layer.name}
           className={`p-4 bg-[#222222] rounded-2xl cursor-pointer flex items-center transition duration-200 ${
-            selectedDA === layer.type
+            selectedDA === layer.name
               ? 'border-[1px] border-primary shadow-lg'
               : 'hover:bg-[#333333]'
           }`}
-          onClick={() => !isSubmitting && setSelectedDA(layer.type)}
+          onClick={() => !isSubmitting && setSelectedDA(layer.name)}
         >
           <div className='flex-shrink-0 mr-4'>
-            {daLogos[layer.type] || (
+            {daLogos[layer.name] || (
               <div className='w-12 h-12 bg-gray-500 rounded-full' />
             )}
           </div>
           <div className='flex flex-col h-full justify-between'>
             <h3 className='text-white text-[24px] mb-2'>
-              {layer.type.charAt(0).toUpperCase() + layer.type.slice(1)}
+              {layer.name.charAt(0).toUpperCase() + layer.name.slice(1)}
             </h3>
             <p className='text-[16px] mb-2'>
-              {daDetails[layer.type]?.description ||
+              {daDetails[layer.name]?.description ||
                 'No description available.'}
             </p>
-            <div className='flex items-center justify-between'>
+            {/* <div className='flex items-center justify-between'>
               <span className='text-[16px]'>
-                Fee: {daDetails[layer.type]?.fee}{' '}
-                {daDetails[layer.type]?.currency}
+                Fee: {daDetails[layer.name]?.fee}{' '}
+                {daDetails[layer.name]?.currency}
               </span>
-            </div>
+            </div> */}
           </div>
         </div>
       ))}
@@ -132,6 +128,14 @@ export default ({
   goToNextStep,
   zkProofData,
   setLoading,
+}: {
+  electionData: types.ElectionBackendData;
+  selectedOption: number;
+  selectedDA: types.DaLayerInfo['name'];
+  setSelectedDA: (da: string) => void;
+  goToNextStep: () => void;
+  zkProofData: string;
+  setLoading: (loading: boolean) => void;
 }) => {
   const {
     selectedAccount,
@@ -140,11 +144,11 @@ export default ({
     sendTransactionSubwallet,
     isSubmitting,
   } = useContext(SubwalletContext);
-  const showToast = useToast();
+  const { showToast } = useContext(ToastContext);
 
-  const [selectedWallet, setSelectedWallet] = useState('');
-  const [walletAddress, setWalletAddress] = useState(null);
-  const [selectionMode, setSelectionMode] = useState('direct');
+  const [selectedWallet, setSelectedWallet] = useState<string>('');
+  const [walletAddress, setWalletAddress] = useState<string>('');
+  const [selectionMode, setSelectionMode] = useState<'direct' | 'backend'>('direct');
 
   const handleConnectWallet = async () => {
     try {
@@ -153,13 +157,7 @@ export default ({
       console.log('Wallet connection initiated.');
     } catch (error) {
       console.error('Error connecting wallet:', error);
-      toast({
-        title: 'Connection Failed',
-        description: 'Failed to connect wallet. Please try again.',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+      showToast('Failed to connect wallet. Please try again', 'error');
     }
   };
 
@@ -172,7 +170,7 @@ export default ({
       setWalletAddress(selectedAccount.address);
       console.log('Wallet connected:', selectedAccount.address);
     } else {
-      setWalletAddress(null);
+      setWalletAddress('');
     }
 
     if (selectedDA === 'avail' && selectionMode === 'direct') {
@@ -183,7 +181,7 @@ export default ({
   }, [selectedAccount, selectedDA, selectionMode]);
 
   useEffect(() => {
-    setWalletAddress(null);
+    setWalletAddress('');
     if (selectedDA === 'avail') {
       setSelectedWallet('Subwallet');
     }
@@ -191,7 +189,7 @@ export default ({
 
   const handleNext = async () => {
     if (!selectedDA) {
-      toast('Please select a DA Layer to proceed.', 'error');
+      showToast('Please select a DA Layer to proceed.', 'error');
 
       return;
     }
@@ -240,7 +238,11 @@ export default ({
           zkProofData,
         };
         console.log('Sending data to backend:', payload);
-        const response = await sendDataToBackend(payload);
+        const response = await sendVoteViaBackend(
+          zkProofData,
+          payload.electionId,
+          selectedDA
+        );
         console.log('Backend response:', response);
 
         if (response.success) {
@@ -255,12 +257,12 @@ export default ({
       setLoading(false);
     } catch (error) {
       console.error('Error in handleNext:', error);
-      alert(error.message || 'An unexpected error occurred.');
+      alert('An unexpected error occurred.');
       setLoading(false);
     }
   };
 
-  const Placeholder = ({ className }) => (
+  const Placeholder = ({ className }: { className: string }) => (
     <div className={`${className} flex items-center justify-center h-full`}>
       <FaImage className='text-gray-500 text-6xl' />
     </div>
@@ -269,7 +271,7 @@ export default ({
   const filteredLayers =
     selectionMode === 'direct'
       ? electionData.communication_layers.filter(
-          (layer) => layer.type === 'avail'
+          (layer) => layer.name === 'avail'
         )
       : electionData.communication_layers;
 
@@ -285,10 +287,10 @@ export default ({
           <div className='w-full md:w-1/4 flex'>
             <div className='flex w-full h-32 rounded-3xl overflow-hidden'>
               <div className='w-full relative'>
-                {electionData.image_raw ? (
+                {electionData.image_url.length ? (
                   <div className='w-full h-full relative'>
-                    <Image
-                      src={electionData.image_raw}
+                    <Image.default
+                      src={electionData.image_url}
                       alt='Candidate 1'
                       fill
                       style={{ objectFit: 'cover' }}
@@ -328,15 +330,14 @@ export default ({
                   <Clock />
                 </span>
                 <span className='ml-1 text-sm text-[#B7B7B7]'>
-                  <DateFormatter dateString={electionData.start_date} />
+                  <DateFormatter date={electionData.start_date} />
                 </span>
               </span>
             </div>
             <div className=' flex flex-col  w-full h-fit '>
               <h2 className='text-[24px] mb-2'>{electionData.question}</h2>
-
               <div className='flex flex-col md:flex-row justify-between py-2 gap-y-1'>
-                <span>
+                {/* <span>
                   <span className='text-[#B7B7B7] text-sm mr-1 flex flex-row items-center'>
                     {electionData.assignedVoters} Assigned Voters
                     <span className='mx-1'>-</span>
@@ -352,8 +353,8 @@ export default ({
                       <DownloadIcon />
                     </button>
                   </span>
-                </span>
-                <span className='flex flex-row items-center'>
+                </span> */}
+                {/* <span className='flex flex-row items-center'>
                   <span className='text-primary mr-2 italic text-sm'>
                     zkVote by
                   </span>
@@ -367,7 +368,7 @@ export default ({
                       position={{ top: -26, left: -38 }}
                     />
                   </span>
-                </span>
+                </span> */}
               </div>
             </div>
           </div>

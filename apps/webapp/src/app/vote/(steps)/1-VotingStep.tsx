@@ -126,7 +126,7 @@ export default ({
       if (connectionSuccess) {
         showToast('Wallet connected successfully!', 'success');
       } else {
-        setSelectedWallet(null);
+        setSelectedWallet('');
         showToast('Wallet connection was not successful.', 'error');
       }
     } catch (error) {
@@ -157,7 +157,7 @@ export default ({
       // else if (selectedWallet === 'Metamask') {
       //   await disconnectMetamaskWallet();
       // }
-      setSelectedWallet(null);
+      setSelectedWallet('');
       setIsWalletModalOpen(true);
       return;
     }

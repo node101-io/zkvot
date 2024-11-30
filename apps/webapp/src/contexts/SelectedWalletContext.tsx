@@ -9,7 +9,10 @@ export interface SelectedWalletContextInterface {
   >;
 };
 
-export const SelectedWalletContext = createContext<SelectedWalletContextInterface | null>(null);
+export const SelectedWalletContext = createContext<SelectedWalletContextInterface>({
+  selectedWallet: '',
+  setSelectedWallet: () => {},
+});
 
 export const SelectedWalletProvider = ({
   children
