@@ -2,7 +2,7 @@
 
 import { PropsWithChildren, Dispatch, useEffect, createContext, useState, SetStateAction } from 'react';
 
-import ZKProgramWorkerClient from '@/utils/zkProgram/ZKProgramWorkerClient.js';
+import ZKProgramWorkerClient from '@/utils/ZKProgramWorkerClient.js';
 
 interface ZKProgramCompileContextInterface {
   zkProgramWorkerClientInstance: ZKProgramWorkerClient | null;

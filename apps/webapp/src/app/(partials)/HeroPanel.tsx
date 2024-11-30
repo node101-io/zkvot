@@ -1,35 +1,48 @@
-import React, { forwardRef, useState } from "react";
+import { forwardRef, useState, Ref } from "react";
 
 import Button from "@/app/(partials)/Button.jsx";
 
 import blueFrame from "@/public/blueframe.png";
 
-const Panel = forwardRef(
-  (
-    {
-      activePanel,
-      handleJoinClick,
-      handleWalletConnect,
-      type,
-      title,
-      description,
-      fullDescription,
-      fullDescription2,
-      buttonText,
-      inputPlaceholder,
-      handleClick,
-      onInputChange,
-      walletAddress,
-    },
-    ref
-  ) => {
+const Panel = forwardRef((
+  {
+    activePanel,
+    handleJoinClick,
+    handleWalletConnect,
+    type,
+    title,
+    description,
+    fullDescription,
+    fullDescription2,
+    buttonText,
+    inputPlaceholder,
+    handleClick,
+    onInputChange,
+    walletAddress,
+  }: {
+    activePanel?: string;
+    handleJoinClick: (target: EventTarget) => void;
+    handleWalletConnect: (target: EventTarget) => void;
+    type: string;
+    title: string;
+    description: string;
+    fullDescription: string;
+    fullDescription2: string;
+    buttonText: string;
+    inputPlaceholder: string;
+    handleClick: (target: EventTarget) => void;
+    onInputChange: (value: string) => void;
+    walletAddress: string;
+  },
+  ref: Ref<HTMLDivElement>
+) => {
     const [hovered, setHovered] = useState(false);
     const [inputValue, setInputValue] = useState("");
     const isActive = activePanel === type;
     const isOtherPanelActive = activePanel && activePanel !== type;
 
-    const handleInputChange = (event) => {
-      const value = event.target.value;
+    const handleInputChange = (target: EventTarget & HTMLInputElement) => {
+      const value = (target as HTMLInputElement).value;
       setInputValue(value);
       if (onInputChange) onInputChange(value);
     };
@@ -51,7 +64,7 @@ const Panel = forwardRef(
           className={`absolute inset-0 transition-opacity duration-500 ease-in-out bg-cover bg-center z-[1] ${
             hovered && !isActive ? "opacity-100" : "opacity-0"
           }`}
-          style={{ backgroundImage: `url(${blueFrame.src})` }}
+          style={{ backgroundImage: `url(${blueFrame})` }}
         />
         <h2 className="z-[2] text-[40px] leading-[48px] font-normal text-white font-hyperlegible">
           {title}
@@ -75,13 +88,13 @@ const Panel = forwardRef(
                   type="text"
                   placeholder={inputPlaceholder}
                   value={inputValue}
-                  onChange={handleInputChange}
+                  onChange={event => handleInputChange(event.target)}
                   className="z-[2] text-white w-[50%] p-3 px-4 rounded-full border bg-transparent border-gray-300 focus:border-green focus:ring focus:ring-green mr-4"
                 />
                 <Button
                   TextColor="text-green group-hover:text-black"
                   backgroundColor="bg-green"
-                  onClick={handleJoinClick}
+                  onClick={event => handleJoinClick(event.target)}
                 >
                   {buttonText}
                 </Button>
@@ -91,15 +104,15 @@ const Panel = forwardRef(
               <Button
                 TextColor="text-green group-hover:text-black"
                 backgroundColor="bg-green"
-                onClick={handleWalletConnect}
-                disabled={walletAddress}
+                onClick={event => handleWalletConnect(event.target)}
+                disabled={!!walletAddress}
               >
                 {buttonText}
               </Button>
             )}
           </>
         ) : (
-          <Button onClick={handleClick}>Learn More</Button>
+          <Button onClick={event => handleClick(event.target)}>Learn More</Button>
         )}
       </div>
     );

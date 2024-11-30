@@ -93,6 +93,28 @@ namespace utilsNamespace {
   
     return Poseidon.hash([stringAsField]).toBigInt();
   };
-};
+
+  export const convertElectionStaticDataToBackendData = (
+    mina_contract_id: string,
+    storage_layer_id: string,
+    storage_layer_platform: ['A', 'F', 'P'],
+    electionData: types.ElectionStaticData
+  ): types.ElectionBackendData => {
+    return {
+      mina_contract_id,
+      storage_layer_id,
+      storage_layer_platform,
+      start_date: electionData.start_date,
+      end_date: electionData.end_date,
+      question: electionData.question,
+      options: electionData.options,
+      description: electionData.description,
+      image_url: electionData.image_raw,
+      voters_list: electionData.voters_list,
+      voters_merkle_root: BigInt(0),
+      communication_layers: electionData.communication_layers
+    }
+  }
+};;
 
 export default utilsNamespace;

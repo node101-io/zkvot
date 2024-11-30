@@ -2,8 +2,10 @@ import React from 'react';
 
 import formatDate from '@/utils/formatDate.js';
 
-const FormattedDate = (dateString: string) => (
-  <span>{ formatDate(dateString) }</span>
+const DateFormatter = ({ date } : {
+  date: Date;
+}) => (
+  <span>{ formatDate(date) }</span>
 );
 
-export default FormattedDate;
+export default DateFormatter;

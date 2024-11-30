@@ -10,7 +10,7 @@ interface MinaWalletContextInterface {
   setMinaWalletAddress: Dispatch<
     SetStateAction<MinaWalletContextInterface['minaWalletAddress']>
   >;
-  connectMinaWallet: () => Promise<void>;
+  connectMinaWallet: () => Promise<boolean>;
   signElectionId: (electionId: string) => Promise<string | Error>;
   generateEncodedVoteProof: (vote: {
     electionId: string;
@@ -25,7 +25,7 @@ interface MinaWalletContextInterface {
 export const MinaWalletContext = createContext<MinaWalletContextInterface>({
   minaWalletAddress: '',
   setMinaWalletAddress: () => {},
-  connectMinaWallet: async () => {},
+  connectMinaWallet: async () => false,
   signElectionId: async () => '',
   generateEncodedVoteProof: async () => '',
   disconnectMinaWallet: () => {},
@@ -38,7 +38,7 @@ export const MinaWalletProvider = ({
 
   const { zkProgramWorkerClientInstance, hasBeenSetup, isSettingUp } = useContext(ZKProgramCompileContext);
 
-  const connectMinaWallet = async (): Promise<void> => {
+  const connectMinaWallet = async (): Promise<boolean> => {
     try {
       if (!(window as any).mina)
         throw new Error('Mina wallet extension not found. Please install it.');
@@ -50,6 +50,7 @@ export const MinaWalletProvider = ({
 
       const address = accounts[0];
       setMinaWalletAddress(address);
+      return true;
     } catch (error) {
       throw new Error('Failed to connect to Mina wallet.');
     }

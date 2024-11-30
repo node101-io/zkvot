@@ -4,13 +4,12 @@ import mockElections from './mockElectionsData.js';
 
 const API_URL = 'https://backend.zkvot.io/api';
 
-export const fetchElectionsFromBackend = async ({
-  skip = 0
-}: {
-  skip: number
-}): Promise<types.ElectionBackendData | Error> => {
+export const fetchElectionsFromBackend = async (
+  skip: number = 0,
+  is_ongoing: boolean = true
+): Promise<types.ElectionBackendData[] | Error> => {
   try {
-    const url = `${API_URL}/election/filter?skip=${skip}`;
+    const url = `${API_URL}/election/filter?skip=${skip}&is_ongoing=${is_ongoing}`;
 
     const response = await fetch(url, {
       method: 'GET',

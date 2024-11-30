@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { Fragment, useState, useEffect } from "react";
+import Image from "next/image.js";
+
 import Step1 from "@/public/StepsProgress/Step1.svg";
 import Step2 from "@/public/StepsProgress/Step2.svg";
 import Step3 from "@/public/StepsProgress/Step3.svg";
@@ -8,9 +10,13 @@ import Current3 from "@/public/StepsProgress/Current3.svg";
 import StepDone from "@/public/StepsProgress/StepDone.svg";
 import Completed from "@/public/StepsProgress/Completed.svg";
 import ErrorIcon from "@/public/StepsProgress/Error.svg";
-import Image from "next/image";
 
-export default ({ currentStep, totalSteps, stepErrors, loading }) => {
+export default ({ currentStep, totalSteps, stepErrors, loading }: {
+  currentStep: number;
+  totalSteps: number;
+  stepErrors: Record<number, string>;
+  loading: boolean;
+}) => {
   const steps = Array.from({ length: totalSteps }, (_, index) => index + 1);
 
   const stepLabels = [
@@ -30,7 +36,7 @@ export default ({ currentStep, totalSteps, stepErrors, loading }) => {
     }
   }, [currentStep, prevStep]);
 
-  const getStepIcon = (step) => {
+  const getStepIcon = (step: number) => {
     if (stepErrors && stepErrors[step]) {
       return ErrorIcon;
     }
@@ -50,8 +56,8 @@ export default ({ currentStep, totalSteps, stepErrors, loading }) => {
     return defaultIcons[step - 1];
   };
 
-  const getProgressBarWidth = (step) => {
-    if (stepErrors && stepErrors <= step) {
+  const getProgressBarWidth = (step: number) => {
+    if (stepErrors && stepErrors[step]) {
       return "0%";
     }
     if (loading && step === currentStep) {
@@ -68,9 +74,9 @@ export default ({ currentStep, totalSteps, stepErrors, loading }) => {
       <div className="w-full flex flex-col items-center ">
         <div className="w-full flex items-center px-24">
           {steps.map((step, index) => (
-            <React.Fragment key={step}>
+            <Fragment key={step}>
               <div className={`flex flex-col items-center flex-none `}>
-                <Image
+                <Image.default
                   src={getStepIcon(step)}
                   alt={`Step ${step}`}
                   className={`${
@@ -107,7 +113,7 @@ export default ({ currentStep, totalSteps, stepErrors, loading }) => {
                   </div>
                 </div>
               )}
-            </React.Fragment>
+            </Fragment>
           ))}
         </div>
         <div className="mt-4 w-full flex justify-between px-6">

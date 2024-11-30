@@ -1,4 +1,4 @@
-import React from "react";
+import { FC, MouseEvent as ReactMouseEvent, ReactNode } from "react";
 import RightArrow from "@/public/RightArrow.jsx";
 
 const Spinner = () => (
@@ -6,8 +6,8 @@ const Spinner = () => (
 );
 
 interface ButtonProps {
-  onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
-  children: React.ReactNode;
+  onClick?: (event: ReactMouseEvent<HTMLButtonElement, MouseEvent>) => void;
+  children?: ReactNode;
   disabled?: boolean;
   loading?: boolean;
   TextColor?: string;
@@ -15,7 +15,7 @@ interface ButtonProps {
   variant?: string;
 };
 
-const Button: React.FC<ButtonProps> = ({
+const Button: FC<ButtonProps> = ({
   onClick,
   children,
   disabled = false,

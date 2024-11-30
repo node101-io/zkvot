@@ -34,6 +34,7 @@ interface ElectionStatics {
       text?: string;
       start_after?: Date;
       end_before?: Date;
+      is_ongoing?: boolean;
     },
     callback: (
       error: string | null,
@@ -243,6 +244,7 @@ ElectionSchema.statics.findElectionsByFilter = function (
     text?: string;
     start_after?: Date;
     end_before?: Date;
+    is_ongoing?: boolean;
   },
   callback: (
     error: string | null,
@@ -269,6 +271,12 @@ ElectionSchema.statics.findElectionsByFilter = function (
   if (data.end_before)
     filters.push({
       end_date: { $lte: data.end_before }
+    });
+
+  if (data.is_ongoing)
+    filters.push({
+      start_date: { $lte: new Date() },
+      end_date: { $gte: new Date() }
     });
 
   Election

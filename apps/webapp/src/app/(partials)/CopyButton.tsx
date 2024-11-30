@@ -1,14 +1,18 @@
-import React from "react";
-import { motion, useAnimation } from "framer-motion";
-import copy from "copy-to-clipboard";
+import { motion, useAnimation } from 'framer-motion';
+import copy from 'copy-to-clipboard';
 
-import CopyIcon from "@/public/ElectionCard/CopyIcon";
+import CopyIcon from '@/public/ElectionCard/CopyIcon.jsx';
 
 const CopyButton = ({
   textToCopy,
-  iconColor = "#B7B7B7",
+  iconColor = '#B7B7B7',
   position = { top: -32, left: -38 },
   notificationStyle = {},
+}: {
+  textToCopy: string;
+  iconColor?: string;
+  position?: { top: number; left: number };
+  notificationStyle?: object;
 }) => {
   const controls = useAnimation();
 
@@ -25,19 +29,18 @@ const CopyButton = ({
         },
       });
     } else {
-      console.log("Failed to copy!");
+      console.log('Failed to copy!');
     }
   };
 
   return (
     <span
-      className="cursor-pointer relative"
+      className='cursor-pointer relative'
       onClick={handleCopy}
     >
-      <CopyIcon Color={iconColor} />
-
+      <CopyIcon color={iconColor} />
       <motion.div
-        className="absolute text-center w-[82px] py-1 bg-[#383838] rounded-3xl font-light"
+        className='absolute text-center w-[82px] py-1 bg-[#383838] rounded-3xl font-light'
         style={{ top: position.top, left: position.left, ...notificationStyle }}
         initial={{ opacity: 0 }}
         animate={controls}

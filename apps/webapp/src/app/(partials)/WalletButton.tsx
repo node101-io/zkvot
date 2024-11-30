@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useContext, useEffect, useState } from "react";
-import Image from "next/image";
+import Image from "next/image.js";
 
-import Button from "@/app/(partials)/Button";
+import Button from "@/app/(partials)/Button.jsx";
 
-import WalletSelectionModal from "@/app/(partials)/WalletSelectionModal";
+import WalletSelectionModal from "@/app/(partials)/WalletSelectionModal.jsx";
 
 import { MinaWalletContext } from "@/contexts/MinaWalletContext";
 import { SubwalletContext } from "@/contexts/SubwalletContext";
-import { MetamaskWalletContext } from "@/contexts/MetamaskWalletContext";
+// import { MetamaskWalletContext } from "@/contexts/MetamaskWalletContext";
 import { SelectedWalletContext } from "@/contexts/SelectedWalletContext";
 
 import LogoutIcon from "@/public/Logout.svg";

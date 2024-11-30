@@ -4,75 +4,98 @@ import React, {
   useMemo,
   useRef,
   useCallback,
-} from "react";
+} from 'react';
 
-import ElectionCard from "./ElectionCard";
-import Loader from "./Loader";
+import { types } from 'zkvot-core';
 
-import { fetchElections } from "@/utils/api.js";
+import ElectionCard from '@/app/elections/(partials)/ElectionCard.jsx';
+import Loader from '@/app/elections/(partials)/Loader.jsx';
 
-const AssignedElections = ({
-  onlyOngoing,
+import { fetchElectionsFromBackend } from '@/utils/backend.js';
+
+interface AssignedElectionsProps {
+  onlyOngoing?: boolean;
+  metamaskWalletAddress?: string;
+  minaWalletAddress?: string;
+};
+
+const ELECTION_SKIP_PER_REQUEST: number = 100;
+
+const AssignedElections: React.FC<AssignedElectionsProps>  = ({
+  onlyOngoing = true,
   metamaskWalletAddress,
   minaWalletAddress,
+}: {
+  onlyOngoing?: boolean;
+  metamaskWalletAddress?: string;
+  minaWalletAddress?: string;
 }) => {
-  const [electionData, setElectionData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [skip, setSkip] = useState(0);
-  const observer = useRef();
+  const [electionData, setElectionData] = useState<types.ElectionBackendData[] | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [loadingMore, setLoadingMore] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [skip, setSkip] = useState<number>(0);
+
+  const observer: React.MutableRefObject<IntersectionObserver | null> = useRef(null);
+
+  if (!metamaskWalletAddress && !minaWalletAddress) {
+    setError('Wallet address not found.');
+    return;
+  }
 
   const walletAddresses = useMemo(
-    () =>
-      [metamaskWalletAddress, minaWalletAddress]
-        .filter(Boolean)
-        .map((addr) => addr.toLowerCase()),
+    () => [metamaskWalletAddress, minaWalletAddress].filter(any => any != undefined).map((addr) => addr.toLowerCase()),
     [metamaskWalletAddress, minaWalletAddress]
   );
 
-  const lastElectionElementRef = useCallback(
-    (node) => {
+  const lastElectionElementRef = useCallback((node: HTMLDivElement) => {
       if (loadingMore) return;
       if (observer.current) observer.current.disconnect();
+
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && hasMore) {
           loadMore();
         }
       });
+
       if (node) observer.current.observe(node);
     },
     [loadingMore, hasMore]
   );
 
   useEffect(() => {
-    setElectionData([]);
+    setElectionData(null);
     setSkip(0);
     setHasMore(true);
-    setError(null);
+    setError('');
     setLoading(true);
 
     const getElections = async () => {
       try {
-        const { data, hasMore } = await fetchElections(0);
+        const result = await fetchElectionsFromBackend(0, onlyOngoing);
 
-        let filteredData = data;
+        if (result instanceof Error) {
+          setError(result.message);
+          return;
+        };
+        
+        let filteredElectionData: types.ElectionBackendData[] = result;
 
         if (onlyOngoing && walletAddresses.length > 0) {
-          filteredData = data.filter((election) =>
-            election.voters_list?.some((voter) =>
-              walletAddresses.includes(voter.student_id.toLowerCase())
-            )
-          );
-        }
+          filteredElectionData = filteredElectionData.filter((election: types.ElectionBackendData) =>
+            election.voters_list.some((voter: {
+              public_key: string;
+            }) => walletAddresses.includes(voter.public_key.toLowerCase())
+          ));
+        };
 
-        setElectionData(filteredData);
-        setHasMore(hasMore);
-        setSkip(100);
+        setElectionData(filteredElectionData);
+        setHasMore(result.length < ELECTION_SKIP_PER_REQUEST ? false : true);
+        setSkip(result.length);
       } catch (error) {
-        console.error("Error fetching elections:", error);
-        setError("Failed to load elections.");
+        console.error('Error fetching elections:', error);
+        setError('Failed to load elections.');
       } finally {
         setLoading(false);
       }
@@ -84,86 +107,90 @@ const AssignedElections = ({
   const loadMore = async () => {
     setLoadingMore(true);
     try {
-      const { data, hasMore: newHasMore } = await fetchElections(skip);
+      const result = await fetchElectionsFromBackend(skip, onlyOngoing);
 
-      let filteredData = data;
+      if (result instanceof Error) {
+        setError(result.message);
+        return;
+      };
+      
+      let filteredElectionData: types.ElectionBackendData[] = result;
 
       if (onlyOngoing && walletAddresses.length > 0) {
-        filteredData = data.filter((election) =>
-          election.voters_list?.some((voter) =>
-            walletAddresses.includes(voter.student_id.toLowerCase())
-          )
-        );
-      }
+        filteredElectionData = filteredElectionData.filter((election: types.ElectionBackendData) =>
+          election.voters_list.some((voter: {
+            public_key: string;
+          }) => walletAddresses.includes(voter.public_key.toLowerCase())
+        ));
+      };
 
-      setElectionData((prevData) => [...prevData, ...filteredData]);
-      setHasMore(newHasMore);
-      setSkip((prevSkip) => prevSkip + 100);
+      setElectionData(previousElectionData => [...(previousElectionData || []), ...filteredElectionData]);
+      setHasMore(result.length < ELECTION_SKIP_PER_REQUEST ? false : true);
+      setSkip(skip => skip + result.length);
     } catch (error) {
-      console.error("Error fetching more elections:", error);
-      setError("Failed to load more elections.");
+      console.error('Error fetching more elections:', error);
+      setError('Failed to load more elections.');
     } finally {
       setLoadingMore(false);
     }
   };
 
-  if (loading) {
+  if (loading)
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
         {Array.from({ length: 6 }).map((_, index) => (
           <ElectionCard
             key={`skeleton-${index}`}
-            loading={true}
+            isLoading={true}
           />
         ))}
       </div>
     );
-  }
 
-  if (error) {
-    return <div className="text-center text-red-500">{error}</div>;
-  }
-
-  if (onlyOngoing && walletAddresses.length > 0 && electionData.length === 0) {
+  if (error)
     return (
-      <div className="text-center text-gray-400">
+      <div className='text-center text-red-500'>{error}</div>
+    );
+
+  if (!electionData?.length)
+    return (
+      <div className='text-center text-gray-400'>
         No elections found matching your criteria.
       </div>
     );
-  }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
       {electionData.map((election, index) => {
         if (electionData.length === index + 1) {
           return (
             <div
               ref={lastElectionElementRef}
-              key={election._id}
+              key={election.mina_contract_id}
             >
               <ElectionCard
                 electionData={election}
-                loading={loading}
+                isLoading={loading}
               />
             </div>
           );
         } else {
           return (
             <ElectionCard
-              key={election._id}
+              key={election.mina_contract_id}
               electionData={election}
-              loading={loading}
+              isLoading={loading}
             />
           );
         }
       })}
       {loadingMore && (
-        <div className="col-span-1 md:col-span-2 flex justify-center my-4">
+        <div className='col-span-1 md:col-span-2 flex justify-center my-4'>
           <Loader />
         </div>
       )}
       {!hasMore && (
-        <div className="text-center text-gray-500 my-4">
+        <div className='text-center text-gray-500 my-4'>
           You've reached the end of the list.
         </div>
       )}

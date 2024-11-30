@@ -1,4 +1,5 @@
 import { model, Model, Schema } from 'mongoose';
+import { types } from 'zkvot-core';
 
 import isBase64String from '../../utils/isBase64String.js';
 import decodeFromBase64String from '../../utils/decodeFromBase64String.js';
@@ -99,9 +100,9 @@ VoteSchema.statics.createAndSubmitVote = function (
             };
 
             if (data.da_layer == 'avail')
-              submitVoteData.app_id = election.communication_layers.find(layer => layer.name == data.da_layer)?.app_id;
+              submitVoteData.app_id = (election.communication_layers as types.AvailDaLayerInfo[]).find(layer => layer.name == data.da_layer)?.app_id;
             else if (data.da_layer == 'celestia')
-              submitVoteData.namespace = election.communication_layers.find(layer => layer.name == data.da_layer)?.namespace;
+              submitVoteData.namespace = (election.communication_layers as types.CelestiaDaLayerInfo[]).find(layer => layer.name == data.da_layer)?.namespace;
             else
               return callback('not_possible_error');
 
