@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { types, utils } from 'zkvot-core';
+import { types } from 'zkvot-core';
 
 import ElectionInfoStep from './(steps)/1-ElectionInfo.jsx';
 import VotersListStep from './(steps)/2-VotersList.jsx';
@@ -11,13 +11,6 @@ import CommLayerSubmissionStep from './(steps)/4-CommLayerSubmission.jsx';
 import StorageLayerSelectionStep from './(steps)/5-StorageLayerSelection.jsx';
 import StorageLayerSubmissionStep from './(steps)/6-StorageLayerSubmission.jsx';
 import DeployElectionStep from './(steps)/7-DeployElection.jsx';
-
-import {
-  fetchAvailBlockHeightFromBackend,
-  fetchCelestiaBlockInfoFromBackend,
-} from '@/utils/backend.js';
-
-import generateRandomCelestiaNamespace from '@/utils/generateRandomCelestiaNamespace.js';
 
 const HomePage = () => {
   const [step, setStep] = useState<number>(1);
@@ -31,138 +24,8 @@ const HomePage = () => {
     voters_list: [],
     communication_layers: [],
   });
-  const [blockHeight, setBlockHeight] = useState('');
-  const [blockHash, setBlockHash] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleCommLayerSelectionStepSubmit = async (communicationLayersData) => {
-    const selectedLayer = communicationLayersData[0];
-    setLoading(true);
-
-    try {
-      if (selectedLayer.type === 'celestia') {
-        const updatedCommunicationLayer = {
-          ...selectedLayer,
-          namespace: generateRandomCelestiaNamespace(),
-        };
-        setElectionData((prevData) => ({
-          ...prevData,
-          communication_layers: [updatedCommunicationLayer],
-        }));
-
-        const data = await fetchCelestiaBlockInfo();
-        setBlockHeight(data.blockHeight);
-        setBlockHash(data.blockHash);
-        setElectionData((prevData) => {
-          const updatedData = { ...prevData };
-          if (updatedData.communication_layers[0]) {
-            updatedData.communication_layers[0].block_height =
-              data.blockHeight;
-            updatedData.communication_layers[0].block_hash = data.blockHash;
-          }
-          return updatedData;
-        });
-      } else if (selectedLayer.type === 'avail') {
-        const height = await fetchAvailBlockHeight();
-        setBlockHeight(height);
-        setElectionData((prevData) => ({
-          ...prevData,
-          communication_layers: [
-            {
-              ...selectedLayer,
-              block_height: height,
-            },
-          ],
-        }));
-      } else {
-        setElectionData((prevData) => ({
-          ...prevData,
-          communication_layers: communicationLayersData,
-        }));
-      }
-      setStep(4);
-    } catch (error) {
-      console.error('Error during Step Three:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCommLayerSubmissionStepSubmit = (additionalData) => {
-    setElectionData((prevData) => {
-      const updatedData = { ...prevData };
-      const communicationLayer = updatedData.communication_layers[0];
-
-      if (communicationLayer.type === 'avail') {
-        communicationLayer.app_id = additionalData.app_id;
-        communicationLayer.block_height = additionalData.block_height;
-      } else if (communicationLayer.type === 'celestia') {
-        communicationLayer.block_height = additionalData.block_height;
-        communicationLayer.block_hash = additionalData.block_hash;
-      }
-      return updatedData;
-    });
-
-    setStep(5);
-  };
-
-  const handleStorageLayerSelectionStepSubmit = (storageLayer) => {
-    setElectionData((prevData) => ({
-      ...prevData,
-      storageLayer: storageLayer,
-    }));
-    setStep(6);
-  };
-
-  const handleStorageLayerSubmissionStepSubmit = (transactionId, setErrorMessage) => {
-    let fetchDataFunction;
-    switch (electionData.storageLayer.name.toLowerCase().trim()) {
-      case 'arweave':
-        fetchDataFunction = fetchDataFromArweave;
-        break;
-      case 'ipfs':
-        fetchDataFunction = fetchDataFromIPFS;
-        break;
-      case 'filecoin':
-        fetchDataFunction = fetchDataFromFilecoin;
-        break;
-      default:
-        return;
-    }
-
-    setLoading(true);
-
-    fetchDataFunction(transactionId)
-      .then((data) => {
-        if (data) {
-          const updatedData = {
-            ...electionData,
-            transactionId,
-            daData: data,
-          };
-          setElectionData(updatedData);
-          setStep(7);
-        } else {
-          throw new Error('Data not found for the provided transaction ID.');
-        }
-      })
-      .catch((error) => {
-        setErrorMessage(
-          error.message || 'An error occurred while fetching data.'
-        );
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
-
-  const handleCommLayerSubmissionStepPrevious = () => {
-    setElectionData((prevData) => ({
-      ...prevData,
-      communication_layers: [],
-    }));
-    setStep(3);
-  };
+  const [storageLayerPlatform, setStorageLayerPlatform] = useState<types.StorageLayerPlatformCodes>('A');
+  const [storageLayerId, setStorageLayerId] = useState<string>('');
 
   return (
     <div className='flex justify-center items-center h-full overflow-y-scroll pb-2'>
@@ -189,39 +52,61 @@ const HomePage = () => {
         {step === 3 && (
           <CommLayerSelectionStep
             onPrevious={() => setStep(2)}
-            onSubmit={handleCommLayerSelectionStepSubmit}
-            loading={loading}
+            onNext={(data: types.ElectionStaticData) => {
+              setElectionData(data);
+              setStep(4);
+            }}
+            initialData={electionData}
           />
         )}
         {step === 4 && (
           <CommLayerSubmissionStep
-            electionData={electionData}
-            blockHeight={blockHeight}
-            blockHash={blockHash}
-            onPrevious={handleCommLayerSubmissionStepPrevious}
-            onSubmit={handleCommLayerSubmissionStepSubmit}
+            onPrevious={() => setStep(3)}
+            onNext={(data: types.ElectionStaticData) => {
+              setElectionData(data);
+              setStep(5);
+            }}
+            initialData={electionData}
           />
         )}
         {step === 5 && (
           <StorageLayerSelectionStep
-            electionData={electionData}
             onPrevious={() => setStep(4)}
-            onSubmit={handleStorageLayerSelectionStepSubmit}
+            onNext={(data: {
+              election: types.ElectionStaticData,
+              storage_layer_platform: types.StorageLayerPlatformCodes
+            }) => {
+              setStorageLayerPlatform(data.storage_layer_platform);
+              setStep(6);
+            }}
+            initialData={electionData}
           />
         )}
         {step === 6 && (
           <StorageLayerSubmissionStep
-            electionData={electionData}
             onPrevious={() => setStep(5)}
-            onSubmit={handleStorageLayerSubmissionStepSubmit}
-            onDownload={() => generateAndDownloadJSON(electionData)}
-            isLoading={loading}
+            onNext={(data: {
+              election: types.ElectionStaticData,
+              storage_layer_platform: types.StorageLayerPlatformCodes
+              storage_layer_id: string
+            }) => {
+              setStorageLayerId(data.storage_layer_id);
+              setStep(7);
+            }}
+            initialData={{
+              election: electionData,
+              storage_layer_platform: storageLayerPlatform
+            }}
           />
         )}
         {step === 7 && (
           <DeployElectionStep
-            electionData={electionData}
             onPrevious={() => setStep(6)}
+            data={{
+              election: electionData,
+              storage_layer_platform: storageLayerPlatform,
+              storage_layer_id: storageLayerId
+            }}
           />
         )}
       </div>

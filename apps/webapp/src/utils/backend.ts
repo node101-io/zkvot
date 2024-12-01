@@ -115,7 +115,7 @@ export const calculateMinaBlockHeightFromTimestampViaBackend = async (
 ): Promise<{
   startBlockHeight: number;
   endBlockHeight: number;
-} | Error> => {
+}> => {
   try {
     const response = await fetch('https://backend.zkvot.io/api/block-info/mina', {
       method: 'POST',

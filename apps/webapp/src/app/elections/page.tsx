@@ -7,17 +7,17 @@ import ToolTip from '@/app/(partials)/ToolTip.jsx';
 import AssignedElections from '@/app/elections/(partials)/AssignedElections.jsx';
 
 // import { MetamaskWalletContext } from '@/contexts/MetamaskWalletContext.jsx';
-import { MinaWalletContext } from '@/contexts/MinaWalletContext.jsx';
+import { AuroWalletContext } from '@/contexts/AuroWalletContext.jsx';
 
 const Page = () => {
   const [activePanel, setActivePanel] = useState('Assigned Elections');
   const [onlyOngoing, setOnlyOngoing] = useState(false);
 
   // const { metamaskWalletAddress } = useContext(MetamaskWalletContext);
-  const { minaWalletAddress } = useContext(MinaWalletContext);
+  const { auroWalletAddress } = useContext(AuroWalletContext);
 
-  // const isWalletConnected = metamaskWalletAddress || minaWalletAddress;
-  const isWalletConnected = minaWalletAddress;
+  // const isWalletConnected = metamaskWalletAddress || auroWalletAddress;
+  const isWalletConnected = auroWalletAddress;
 
   return (
     <div className='flex justify-center'>
@@ -85,7 +85,7 @@ const Page = () => {
               <AssignedElections
                 onlyOngoing={onlyOngoing}
                 // metamaskWalletAddress={metamaskWalletAddress}
-                minaWalletAddress={minaWalletAddress}
+                auroWalletAddress={auroWalletAddress}
               />
             </div>
           )}

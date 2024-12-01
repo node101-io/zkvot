@@ -1,11 +1,11 @@
 import '../styles/globals.css';
 
+import Navbar from '@/app/(partials)/NavBar.jsx';
+
 import WalletProvider from '@/components/WalletProvider.jsx';
 
-import { IsCompiledProvider } from '@/contexts/IsCompiledContext.js';
-
-import Navbar from '@/app/(partials)/NavBar.jsx';
-import ToastProvider from '@/app/(partials)/ToastProvider.jsx';
+import { ZKProgramCompileProvider } from '@/contexts/ZKProgramCompileContext.jsx';
+import { ToastProvider } from '@/contexts/ToastContext.jsx';
 
 // TODO: uncomment
 // const montserrat = Montserrat({
@@ -14,8 +14,11 @@ import ToastProvider from '@/app/(partials)/ToastProvider.jsx';
 // });
 
 export const metadata = {
-  title: 'zkVot',
-  description: 'A zero-knowledge voting platform',
+  title: 'zkVot - World\'s first fully live anonymous voting application!',
+  description: `
+    zkVot is a client side trustless distributed computation protocol designed to achieve anonymous and censorship resistant voting while ensuring scalability. The protocol is created as an example of how modular and distributed computation may improve both decentralization and scalability of the internet.
+    zkVot brings various distributed layers (e.g. blockchains), zero knowledge proving technology, and client side computation together to make most of the distributed value on an actual use case. By implementing this project, our main goal is to show that the technology is ready, and it is just a matter of time and perspective to bring decentralization into the life of the actual end user.
+  `
 };
 
 export default function RootLayout({
@@ -60,14 +63,14 @@ export default function RootLayout({
         </div>
 
         <main className='flex flex-col px-4 overflow-hidden'>
-          <IsCompiledProvider>
+          <ZKProgramCompileProvider>
             <ToastProvider>
               <WalletProvider>
                 <Navbar />
                 {children}
               </WalletProvider>
             </ToastProvider>
-          </IsCompiledProvider>
+          </ZKProgramCompileProvider>
         </main>
       </body>
     </html>

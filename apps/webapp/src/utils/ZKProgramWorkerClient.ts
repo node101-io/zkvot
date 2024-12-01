@@ -1,5 +1,7 @@
 import * as Comlink from 'comlink';
 
+import { Election } from 'zkvot-core';
+
 export default class {
   worker: Worker;
   remoteApi: Comlink.Remote<typeof import('@/utils/ZKProgramWorker.js').api>;
@@ -34,21 +36,18 @@ export default class {
   async deployElection(
     electionDeployer: string,
     electionStartBlock: number,
-    electionFinalizeBlelectionStartBlock: number,
+    electionFinalizeBlock: number,
     votersRoot: bigint,
-    electionData: {
-      first: bigint;
-      last: bigint;
-    },
-    settlementReward: number
+    electionData: Election.StorageLayerInfoEncoding,
+    settlementReward?: number
   ) {
     const result = await this.remoteApi.deployElection(
       electionDeployer,
       electionStartBlock,
-      electionFinalizeBlelectionStartBlock,
+      electionFinalizeBlock,
       votersRoot,
       electionData,
-      settlementReward
+      settlementReward || 0
     );
 
     return result;

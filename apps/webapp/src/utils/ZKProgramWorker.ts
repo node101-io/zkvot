@@ -154,10 +154,7 @@ export const api = {
     electionStartBlock: number,
     electionFinalizeBlock: number,
     votersRoot: bigint,
-    electionData: {
-      first: bigint;
-      last: bigint;
-    },
+    electionData: Election.StorageLayerInfoEncoding,
     settlementReward: number
   ) {
     try {
@@ -180,12 +177,7 @@ export const api = {
         },
         async () => {
           await electionContract.deploy();
-          await electionContract.initialize(
-            new Election.StorageLayerInfoEncoding({
-              first: Field.from(electionData.first),
-              last: Field.from(electionData.last),
-            })
-          );
+          await electionContract.initialize(electionData);
         }
       );
       await deployTx.prove();

@@ -7,14 +7,15 @@ import { motion } from 'framer-motion';
 
 import { Election, types } from 'zkvot-core';
 
+import CopyButton from '@/app/(partials)/CopyButton.jsx';
 import DateFormatter from '@/app/(partials)/DateFormatter.jsx';
 import ToolTip from '@/app/(partials)/ToolTip.jsx';
 
-import Clock from '@/public/elections/partials/Clock.jsx';
-import LearnMoreIcon from '@/public/election/card/LearnMoreIcon.jsx';
-import DownloadIcon from '@/public/election/card/DownloadIcon.jsx';
-import MinaLogo from '@/public/StepsProgress/MinaLastStep.svg';
-import CopyButton from '@/app/(partials)/CopyButton.jsx';
+import LearnMoreIcon from '@/public/elections/partials/learn-more-icon.jsx';
+import Clock from '@/public/elections/partials/clock-icon.jsx';
+import DownloadIcon from '@/public/elections/partials/download-icon.jsx';
+
+import MinaLogo from '@/public/general/blockchain-logos/mina.png';
 
 const DEFAULT_MINA_RPC_URL = 'https://api.minascan.io/node/devnet/v1/graphql';
 const PUBLIC_KEY = 'B62qmsjhW3v8XQXHPAJairdpVrLD7RRmzWXCkgZUAsbXbmn2UMGdrYm';
@@ -23,9 +24,7 @@ export default ({ electionData, selectedOption }: {
   electionData: types.ElectionBackendData;
   selectedOption: string;
 }) => {
-  const [contractState, setContractState] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const [results, setResults] = useState([]);
 
   const Placeholder = ({ className }: { className: string }) => (
@@ -48,7 +47,6 @@ export default ({ electionData, selectedOption }: {
           mina_rpc_url: DEFAULT_MINA_RPC_URL,
         };
         const state = await ;
-        setContractState(state);
 
         const voteCounts = electionData.options.map((option, index) => {
           const voteCountStr = state[index] || '0';

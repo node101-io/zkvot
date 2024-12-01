@@ -14,15 +14,14 @@ import LoadingOverlay from '@/app/(partials)/LoadingOverlay.jsx';
 import ToolTip from '@/app/(partials)/ToolTip.jsx';
 import WalletSelectionModal from '@/app/(partials)/WalletSelectionModal.jsx';
 
-import { MinaWalletContext } from '@/contexts/MinaWalletContext.jsx';
+import { AuroWalletContext } from '@/contexts/AuroWalletContext.jsx';
 // import { MetamaskWalletContext } from '@/contexts/MetamaskWalletContext';
 import { SelectedWalletContext } from '@/contexts/SelectedWalletContext.jsx';
 import { ZKProgramCompileContext } from '@/contexts/ZKProgramCompileContext.jsx';
 import { ToastContext } from '@/contexts/ToastContext.jsx';
 
-import LearnMoreIcon from '@/public/election/card/LearnMoreIcon.jsx';
-import Clock from '@/public/elections/partials/Clock.jsx';
-import DownloadIcon from '@/public/election/card/DownloadIcon.jsx';
+import LearnMoreIcon from '@/public/elections/partials/learn-more-icon.jsx';
+import Clock from '@/public/elections/partials/clock-icon.jsx';
 
 export default ({
   electionData,
@@ -51,12 +50,12 @@ export default ({
   const [eligibilityStatus, setEligibilityStatus] = useState('not_connected');
 
   const {
-    minaWalletAddress,
-    connectMinaWallet,
+    auroWalletAddress,
+    connectAuroWallet,
     generateEncodedVoteProof,
-    disconnectMinaWallet,
+    disconnectAuroWallet,
     signElectionId,
-  } = useContext(MinaWalletContext);
+  } = useContext(AuroWalletContext);
 
   // const {
   //   metamaskWalletAddress,
@@ -68,10 +67,10 @@ export default ({
     SelectedWalletContext
   );
 
-  // const userWalletAddresses = [metamaskWalletAddress, minaWalletAddress]
+  // const userWalletAddresses = [metamaskWalletAddress, auroWalletAddress]
   //   .filter(Boolean)
   //   .map((addr) => addr.trim().toLowerCase());
-  const userWalletAddresses = [minaWalletAddress];
+  const userWalletAddresses = [auroWalletAddress];
 
   useEffect(() => {
     if (
@@ -105,7 +104,7 @@ export default ({
   const handleWalletSelection = async (wallet: string) => {
     try {
       if (selectedWallet === 'Mina') {
-        disconnectMinaWallet();
+        disconnectAuroWallet();
       }
       // else if (selectedWallet === 'Metamask') {
       //   await disconnectMetamaskWallet();
@@ -117,7 +116,7 @@ export default ({
       let connectionSuccess = false;
 
       if (wallet === 'Mina') {
-        connectionSuccess = await connectMinaWallet();
+        connectionSuccess = await connectAuroWallet();
       }
       // else if (wallet === 'Metamask') {
       //   connectionSuccess = await connectMetamaskWallet();
@@ -152,7 +151,7 @@ export default ({
 
     if (eligibilityStatus === 'not_eligible') {
       if (selectedWallet === 'Mina') {
-        disconnectMinaWallet();
+        disconnectAuroWallet();
       }
       // else if (selectedWallet === 'Metamask') {
       //   await disconnectMetamaskWallet();
@@ -173,7 +172,7 @@ export default ({
 
   const checkWalletConnection = () => {
     if (selectedWallet === 'Mina') {
-      return !!minaWalletAddress;
+      return !!auroWalletAddress;
     }
     // else if (selectedWallet === 'Metamask') {
     //   return !!metamaskWalletAddress;
@@ -243,8 +242,8 @@ export default ({
         return;
       }
 
-      // const publicKey = selectedWallet === 'Mina' ? minaWalletAddress : metamaskWalletAddress;
-      const publicKey = minaWalletAddress;
+      // const publicKey = selectedWallet === 'Mina' ? auroWalletAddress : metamaskWalletAddress;
+      const publicKey = auroWalletAddress;
 
       const electionJson = generateElectionJson(
         electionData,
@@ -267,7 +266,7 @@ export default ({
       setZkProofData(proof);
 
       if (selectedWallet === 'Mina') {
-        disconnectMinaWallet();
+        disconnectAuroWallet();
       }
       // else if (selectedWallet === 'Metamask') {
       //   await disconnectMetamaskWallet();
@@ -328,7 +327,7 @@ export default ({
                   position='top'
                   arrowPosition='start'
                 >
-                  <LearnMoreIcon Color='#B7B7B7' />
+                  <LearnMoreIcon color='#B7B7B7' />
                 </ToolTip>
               </span>
               Election id:{' '}

@@ -12,11 +12,10 @@ import { fetchAvailBlockHeightFromBackend, fetchCelestiaBlockInfoFromBackend } f
 import { CommunicationLayerDetails } from '@/utils/constants.jsx';
 import generateRandomCelestiaNamespace from '@/utils/generateRandomCelestiaNamespace.js';
 
-export default ({ onPrevious, onNext, initialData, loading }: {
+export default ({ onPrevious, onNext, initialData }: {
   onPrevious: () => void;
   onNext: (data: types.ElectionStaticData) => void;
   initialData: types.ElectionStaticData;
-  loading: boolean;
 }) => {
   const [selectedCommunicationLayer, setSelectedCommunicationLayer] = useState<'avail' | 'celestia' | null>(null);
 
@@ -122,7 +121,7 @@ export default ({ onPrevious, onNext, initialData, loading }: {
               ? 'opacity-50 cursor-not-allowed'
               : ''
           }
-          loading={loading}
+          // loading={loading}
         >
           Submit
         </Button>

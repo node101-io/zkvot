@@ -1,10 +1,4 @@
-import React, {
-  useEffect,
-  useState,
-  useMemo,
-  useRef,
-  useCallback,
-} from 'react';
+import { MutableRefObject, useEffect, useState, useMemo, useRef, useCallback } from 'react';
 
 import { types } from 'zkvot-core';
 
@@ -16,7 +10,7 @@ import { fetchElectionsFromBackend } from '@/utils/backend.js';
 interface AssignedElectionsProps {
   onlyOngoing?: boolean;
   metamaskWalletAddress?: string;
-  minaWalletAddress?: string;
+  auroWalletAddress?: string;
 };
 
 const ELECTION_SKIP_PER_REQUEST: number = 100;
@@ -24,11 +18,11 @@ const ELECTION_SKIP_PER_REQUEST: number = 100;
 const AssignedElections: React.FC<AssignedElectionsProps>  = ({
   onlyOngoing = true,
   metamaskWalletAddress,
-  minaWalletAddress,
+  auroWalletAddress,
 }: {
   onlyOngoing?: boolean;
   metamaskWalletAddress?: string;
-  minaWalletAddress?: string;
+  auroWalletAddress?: string;
 }) => {
   const [electionData, setElectionData] = useState<types.ElectionBackendData[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -37,16 +31,16 @@ const AssignedElections: React.FC<AssignedElectionsProps>  = ({
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [skip, setSkip] = useState<number>(0);
 
-  const observer: React.MutableRefObject<IntersectionObserver | null> = useRef(null);
+  const observer: MutableRefObject<IntersectionObserver | null> = useRef(null);
 
-  if (!metamaskWalletAddress && !minaWalletAddress) {
+  if (!metamaskWalletAddress && !auroWalletAddress) {
     setError('Wallet address not found.');
     return;
   }
 
   const walletAddresses = useMemo(
-    () => [metamaskWalletAddress, minaWalletAddress].filter(any => any != undefined).map((addr) => addr.toLowerCase()),
-    [metamaskWalletAddress, minaWalletAddress]
+    () => [metamaskWalletAddress, auroWalletAddress].filter(any => any != undefined).map((addr) => addr.toLowerCase()),
+    [metamaskWalletAddress, auroWalletAddress]
   );
 
   const lastElectionElementRef = useCallback((node: HTMLDivElement) => {

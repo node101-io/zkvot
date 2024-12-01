@@ -14,24 +14,11 @@ import ToolTip from '@/app/(partials)/ToolTip.jsx';
 import { SubwalletContext } from '@/contexts/SubwalletContext.jsx';
 import { ToastContext } from '@/contexts/ToastContext.jsx';
 
-import LearnMoreIcon from '@/public/election/card/LearnMoreIcon.jsx';
-import Clock from '@/public/elections/partials/Clock.jsx';
-import DownloadIcon from '@/public/election/card/DownloadIcon.jsx';
-import AvailLogo from '@/public/DaLogos/Avail.jsx';
-import CelestiaLogo from '@/public/blockchain-logos/Celestia.jsx';
+import LearnMoreIcon from '@/public/elections/partials/learn-more-icon.jsx';
+import Clock from '@/public/elections/partials/clock-icon.jsx';
 
 import { sendVoteViaBackend } from '@/utils/backend.js';
-
-const daDetails = {
-  avail: {
-    description: 'It is a long established fact that a reader will be distracted.',
-    currency: '$AVAIL',
-  },
-  celestia: {
-    description: 'It is a long established fact that a reader will be distracted.',
-    currency: '$TIA',
-  },
-};
+import { CommunicationLayerDetails } from '@/utils/constants.jsx';
 
 const ModeSelection = ({ selectionMode, setSelectionMode }: {
   selectionMode: string;
@@ -67,15 +54,11 @@ const DASelection = ({
   communicationLayers,
   selectedDA,
   setSelectedDA,
-  daDetails,
-  daLogos,
   isSubmitting,
 }: {
   communicationLayers: types.DaLayerInfo[];
   selectedDA: types.DaLayerInfo['name'];
   setSelectedDA: (da: string) => void;
-  daDetails: Record<string, { description: string, currency: string }>;
-  daLogos: Record<string, JSX.Element>;
   isSubmitting: boolean;
 }) => {
   return (
@@ -95,7 +78,7 @@ const DASelection = ({
           onClick={() => !isSubmitting && setSelectedDA(layer.name)}
         >
           <div className='flex-shrink-0 mr-4'>
-            {daLogos[layer.name] || (
+            {CommunicationLayerDetails[layer.name].logo || (
               <div className='w-12 h-12 bg-gray-500 rounded-full' />
             )}
           </div>
@@ -104,7 +87,7 @@ const DASelection = ({
               {layer.name.charAt(0).toUpperCase() + layer.name.slice(1)}
             </h3>
             <p className='text-[16px] mb-2'>
-              {daDetails[layer.name]?.description ||
+              {CommunicationLayerDetails[layer.name]?.description ||
                 'No description available.'}
             </p>
             {/* <div className='flex items-center justify-between'>
@@ -138,9 +121,9 @@ export default ({
   setLoading: (loading: boolean) => void;
 }) => {
   const {
-    selectedAccount,
-    connectWallet: connectSubwallet,
-    disconnectWallet: disconnectSubwallet,
+    subWalletAddress,
+    connectSubWallet,
+    disconnectSubWallet,
     sendTransactionSubwallet,
     isSubmitting,
   } = useContext(SubwalletContext);
@@ -153,7 +136,7 @@ export default ({
   const handleConnectWallet = async () => {
     try {
       console.log('Connecting wallet...');
-      await connectSubwallet();
+      await connectSubWallet();
       console.log('Wallet connection initiated.');
     } catch (error) {
       console.error('Error connecting wallet:', error);
@@ -165,10 +148,10 @@ export default ({
     if (
       selectionMode === 'direct' &&
       selectedDA === 'avail' &&
-      selectedAccount
+      subWalletAddress
     ) {
-      setWalletAddress(selectedAccount.address);
-      console.log('Wallet connected:', selectedAccount.address);
+      setWalletAddress(subWalletAddress);
+      console.log('Wallet connected:', subWalletAddress);
     } else {
       setWalletAddress('');
     }
@@ -178,24 +161,23 @@ export default ({
     } else {
       setSelectedWallet('');
     }
-  }, [selectedAccount, selectedDA, selectionMode]);
+  }, [subWalletAddress, selectedDA, selectionMode]);
 
   useEffect(() => {
     setWalletAddress('');
     if (selectedDA === 'avail') {
       setSelectedWallet('Subwallet');
     }
-  }, [selectedDA, selectedAccount, disconnectSubwallet]);
+  }, [selectedDA, subWalletAddress, disconnectSubWallet]);
 
   const handleNext = async () => {
     if (!selectedDA) {
       showToast('Please select a DA Layer to proceed.', 'error');
-
       return;
     }
 
     if (selectionMode === 'direct') {
-      if (!selectedAccount) {
+      if (!subWalletAddress) {
         showToast('Please connect your wallet to proceed.', 'error');
         return;
       }
@@ -275,11 +257,6 @@ export default ({
         )
       : electionData.communication_layers;
 
-  const daLogos = {
-    avail: <AvailLogo className='w-12 h-12' />,
-    celestia: <CelestiaLogo className='w-12 h-12' />,
-  };
-
   return (
     <div className='flex flex-col items-center px-8 sm:px-12 md:px-24 flex-grow py-12'>
       <div className='flex flex-col items-start w-full h-fit text-white mb-6 bg-[#222222] p-5 rounded-[30px] '>
@@ -312,7 +289,7 @@ export default ({
                     position='top'
                     arrowPosition='start'
                   >
-                    <LearnMoreIcon Color='#B7B7B7' />
+                    <LearnMoreIcon color='#B7B7B7' />
                   </ToolTip>
                 </span>
                 Election id:{' '}
@@ -390,14 +367,12 @@ export default ({
         communicationLayers={filteredLayers}
         selectedDA={selectedDA}
         setSelectedDA={setSelectedDA}
-        daDetails={daDetails}
-        daLogos={daLogos}
         isSubmitting={isSubmitting}
       />
 
       <div className='w-full pt-8 flex justify-end'>
         {selectionMode === 'direct' ? (
-          selectedAccount ? (
+          subWalletAddress ? (
             <Button
               onClick={handleNext}
               disabled={!selectedDA || isSubmitting}

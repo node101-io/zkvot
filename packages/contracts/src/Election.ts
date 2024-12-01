@@ -39,14 +39,26 @@ namespace ElectionNamespace {
         last: fields[1]
       },
       lastAggregatorPubKeyHash: fields[2],
-      voteOptions: {
+      voteOptions: new VoteOptions({
         voteOptions_1: fields[3],
         voteOptions_2: fields[4],
         voteOptions_3: fields[5],
         voteOptions_4: fields[6]
-      },
+      }),
       maximumCountedVotes: fields[7]
     };
+  };
+
+  const UInt32ToFieldBigEndian = (arr: UInt32[]): Field => {
+    let acc = Field.from(0);
+    let shift = Field.from(1);
+    for (let i = 6; i >= 0; i--) {
+      const byte = arr[i];
+      byte.value.assertLessThanOrEqual(4294967295);
+      acc = acc.add(byte.value.mul(shift));
+      shift = shift.mul(4294967296);
+    }
+    return acc;
   };
 
   export const ContractErrors = {};
@@ -72,7 +84,7 @@ namespace ElectionNamespace {
     first: Field,
     last: Field,
   }) {};
-  
+
   export class VoteOptions extends Struct({
     voteOptions_1: Field,
     voteOptions_2: Field,
@@ -86,6 +98,16 @@ namespace ElectionNamespace {
         voteOptions_3: Field.from(0),
         voteOptions_4: Field.from(0),
       });
+    }
+
+    toResults(): number[] {
+      const results: number[] = [];
+
+      for (let i = 1; i <= 4; i++) {
+        const currentOptions = this[`voteOptions_${i}` as keyof VoteOptions];
+      }
+
+      return results;
     }
   };
   

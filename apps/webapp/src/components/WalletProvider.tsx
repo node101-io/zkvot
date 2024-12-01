@@ -7,7 +7,7 @@ import { AuroWalletProvider } from '@/contexts/AuroWalletContext.js';
 import { SelectedWalletProvider } from '@/contexts/SelectedWalletContext.js';
 import { SubwalletProvider } from '@/contexts/SubwalletContext.js';
 
-export default (children: ReactNode) => {
+export default ({ children }: {children: ReactNode}) => {
   return (
     <SelectedWalletProvider>
       <AuroWalletProvider>

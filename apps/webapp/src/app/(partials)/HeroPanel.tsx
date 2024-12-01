@@ -21,18 +21,18 @@ const Panel = forwardRef((
     walletAddress,
   }: {
     activePanel?: string;
-    handleJoinClick: (target: EventTarget) => void;
-    handleWalletConnect: (target: EventTarget) => void;
+    handleJoinClick?: (target: EventTarget) => void;
+    handleWalletConnect?: (target: EventTarget) => void;
     type: string;
     title: string;
     description: string;
     fullDescription: string;
     fullDescription2: string;
     buttonText: string;
-    inputPlaceholder: string;
+    inputPlaceholder?: string;
     handleClick: (target: EventTarget) => void;
-    onInputChange: (value: string) => void;
-    walletAddress: string;
+    onInputChange?: (value: string) => void;
+    walletAddress?: string;
   },
   ref: Ref<HTMLDivElement>
 ) => {
@@ -94,7 +94,9 @@ const Panel = forwardRef((
                 <Button
                   TextColor='text-green group-hover:text-black'
                   backgroundColor='bg-green'
-                  onClick={event => handleJoinClick(event.target)}
+                  onClick={event => {
+                    if (handleJoinClick) handleJoinClick(event.target);
+                  }}
                 >
                   {buttonText}
                 </Button>
@@ -104,7 +106,9 @@ const Panel = forwardRef((
               <Button
                 TextColor='text-green group-hover:text-black'
                 backgroundColor='bg-green'
-                onClick={event => handleWalletConnect(event.target)}
+                onClick={event => {
+                  if (handleWalletConnect) handleWalletConnect(event.target);
+                }}
                 disabled={!!walletAddress}
               >
                 {buttonText}

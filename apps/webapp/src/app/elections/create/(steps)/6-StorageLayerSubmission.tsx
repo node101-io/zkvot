@@ -10,21 +10,21 @@ import Button from '@/app/(partials)/Button.jsx';
 
 import { ToastContext } from '@/contexts/ToastContext.jsx';
 
-import ArweaveStep1Image from '@/public/elections/create/5-storage-layer-upload/arweave/step-1.png';
-import ArweaveStep2Image from '@/public/elections/create/5-storage-layer-upload/arweave/step-2.png';
-import ArweaveStep3Image from '@/public/elections/create/5-storage-layer-upload/arweave/step-3.png';
-import ArweaveStep4Image from '@/public/elections/create/5-storage-layer-upload/arweave/step-4.png';
-import ArweaveStep5Image from '@/public/elections/create/5-storage-layer-upload/arweave/step-5.png';
-import ArweaveStep6Image from '@/public/elections/create/5-storage-layer-upload/arweave/step-6.png';
-import ArweaveStep7Image from '@/public/elections/create/5-storage-layer-upload/arweave/step-7.png';
+import ArweaveStep1Image from '@/public/elections/storage-layer-upload-instructions/arweave/step-1.png';
+import ArweaveStep2Image from '@/public/elections/storage-layer-upload-instructions/arweave/step-2.png';
+import ArweaveStep3Image from '@/public/elections/storage-layer-upload-instructions/arweave/step-3.png';
+import ArweaveStep4Image from '@/public/elections/storage-layer-upload-instructions/arweave/step-4.png';
+import ArweaveStep5Image from '@/public/elections/storage-layer-upload-instructions/arweave/step-5.png';
+import ArweaveStep6Image from '@/public/elections/storage-layer-upload-instructions/arweave/step-6.png';
+import ArweaveStep7Image from '@/public/elections/storage-layer-upload-instructions/arweave/step-7.png';
 
-import FilecoinStep1Image from '@/public/elections/create/5-storage-layer-upload/filecoin/step-1.png';
-import FilecoinStep2Image from '@/public/elections/create/5-storage-layer-upload/filecoin/step-2.png';
-import FilecoinStep3Image from '@/public/elections/create/5-storage-layer-upload/filecoin/step-3.png';
-import FilecoinStep4Image from '@/public/elections/create/5-storage-layer-upload/filecoin/step-4.png';
-import FilecoinStep5Image from '@/public/elections/create/5-storage-layer-upload/filecoin/step-5.png';
-import FilecoinStep6Image from '@/public/elections/create/5-storage-layer-upload/filecoin/step-6.png';
-import FilecoinStep7Image from '@/public/elections/create/5-storage-layer-upload/filecoin/step-7.png';
+import FilecoinStep1Image from '@/public/elections/storage-layer-upload-instructions/filecoin/step-1.png';
+import FilecoinStep2Image from '@/public/elections/storage-layer-upload-instructions/filecoin/step-2.png';
+import FilecoinStep3Image from '@/public/elections/storage-layer-upload-instructions/filecoin/step-3.png';
+import FilecoinStep4Image from '@/public/elections/storage-layer-upload-instructions/filecoin/step-4.png';
+import FilecoinStep5Image from '@/public/elections/storage-layer-upload-instructions/filecoin/step-5.png';
+import FilecoinStep6Image from '@/public/elections/storage-layer-upload-instructions/filecoin/step-6.png';
+import FilecoinStep7Image from '@/public/elections/storage-layer-upload-instructions/filecoin/step-7.png';
 
 export default ({ onPrevious, onNext, initialData }: {
   onPrevious: () => void;
