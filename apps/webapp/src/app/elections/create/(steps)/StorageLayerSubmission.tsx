@@ -1,5 +1,3 @@
-'use client';
-
 import { useContext, useState, ChangeEvent } from 'react';
 import Image from 'next/image.js';
 import Link from 'next/link.js';

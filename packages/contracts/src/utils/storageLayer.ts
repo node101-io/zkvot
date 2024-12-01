@@ -1,4 +1,6 @@
-import { ElectionStaticData } from '../types.js';
+import types from '../types.js';
+
+type ElectionStaticData = types.ElectionStaticData;
 
 export const fetchDataFromIPFS = (
   CID: string,

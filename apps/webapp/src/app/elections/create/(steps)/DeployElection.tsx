@@ -1,6 +1,4 @@
-'use client';
-
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import Image from 'next/image.js';
 import { FaImage } from 'react-icons/fa';
 // import confetti from 'canvas-confetti';

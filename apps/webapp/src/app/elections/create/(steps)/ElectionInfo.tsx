@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useEffect, KeyboardEvent, ChangeEvent } from 'react';
 
 import { types } from 'zkvot-core';

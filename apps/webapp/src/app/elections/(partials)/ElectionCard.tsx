@@ -1,4 +1,3 @@
-import React from 'react';
 import Image from 'next/image.js';
 import Link from 'next/link.js';
 import { FaImage } from 'react-icons/fa';

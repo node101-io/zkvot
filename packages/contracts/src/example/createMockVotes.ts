@@ -1,4 +1,4 @@
-import fs from "fs/promises";
+import fs from 'fs/promises';
 import {
   Field,
   Mina,
@@ -6,14 +6,14 @@ import {
   PublicKey,
   Poseidon,
   Signature,
-} from "o1js";
-import dotenv from "dotenv";
+} from 'o1js';
+import dotenv from 'dotenv';
 
-import { votersArray } from "../local/mock.js";
+import { votersArray } from '../local/mock.js';
 
-import Aggregation from "../Aggregation.js";
-import MerkleTree from "../MerkleTree.js";
-import Vote from "../Vote.js";
+import Aggregation from '../Aggregation.js';
+import MerkleTree from '../MerkleTree.js';
+import Vote from '../Vote.js';
 
 dotenv.config();
 
@@ -48,18 +48,18 @@ export const mockVotes = async (electionPrivateKey: PrivateKey) => {
   let votersTree = MerkleTree.createFromStringArray(votersArray.map((v) => v[1]));
 
   if (!votersTree)
-    throw new Error("Failed to create Merkle tree from voters array");
+    throw new Error('Failed to create Merkle tree from voters array');
 
   let votersRoot = votersTree.getRoot();
   console.log(`Voters root: ${votersRoot.toString()}`);
 
-  await fs.writeFile("votersRoot.json", JSON.stringify(votersRoot, null, 2));
+  await fs.writeFile('votersRoot.json', JSON.stringify(votersRoot, null, 2));
 
-  console.log("compiling vote program");
+  console.log('compiling vote program');
   let { verificationKey } = await Vote.Program.compile();
-  console.log("verification key", verificationKey.data.slice(0, 10) + "..");
+  console.log('verification key', verificationKey.data.slice(0, 10) + '..');
 
-  console.log("casting votes");
+  console.log('casting votes');
 
   const electionId = electionPrivateKey.toPublicKey();
   console.log(`Election id: ${electionId.toBase58()}`);
@@ -108,7 +108,7 @@ export const mockVotes = async (electionPrivateKey: PrivateKey) => {
     return 0;
   });
 
-  await fs.writeFile("voteProofs.json", JSON.stringify(voteProofs, null, 2));
+  await fs.writeFile('voteProofs.json', JSON.stringify(voteProofs, null, 2));
 
   // voteProofs = [];
   // for (let i = 20; i < 40; i++) {
@@ -139,7 +139,7 @@ export const mockVotes = async (electionPrivateKey: PrivateKey) => {
   // }
 
   // await fs.writeFile(
-  //   "voteProofsRandom.json",
+  //   'voteProofsRandom.json',
   //   JSON.stringify(voteProofs, null, 2)
   // );
 
@@ -147,7 +147,7 @@ export const mockVotes = async (electionPrivateKey: PrivateKey) => {
     await Aggregation.Program.compile();
 
   await fs.writeFile(
-    "voteAggregatorVerificationKey.json",
+    'voteAggregatorVerificationKey.json',
     JSON.stringify(
       {
         data: voteAggregatorVerificationKey.data,

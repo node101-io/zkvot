@@ -83,7 +83,7 @@ export default async function deploy(
 
   const electionContractInstance = new Election.Contract(electionContractPubKey);
 
-  const electionData = new Election.ElectionData({
+  const electionData = new Election.StorageLayerInfoEncoding({
     first: fileCoinDatas[0],
     last: fileCoinDatas[1],
   });

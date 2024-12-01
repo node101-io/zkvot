@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, KeyboardEvent } from 'react';
 import ChevronDownIcon from '@heroicons/react/solid/ChevronDownIcon.js';
 
