@@ -4,17 +4,17 @@ import React from 'react';
 import Image from 'next/image.js';
 import { motion } from 'framer-motion';
 
-import Face1SVG from '@/public/howitworks/face1.svg';
-import Face2SVG from '@/public/howitworks/face2.svg';
-import Face3SVG from '@/public/howitworks/face3.svg';
-import Face4SVG from '@/public/howitworks/face4.svg';
-import WhyZkProof from '@/public/howitworks/WhyZkProofs.svg';
-import BlueQuestionMark from '@/public/howitworks/BlueQuestionMark.svg';
-import FacesCircle from '@/public/howitworks/FacesCircle.svg';
-import ThinkingFaces from '@/public/howitworks/ThinkingFaces.svg';
-import VotesMinaAmount from '@/public/howitworks/VotesMinaAmount.svg';
-import AllCounters from '@/public/howitworks/AllCounters.svg';
-import FacesLine from '@/public/howitworks/FacesLine.svg';
+import Face1SVG from '@/public/howitworks/face-1.svg';
+import Face2SVG from '@/public/howitworks/face-2.svg';
+import Face3SVG from '@/public/howitworks/face-3.svg';
+import Face4SVG from '@/public/howitworks/face-4.svg';
+import WhyZkProof from '@/public/howitworks/why-zk-proofs.svg';
+import BlueQuestionMark from '@/public/howitworks/blue-question-mark.svg';
+import FacesCircle from '@/public/howitworks/faces-circle.svg';
+import ThinkingFaces from '@/public/howitworks/thinking-faces.svg';
+import VotesMinaAmount from '@/public/howitworks/votes-mina-amount.svg';
+import AllCounters from '@/public/howitworks/all-counters.svg';
+import FacesLine from '@/public/howitworks/faces-line.svg';
 
 const Page = () => {
   const containerVariants = {

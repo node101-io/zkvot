@@ -1,9 +1,9 @@
 'use client';
 
-import { PropsWithChildren, Dispatch, useContext, createContext, useState, SetStateAction } from 'react';
+import { PropsWithChildren, useContext, createContext, useState } from 'react';
 import { Signature } from 'o1js';
 
-import { ZKProgramCompileContext } from '@/contexts/ZKProgramCompileContext.js';
+import { ZKProgramCompileContext } from '@/contexts/ZKProgramCompileContext.jsx';
 
 interface AuroWalletContextInterface {
   auroWalletAddress: string;

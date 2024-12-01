@@ -57,8 +57,8 @@ const DASelection = ({
   isSubmitting,
 }: {
   communicationLayers: types.DaLayerInfo[];
-  selectedDA: types.DaLayerInfo['name'];
-  setSelectedDA: (da: string) => void;
+  selectedDA: types.DaLayerInfo['name'] | '';
+  setSelectedDA: (da: types.DaLayerInfo['name']) => void;
   isSubmitting: boolean;
 }) => {
   return (
@@ -114,8 +114,8 @@ export default ({
 }: {
   electionData: types.ElectionBackendData;
   selectedOption: number;
-  selectedDA: types.DaLayerInfo['name'];
-  setSelectedDA: (da: string) => void;
+  selectedDA: types.DaLayerInfo['name'] | '';
+  setSelectedDA: (da: types.DaLayerInfo['name']) => void;
   goToNextStep: () => void;
   zkProofData: string;
   setLoading: (loading: boolean) => void;

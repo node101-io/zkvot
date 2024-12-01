@@ -7,8 +7,8 @@ import { motion } from 'framer-motion';
 
 import WalletButton from '@/app/(partials)/WalletButton.jsx';
 
-import ZKVot from '@/public/Logo/ZKVot.svg';
-import ZKVotDot from '@/public/Logo/ZKVotDot.svg';
+import ZKVot from '@/public/general/logo/zkvot.jsx';
+import ZKVotDot from '@/public/general/logo/zkvot-dot.jsx';
 
 const Navbar = () => {
   const navItems = [
@@ -70,13 +70,7 @@ const Navbar = () => {
             onAnimationComplete={() => setAnimationComplete(true)}
             className='absolute inset-0'
           >
-            <Image.default
-              src={ZKVot}
-              alt='ZKVot Logo'
-              fill
-              sizes='100%'
-              priority
-            />
+            <ZKVot />
           </motion.div>
         )}
 
@@ -86,11 +80,7 @@ const Navbar = () => {
           transition={{ duration: 1, ease: 'easeInOut' }}
           className='absolute left-[44px] top-[2px]'
         >
-          <Image.default
-            src={ZKVotDot}
-            alt='ZKVot Dot'
-            priority
-          />
+          <ZKVotDot />
         </motion.div>
       </Link.default>
       {navItems.map((item, index) => (

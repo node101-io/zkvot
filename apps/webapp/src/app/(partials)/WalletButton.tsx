@@ -15,7 +15,7 @@ import { SubwalletContext } from '@/contexts/SubwalletContext.jsx';
 import LogoutIcon from '@/public/general/icons/logout.jsx';
 
 import AuroIcon from '@/public/general/wallet-logos/auro.png';
-import SubwalletIcon from '@/public/general/wallet-logos/subwallet.svg';
+import SubwalletIcon from '@/public/general/wallet-logos/subwallet.png';
 // import MetamaskIcon from '@/public/wallets/Metamask.svg';
 
 const WalletButton = () => {
@@ -93,7 +93,7 @@ const WalletButton = () => {
       // case 'Metamask':
       //   return MetamaskIcon;
       default:
-        return null;
+        return '';
     }
   };
 

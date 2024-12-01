@@ -5,7 +5,7 @@ import { LegacyRef, useEffect, useContext, useRef, useState } from 'react';
 import Panel from '@/app/(partials)/HeroPanel.jsx';
 import InitialLoadingPage from '@/app/(partials)/InitialLoadingPage.jsx';
 
-import { AuroWalletContext } from '@/contexts/AuroWalletContext.js';
+import { AuroWalletContext } from '@/contexts/AuroWalletContext.jsx';
 
 const Page = () => {
   const [activePanel, setActivePanel] = useState<string>('');

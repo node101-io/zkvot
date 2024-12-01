@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 
 import ToolTip from '@/app/(partials)/ToolTip.jsx';
 

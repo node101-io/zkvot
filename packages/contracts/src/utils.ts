@@ -124,7 +124,7 @@ namespace utilsNamespace {
       voters_merkle_root: BigInt(0),
       communication_layers: electionData.communication_layers
     }
-  }
+  };
 };;
 
 export default utilsNamespace;

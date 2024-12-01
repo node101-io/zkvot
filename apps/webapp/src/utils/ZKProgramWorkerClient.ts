@@ -7,7 +7,7 @@ export default class {
   remoteApi: Comlink.Remote<typeof import('@/utils/ZKProgramWorker.js').api>;
 
   constructor() {
-    const worker = new Worker(new URL('@/utils/zkProgram/zkProgramWorker.js', import.meta.url), {
+    const worker = new Worker(new URL('@/utils/ZKProgramWorker.js', import.meta.url), {
       type: 'module',
     });
     this.remoteApi = Comlink.wrap(worker);

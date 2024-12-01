@@ -103,9 +103,9 @@ namespace ElectionNamespace {
     toResults(): number[] {
       const results: number[] = [];
 
-      for (let i = 1; i <= 4; i++) {
-        const currentOptions = this[`voteOptions_${i}` as keyof VoteOptions];
-      }
+      // for (let i = 1; i <= 4; i++) {
+      //   const currentOptions = this[`voteOptions_${i}` as keyof VoteOptions];
+      // }
 
       return results;
     }

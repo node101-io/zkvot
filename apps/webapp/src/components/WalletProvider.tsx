@@ -3,9 +3,9 @@
 import { ReactNode } from 'react';
 
 // import { MetamaskWalletProvider } from '@/contexts/MetamaskWalletContext.js';
-import { AuroWalletProvider } from '@/contexts/AuroWalletContext.js';
-import { SelectedWalletProvider } from '@/contexts/SelectedWalletContext.js';
-import { SubwalletProvider } from '@/contexts/SubwalletContext.js';
+import { AuroWalletProvider } from '@/contexts/AuroWalletContext.jsx';
+import { SelectedWalletProvider } from '@/contexts/SelectedWalletContext.jsx';
+import { SubwalletProvider } from '@/contexts/SubwalletContext.jsx';
 
 export default ({ children }: {children: ReactNode}) => {
   return (

@@ -1,8 +1,8 @@
 import Image from 'next/image.js';
 import { IoClose } from 'react-icons/io5';
 
-import AuroIcon from '@/public/wallets/auro.png';
-import SubwalletIcon from '@/public/wallets/subwallet.png';
+import AuroIcon from '@/public/general/wallet-logos/auro.png';
+import SubwalletIcon from '@/public/general/wallet-logos/subwallet.png';
 // import MetamaskIcon from '@/public/wallets/Metamask.svg';
 
 const WalletSelectionModal = ({

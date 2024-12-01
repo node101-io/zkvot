@@ -17,8 +17,8 @@ import WalletSelectionModal from '@/app/(partials)/WalletSelectionModal.jsx';
 import { AuroWalletContext } from '@/contexts/AuroWalletContext.jsx';
 // import { MetamaskWalletContext } from '@/contexts/MetamaskWalletContext';
 import { SelectedWalletContext } from '@/contexts/SelectedWalletContext.jsx';
-import { ZKProgramCompileContext } from '@/contexts/ZKProgramCompileContext.jsx';
 import { ToastContext } from '@/contexts/ToastContext.jsx';
+import { ZKProgramCompileContext } from '@/contexts/ZKProgramCompileContext.jsx';
 
 import LearnMoreIcon from '@/public/elections/partials/learn-more-icon.jsx';
 import Clock from '@/public/elections/partials/clock-icon.jsx';

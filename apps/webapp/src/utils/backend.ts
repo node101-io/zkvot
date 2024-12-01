@@ -5,7 +5,7 @@ const API_URL = 'https://backend.zkvot.io/api';
 export const fetchElectionsFromBackend = async (
   skip: number = 0,
   is_ongoing: boolean = true
-): Promise<types.ElectionBackendData[] | Error> => {
+): Promise<types.ElectionBackendData[]> => {
   try {
     const url = `${API_URL}/election/filter?skip=${skip}&is_ongoing=${is_ongoing}`;
 
@@ -25,6 +25,33 @@ export const fetchElectionsFromBackend = async (
       throw new Error(result.error || 'Failed to fetch elections');
 
     return result.elections;
+  } catch (error) {
+    throw new Error('Failed to fetch elections');
+  };
+};
+
+export const fetchElectionByContractIdFromBackend = async (
+  id: string
+): Promise<types.ElectionBackendData> => {
+  try {
+    const url = `${API_URL}/election/${id}`;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok)
+      throw new Error('Failed to fetch the election');
+
+    const result = await response.json();
+
+    if (!result.success)
+      throw new Error(result.error || 'Failed to fetch the election');
+
+    return result.election;
   } catch (error) {
     throw new Error('Failed to fetch elections');
   };
