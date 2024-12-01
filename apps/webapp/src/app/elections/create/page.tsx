@@ -4,13 +4,13 @@ import { useState } from 'react';
 
 import { types } from 'zkvot-core';
 
-import ElectionInfoStep from './(steps)/1-ElectionInfo.jsx';
-import VotersListStep from './(steps)/2-VotersList.jsx';
-import CommLayerSelectionStep from './(steps)/3-CommLayerSelection.jsx';
-import CommLayerSubmissionStep from './(steps)/4-CommLayerSubmission.jsx';
-import StorageLayerSelectionStep from './(steps)/5-StorageLayerSelection.jsx';
-import StorageLayerSubmissionStep from './(steps)/6-StorageLayerSubmission.jsx';
-import DeployElectionStep from './(steps)/7-DeployElection.jsx';
+import ElectionInfoStep from '@/app/elections/create/(steps)/1-ElectionInfo.jsx';
+import VotersListStep from '@/app/elections/create/(steps)/2-VotersList.jsx';
+import CommLayerSelectionStep from '@/app/elections/create/(steps)/3-CommLayerSelection.jsx';
+import CommLayerSubmissionStep from '@/app/elections/create/(steps)/4-CommLayerSubmission.jsx';
+import StorageLayerSelectionStep from '@/app/elections/create/(steps)/5-StorageLayerSelection.jsx';
+import StorageLayerSubmissionStep from '@/app/elections/create/(steps)/6-StorageLayerSubmission.jsx';
+import DeployElectionStep from '@/app/elections/create/(steps)/7-DeployElection.jsx';
 
 const HomePage = () => {
   const [step, setStep] = useState<number>(1);

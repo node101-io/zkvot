@@ -2,6 +2,8 @@
 
 import { useState, useEffect, KeyboardEvent, ChangeEvent } from 'react';
 
+import { types } from 'zkvot-core';
+
 import Button from '@/app/(partials)/Button.jsx';
 
 import DeleteIcon from '@/public/general/icons/delete.jsx';
@@ -9,8 +11,6 @@ import EditIcon from '@/public/general/icons/edit.jsx';
 import PlusIcon from '@/public/general/icons/plus.jsx';
 
 import convertDateToISOString from '@/utils/convertDateToISOString.js';
-
-import { types } from 'zkvot-core';
 
 const ChoiceItem = ({
   index,
