@@ -25,15 +25,14 @@ namespace typesNamespace {
     index: number
   };
 
-  export type PlatformCodes = 'A' | 'F' | 'P';
-
-  export type Voter = {
-    public_key: string;
-  } & VoterCustomFields;
-
   export type VoterCustomFields = {
     [key: string]: string;
   };
+  export type Voter = VoterCustomFields & {
+    public_key: string;
+  };
+
+  export type StorageLayerPlatformCodes = 'A' | 'F' | 'P';
 
   export type ElectionStaticData = {
     start_date: Date;
@@ -45,13 +44,10 @@ namespace typesNamespace {
     voters_list: Voter[];
     communication_layers: (AvailDaLayerInfo | CelestiaDaLayerInfo)[]
   };
-  export type ElectionFrontendData = ElectionStaticData & {
-    storage_layer_platform: PlatformCodes;
-  };
   export type ElectionBackendData = {
     mina_contract_id: string;
     storage_layer_id: string;
-    storage_layer_platform: PlatformCodes;
+    storage_layer_platform: StorageLayerPlatformCodes;
     start_date: Date;
     end_date: Date;
     question: string;

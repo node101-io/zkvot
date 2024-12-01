@@ -20,9 +20,9 @@ import { SelectedWalletContext } from '@/contexts/SelectedWalletContext.jsx';
 import { ZKProgramCompileContext } from '@/contexts/ZKProgramCompileContext.jsx';
 import { ToastContext } from '@/contexts/ToastContext.jsx';
 
-import LearnMoreIcon from '@/public/ElectionCard/LearnMoreIcon.jsx';
-import Clock from '@/public/ElectionCard/Clock.jsx';
-import DownloadIcon from '@/public/ElectionCard/DownloadIcon.jsx';
+import LearnMoreIcon from '@/public/election/card/LearnMoreIcon.jsx';
+import Clock from '@/public/elections/partials/Clock.jsx';
+import DownloadIcon from '@/public/election/card/DownloadIcon.jsx';
 
 export default ({
   electionData,

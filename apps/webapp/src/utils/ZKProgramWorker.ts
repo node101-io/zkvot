@@ -1,7 +1,6 @@
 import {
   Field,
   Mina,
-  Poseidon,
   PublicKey,
   PrivateKey,
   Signature

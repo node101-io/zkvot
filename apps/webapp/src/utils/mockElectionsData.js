@@ -1,7 +1,5 @@
 const MockElectionData = [
   {
-    _id: "67194df7b50eab81d74f2a0f",
-    mina_contract_id: "mina-12345",
     storage_layer_id: "storage-67890",
     storage_layer_platform: "C",
     start_date: "2024-10-25T08:00:00.000Z",
@@ -22,14 +20,12 @@ const MockElectionData = [
     ],
     communication_layers: [
       {
-        _id: "67195d7c1a11ec43bad1ccf8",
         type: "celestia",
         start_block: 123456,
         namespace: "0x123abc",
         block_hash: "0xabcdef1234567890",
       },
       {
-        _id: "67195d7c1a11ec43bad1ccf9",
         type: "avail",
         start_block: 987654,
         app_id: 42,

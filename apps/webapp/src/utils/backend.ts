@@ -1,7 +1,5 @@
 import { types } from 'zkvot-core';
 
-import mockElections from './mockElectionsData.js';
-
 const API_URL = 'https://backend.zkvot.io/api';
 
 export const fetchElectionsFromBackend = async (
@@ -110,3 +108,40 @@ export const fetchCelestiaBlockInfoFromBackend = async () => {
     throw error;
   }
 };
+
+export const calculateMinaBlockHeightFromTimestampViaBackend = async (
+  start_date: Date,
+  end_date: Date
+): Promise<{
+  startBlockHeight: number;
+  endBlockHeight: number;
+} | Error> => {
+  try {
+    const response = await fetch('https://backend.zkvot.io/api/block-info/mina', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        start_date,
+        end_date
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error calculating Mina block height: ${errorText}`);
+    }
+
+    const result = await response.json();
+
+    if (result.success) {
+      return result.data;
+    } else {
+      throw new Error(`Error in response data: ${result.error}`);
+    }
+  } catch (error) {
+    console.error('Error calculating Mina block height:', error);
+    throw error;
+  }
+}

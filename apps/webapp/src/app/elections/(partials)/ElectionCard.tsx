@@ -10,8 +10,8 @@ import CopyButton from '@/app/(partials)/CopyButton.jsx';
 import ToolTip from '@/app/(partials)/ToolTip.jsx';
 import DateFormatter from '@/app/(partials)/DateFormatter.jsx';
 
-import Clock from '@/public/ElectionCard/Clock.jsx';
-import LearnMoreIcon from '@/public/ElectionCard/LearnMoreIcon.jsx';
+import Clock from '@/public/elections/partials/Clock.jsx';
+import LearnMoreIcon from '@/public/election/card/LearnMoreIcon.jsx';
 
 const ElectionCard = ({
   electionData,

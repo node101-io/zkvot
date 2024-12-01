@@ -14,11 +14,11 @@ import ToolTip from '@/app/(partials)/ToolTip.jsx';
 import { SubwalletContext } from '@/contexts/SubwalletContext.jsx';
 import { ToastContext } from '@/contexts/ToastContext.jsx';
 
-import LearnMoreIcon from '@/public/ElectionCard/LearnMoreIcon.jsx';
-import Clock from '@/public/ElectionCard/Clock.jsx';
-import DownloadIcon from '@/public/ElectionCard/DownloadIcon.jsx';
+import LearnMoreIcon from '@/public/election/card/LearnMoreIcon.jsx';
+import Clock from '@/public/elections/partials/Clock.jsx';
+import DownloadIcon from '@/public/election/card/DownloadIcon.jsx';
 import AvailLogo from '@/public/DaLogos/Avail.jsx';
-import CelestiaLogo from '@/public/DaLogos/Celestia.jsx';
+import CelestiaLogo from '@/public/blockchain-logos/Celestia.jsx';
 
 import { sendVoteViaBackend } from '@/utils/backend.js';
 

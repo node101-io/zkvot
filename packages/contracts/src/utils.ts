@@ -19,7 +19,7 @@ namespace utilsNamespace {
   };
 
   export const Platforms: {
-    [key: string]: types.PlatformCodes
+    [key: string]: types.StorageLayerPlatformCodes
   } = {
     Arweave: 'A',
     Filecoin: 'F',
@@ -27,7 +27,7 @@ namespace utilsNamespace {
   };
 
   export const encodeStorageLayerInfo = (
-    platform: types.PlatformCodes,
+    platform: types.StorageLayerPlatformCodes,
     id: string
   ): Election.StorageLayerInfoEncoding => {
     return new Election.StorageLayerInfoEncoding({
@@ -99,7 +99,7 @@ namespace utilsNamespace {
   export const convertElectionStaticDataToBackendData = (
     mina_contract_id: string,
     storage_layer_id: string,
-    storage_layer_platform: types.PlatformCodes,
+    storage_layer_platform: types.StorageLayerPlatformCodes,
     electionData: types.ElectionStaticData
   ): types.ElectionBackendData => {
     return {

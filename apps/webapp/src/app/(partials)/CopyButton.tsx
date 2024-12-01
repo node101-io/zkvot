@@ -1,7 +1,7 @@
 import { motion, useAnimation } from 'framer-motion';
 import copy from 'copy-to-clipboard';
 
-import CopyIcon from '@/public/ElectionCard/CopyIcon.jsx';
+import CopyIcon from '@/public/election/card/CopyIcon.jsx';
 
 const CopyButton = ({
   textToCopy,

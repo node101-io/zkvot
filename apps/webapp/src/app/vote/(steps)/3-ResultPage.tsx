@@ -10,9 +10,9 @@ import { Election, types } from 'zkvot-core';
 import DateFormatter from '@/app/(partials)/DateFormatter.jsx';
 import ToolTip from '@/app/(partials)/ToolTip.jsx';
 
-import Clock from '@/public/ElectionCard/Clock.jsx';
-import LearnMoreIcon from '@/public/ElectionCard/LearnMoreIcon.jsx';
-import DownloadIcon from '@/public/ElectionCard/DownloadIcon.jsx';
+import Clock from '@/public/elections/partials/Clock.jsx';
+import LearnMoreIcon from '@/public/election/card/LearnMoreIcon.jsx';
+import DownloadIcon from '@/public/election/card/DownloadIcon.jsx';
 import MinaLogo from '@/public/StepsProgress/MinaLastStep.svg';
 import CopyButton from '@/app/(partials)/CopyButton.jsx';
 

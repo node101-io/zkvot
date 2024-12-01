@@ -18,7 +18,7 @@ const Page = () => {
   const { minaWalletAddress, connectMinaWallet } = useContext(MinaWalletContext);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (event: Event) => {
       if (
         leftPanelRef.current &&
         !leftPanelRef.current.contains(event.target) &&
