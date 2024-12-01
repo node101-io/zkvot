@@ -4,8 +4,8 @@ import { PropsWithChildren, Dispatch, SetStateAction, useState, createContext, u
 import { v4 as uuidv4 } from 'uuid';
 import { createPortal } from 'react-dom';
 
-import SuccessSVG from '@/public/toast/success.svg';
-import ErrorSVG from '@/public/toast/error.svg';
+import SuccessIcon from '@/public/general/toast/success.jsx';
+import ErrorIcon from '@/public/general/toast/error.jsx';
 
 interface ToastInterface {
   _id: string;
@@ -46,7 +46,7 @@ const Toast = ({
         type === 'success' ? 'text-green' : 'text-[#CD3556]'
       } ${position}`}
     >
-      {type === 'success' ? <SuccessSVG /> : <ErrorSVG />}
+      {type === 'success' ? <SuccessIcon /> : <ErrorIcon />}
       <p>{message}</p>
     </div>,
     document.body

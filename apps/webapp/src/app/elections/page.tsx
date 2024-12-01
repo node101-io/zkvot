@@ -3,12 +3,11 @@
 import React, { useContext, useState } from 'react';
 
 import ToolTip from '@/app/(partials)/ToolTip.jsx';
+
 import AssignedElections from '@/app/elections/(partials)/AssignedElections.jsx';
 
 // import { MetamaskWalletContext } from '@/contexts/MetamaskWalletContext.jsx';
 import { MinaWalletContext } from '@/contexts/MinaWalletContext.jsx';
-
-// import LearnMoreIcon f@/public/ElectionCard/LearnMoreIcon';
 
 const Page = () => {
   const [activePanel, setActivePanel] = useState('Assigned Elections');
@@ -80,7 +79,6 @@ const Page = () => {
             </div>
           </ToolTip>
         </div>
-
         <div className='px-6'>
           {activePanel === 'Assigned Elections' && (
             <div className='py-8'>

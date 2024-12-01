@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useEffect, KeyboardEvent, ChangeEvent } from 'react';
-import Image from 'next/image.js';
 
 import Button from '@/app/(partials)/Button.jsx';
 
-import EditIcon from '@/public/CreateElection/EditIcon.svg';
-import DeleteIcon from '@/public/CreateElection/DeleteIcon.svg';
-import PlusIcon from '@/public/CreateElection/PlusIcon.svg';
+import DeleteIcon from '@/public/general/icons/delete.jsx';
+import EditIcon from '@/public/general/icons/edit.jsx';
+import PlusIcon from '@/public/general/icons/plus.jsx';
 
 import convertDateToISOString from '@/utils/convertDateToISOString.js';
 
@@ -70,12 +69,7 @@ const ChoiceItem = ({
             onClick={() => setIsEditing(false)}
             className='rounded-full flex items-center justify-center mx-1'
           >
-            <Image.default
-              src={DeleteIcon}
-              alt='Edit'
-              width={24}
-              height={24}
-            />
+            <DeleteIcon size={24}/>
           </button>
         </>
       ) : (
@@ -85,23 +79,13 @@ const ChoiceItem = ({
             onClick={() => setIsEditing(true)}
             className='rounded-full flex items-center justify-center mx-1'
           >
-            <Image.default
-              src={EditIcon}
-              alt='Edit'
-              width={24}
-              height={24}
-            />
+            <EditIcon />
           </button>
           <button
             onClick={deleteChoice}
             className=' rounded-full flex items-center justify-center mx-1'
           >
-            <Image.default
-              src={DeleteIcon}
-              alt='Delete'
-              width={20}
-              height={20}
-            />
+            <DeleteIcon size={20}/>
           </button>
         </>
       )}
@@ -143,12 +127,7 @@ const ChoiceInput = ({ choices, setChoices }: {
         onClick={addChoice}
         className='w-12 h-12 bg-[#222] text-white rounded-[23px] border border-[#1E1E1E] flex items-center justify-center'
       >
-        <Image.default
-          width={20}
-          height={20}
-          src={PlusIcon}
-          alt='Plus Icon'
-        />
+        <PlusIcon />
       </button>
     </div>
   );

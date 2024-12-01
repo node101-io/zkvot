@@ -164,38 +164,6 @@ const HomePage = () => {
     setStep(3);
   };
 
-  const generateAndDownloadJSON = (currentElectionData) => {
-    const finalElectionData = { ...currentElectionData };
-
-    delete finalElectionData.someComponent;
-    delete finalElectionData.someEventObject;
-    delete finalElectionData.storageLayer;
-    console.log('Final Election Data:', finalElectionData);
-
-    downloadJSON(finalElectionData);
-  };
-
-  const downloadJSON = (finalElectionData) => {
-    if (!finalElectionData) {
-      console.error('finalElectionData is undefined or null');
-      return;
-    }
-
-    delete finalElectionData.someComponent;
-    delete finalElectionData.someEventObject;
-
-    console.log('Data to be serialized:', finalElectionData);
-    const dataStr = JSON.stringify(finalElectionData, null, 2);
-    const blob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement('a');
-    link.download = 'election_data.json';
-    link.href = url;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
   return (
     <div className='flex justify-center items-center h-full overflow-y-scroll pb-2'>
       <div className='w-[1062px] h-full p-6 rounded-lg '>

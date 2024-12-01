@@ -7,11 +7,11 @@ import { types } from 'zkvot-core'
 
 import Button from '@/app/(partials)/Button.jsx';
 import CopyButton from '@/app/(partials)/CopyButton.jsx';
-import ToolTip from '@/app/(partials)/ToolTip.jsx';
 import DateFormatter from '@/app/(partials)/DateFormatter.jsx';
+import ToolTip from '@/app/(partials)/ToolTip.jsx';
 
-import Clock from '@/public/elections/partials/Clock.jsx';
-import LearnMoreIcon from '@/public/election/card/LearnMoreIcon.jsx';
+import Clock from '@/public/elections/partials/clock.jsx';
+import LearnMoreIcon from '@/public/elections/partials/learn-more-icon.jsx';
 
 const ElectionCard = ({
   electionData,
@@ -99,7 +99,7 @@ const ElectionCard = ({
               position='top'
               arrowPosition='start'
             >
-              <LearnMoreIcon Color='#B7B7B7' />
+              <LearnMoreIcon color='#B7B7B7' />
             </ToolTip>
           </span>
           Election id: {String(electionData.mina_contract_id).slice(0, 12) + '...'}

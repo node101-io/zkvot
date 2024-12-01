@@ -5,12 +5,9 @@ import { Signature } from 'o1js';
 
 import { ZKProgramCompileContext } from '@/contexts/ZKProgramCompileContext.js';
 
-interface MinaWalletContextInterface {
-  minaWalletAddress: string;
-  setMinaWalletAddress: Dispatch<
-    SetStateAction<MinaWalletContextInterface['minaWalletAddress']>
-  >;
-  connectMinaWallet: () => Promise<boolean>;
+interface AuroWalletContextInterface {
+  auroWalletAddress: string;
+  connectAuroWallet: () => Promise<boolean>;
   signElectionId: (electionId: string) => Promise<string | Error>;
   generateEncodedVoteProof: (vote: {
     electionId: string;
@@ -19,40 +16,39 @@ interface MinaWalletContextInterface {
     votersArray: string[];
     publicKey: string;
   }) => Promise<string | Error>;
-  disconnectMinaWallet: () => void;
+  disconnectAuroWallet: () => void;
 };
 
-export const MinaWalletContext = createContext<MinaWalletContextInterface>({
-  minaWalletAddress: '',
-  setMinaWalletAddress: () => {},
-  connectMinaWallet: async () => false,
+export const AuroWalletContext = createContext<AuroWalletContextInterface>({
+  auroWalletAddress: '',
+  connectAuroWallet: async () => false,
   signElectionId: async () => '',
   generateEncodedVoteProof: async () => '',
-  disconnectMinaWallet: () => {},
+  disconnectAuroWallet: () => {},
 });
 
-export const MinaWalletProvider = ({
+export const AuroWalletProvider = ({
   children
 }: PropsWithChildren<{}>) => {
-  const [minaWalletAddress, setMinaWalletAddress] = useState<MinaWalletContextInterface['minaWalletAddress']>('');
+  const [auroWalletAddress, setAuroWalletAddress] = useState<AuroWalletContextInterface['auroWalletAddress']>('');
 
   const { zkProgramWorkerClientInstance, hasBeenSetup, isSettingUp } = useContext(ZKProgramCompileContext);
 
-  const connectMinaWallet = async (): Promise<boolean> => {
+  const connectAuroWallet = async (): Promise<boolean> => {
     try {
-      if (!(window as any).mina)
-        throw new Error('Mina wallet extension not found. Please install it.');
+      if (!(window as any).auro)
+        throw new Error('Auro wallet extension not found. Please install it.');
 
-      const accounts = await (window as any).mina.requestAccounts();
+      const accounts = await (window as any).auro.requestAccounts();
 
       if (accounts.length === 0)
-        throw new Error('No accounts found in Mina wallet.');
+        throw new Error('No accounts found in Auro wallet.');
 
       const address = accounts[0];
-      setMinaWalletAddress(address);
+      setAuroWalletAddress(address);
       return true;
     } catch (error) {
-      throw new Error('Failed to connect to Mina wallet.');
+      throw new Error('Failed to connect to Auro wallet.');
     }
   };
 
@@ -60,11 +56,11 @@ export const MinaWalletProvider = ({
     electionId: string
   ): Promise<string | Error> => {
     try {
-      if (!(window as any).mina)
-        throw new Error('Mina wallet extension not found. Please install it.');
+      if (!(window as any).auro)
+        throw new Error('Auro wallet extension not found. Please install it.');
 
-      const signature = await (window as any).mina.signMessage({ message: electionId });
-      console.log('Raw signature from Mina wallet:', signature);
+      const signature = await (window as any).auro.signMessage({ message: electionId });
+      console.log('Raw signature from Auro wallet:', signature);
 
       if (!signature)
         throw new Error('Failed to sign the election ID.');
@@ -125,22 +121,21 @@ export const MinaWalletProvider = ({
     }
   };
 
-  const disconnectMinaWallet = () => {
-    setMinaWalletAddress('');
+  const disconnectAuroWallet = () => {
+    setAuroWalletAddress('');
   };
 
   return (
-    <MinaWalletContext.Provider
+    <AuroWalletContext.Provider
       value={{
-        minaWalletAddress,
-        setMinaWalletAddress,
-        connectMinaWallet,
+        auroWalletAddress,
+        connectAuroWallet,
         signElectionId,
         generateEncodedVoteProof,
-        disconnectMinaWallet,
+        disconnectAuroWallet,
       }}
     >
       {children}
-    </MinaWalletContext.Provider>
+    </AuroWalletContext.Provider>
   );
 };

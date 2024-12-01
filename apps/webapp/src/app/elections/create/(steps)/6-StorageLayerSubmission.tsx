@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, ChangeEvent } from 'react';
+import { useContext, useState, ChangeEvent } from 'react';
 import Image from 'next/image.js';
 import Link from 'next/link.js';
 
@@ -8,59 +8,96 @@ import { types, utils } from 'zkvot-core';
 
 import Button from '@/app/(partials)/Button.jsx';
 
-import SignUpImage from '@/public/StepFiveTutorial/AkordSignUp.svg';
-import SetUpVaultImage from '@/public/StepFiveTutorial/AkordSetUpVault.svg';
-import CreateVaultImage from '@/public/StepFiveTutorial/AkordCreateVault.svg';
-import UploadFileImage from '@/public/StepFiveTutorial/AkordUploadFile.svg';
-import DownloadFileImage from '@/public/StepFiveTutorial/AkordDownloadUploadFile.svg';
-import FileContentImage from '@/public/StepFiveTutorial/AkordFileContent.svg';
-import CopyFromFileImage from '@/public/StepFiveTutorial/AkordCopyFromFile.svg';
+import { ToastContext } from '@/contexts/ToastContext.jsx';
 
-const StepSix = ({ electionData, onPrevious, onSubmit, onDownload }: {
-  electionData: types.ElectionFrontendData;
+import ArweaveStep1Image from '@/public/elections/create/5-storage-layer-upload/arweave/step-1.png';
+import ArweaveStep2Image from '@/public/elections/create/5-storage-layer-upload/arweave/step-2.png';
+import ArweaveStep3Image from '@/public/elections/create/5-storage-layer-upload/arweave/step-3.png';
+import ArweaveStep4Image from '@/public/elections/create/5-storage-layer-upload/arweave/step-4.png';
+import ArweaveStep5Image from '@/public/elections/create/5-storage-layer-upload/arweave/step-5.png';
+import ArweaveStep6Image from '@/public/elections/create/5-storage-layer-upload/arweave/step-6.png';
+import ArweaveStep7Image from '@/public/elections/create/5-storage-layer-upload/arweave/step-7.png';
+
+import FilecoinStep1Image from '@/public/elections/create/5-storage-layer-upload/filecoin/step-1.png';
+import FilecoinStep2Image from '@/public/elections/create/5-storage-layer-upload/filecoin/step-2.png';
+import FilecoinStep3Image from '@/public/elections/create/5-storage-layer-upload/filecoin/step-3.png';
+import FilecoinStep4Image from '@/public/elections/create/5-storage-layer-upload/filecoin/step-4.png';
+import FilecoinStep5Image from '@/public/elections/create/5-storage-layer-upload/filecoin/step-5.png';
+import FilecoinStep6Image from '@/public/elections/create/5-storage-layer-upload/filecoin/step-6.png';
+import FilecoinStep7Image from '@/public/elections/create/5-storage-layer-upload/filecoin/step-7.png';
+
+export default ({ onPrevious, onNext, initialData }: {
   onPrevious: () => void;
-  onSubmit: (data: any, setError: (error: string) => void) => Promise<void>;
-  onDownload: () => void;
-}) => {
-  const [transactionId, setTransactionId] = useState('');
-  const [isSubmitEnabled, setIsSubmitEnabled] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isFetchingData, setIsFetchingData] = useState(false);
-
-  const stepsData = getStepsData(electionData.storage_layer_platform, onDownload);
-
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setTransactionId(e.target.value);
-    setIsSubmitEnabled(e.target.value.trim() !== '');
-    setErrorMessage('');
+  onNext: (data: {
+    election: types.ElectionStaticData,
+    storage_layer_platform: types.StorageLayerPlatformCodes,
+    storage_layer_id: string
+  }) => void;
+  initialData: {
+    election: types.ElectionStaticData,
+    storage_layer_platform: types.StorageLayerPlatformCodes
   };
+}) => {
+  const { showToast } = useContext(ToastContext);
+
+  const [transactionId, setTransactionId] = useState<string>('');
 
   const handleSubmit = () => {
-    if (isSubmitEnabled) {
-      setIsFetchingData(true);
-
-      Promise.resolve(onSubmit(transactionId.trim(), setErrorMessage))
-        .then(() => {
-          console.log('Submission successful.');
-        })
-        .catch((error) => {
-          console.error('Submission error:', error);
-          const errorMessageToDisplay =
-            error.message || 'An error occurred during submission.';
-          setErrorMessage(errorMessageToDisplay);
-          console.log('Displaying error message:', errorMessageToDisplay);
-        })
-        .finally(() => {
-          setIsFetchingData(false);
-        });
+    if (!transactionId.trim().length) {
+      showToast('Please enter a transaction ID.', 'error');
+      return;
     }
+
+    onNext({
+      election: initialData.election,
+      storage_layer_platform: initialData.storage_layer_platform,
+      storage_layer_id: transactionId
+    });
   };
+
+  const downloadJSON = () => {
+    const dataStr = JSON.stringify(initialData.election, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.download = 'zkvot-election-data.json';
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const stepsData = getUploadInstructions(initialData.storage_layer_platform, downloadJSON);
 
   return (
     <div className='flex flex-col items-start space-y-6'>
       <h2 className='text-white text-2xl'>
-        Guide
+        Storage Layer Upload Guide
       </h2>
+      <div className='w-full'>
+        <label className='block text-white mb-2'>Transaction ID</label>
+        <input
+          type='text'
+          value={transactionId}
+          onChange={event => setTransactionId(event.target.value)}
+          className='w-full h-12 p-2 bg-[#222] text-white rounded-[23px] border'
+          placeholder='Enter your transaction ID here'
+        />
+      </div>
+      <div className='w-full flex justify-between pt-4'>
+        <Button onClick={onPrevious}>Previous</Button>
+        <Button
+          onClick={handleSubmit}
+          disabled={!transactionId.trim().length}
+          className={
+            !transactionId.trim().length
+              ? 'opacity-50 cursor-not-allowed'
+              : ''
+          }
+        >
+          Next
+        </Button>
+      </div>
       <div className='w-full text-white'>
         {stepsData.map((step, index) => (
           <div key={index}>
@@ -75,44 +112,12 @@ const StepSix = ({ electionData, onPrevious, onSubmit, onDownload }: {
           </div>
         ))}
       </div>
-      <div className='w-full'>
-        <label className='block text-white mb-2'>Transaction ID</label>
-        <input
-          type='text'
-          value={transactionId}
-          onChange={handleInputChange}
-          className='w-full h-12 p-2 bg-[#222] text-white rounded-[23px] border'
-          placeholder='Enter your transaction ID here'
-        />
-      </div>
-      {errorMessage && <p className='text-red-500 mt-2'>{errorMessage}</p>}
-
-      {isFetchingData && (
-        <p className='text-white mt-2'>Submitting data, please wait...</p>
-      )}
-
-      <div className='w-full flex justify-between pt-4'>
-        <Button onClick={onPrevious}>Previous</Button>
-        <Button
-          onClick={handleSubmit}
-          disabled={!isSubmitEnabled || isFetchingData}
-          className={
-            !isSubmitEnabled || isFetchingData
-              ? 'opacity-50 cursor-not-allowed'
-              : ''
-          }
-        >
-          Next
-        </Button>
-      </div>
     </div>
   );
 };
 
-export default StepSix;
-
-function getStepsData(
-  storageLayer: (typeof utils.Platforms)[keyof typeof utils.Platforms],
+function getUploadInstructions(
+  storageLayer: (typeof utils.StorageLayerPlatformEncoding)[keyof typeof utils.StorageLayerPlatformEncoding],
   onDownload: () => void
 ) {
   switch (storageLayer) {
@@ -132,24 +137,19 @@ function getStepsData(
               and create an account.
             </>
           ),
-          image: SignUpImage,
+          image: ArweaveStep1Image,
         },
         {
-          text: (
-            <>
-              2. After you sign up, sign in. You will see the following page,
-              choose “NFT assets / public archives” and click “Setup vault”.
-            </>
-          ),
-          image: SetUpVaultImage,
+          text: '2. After you sign up, sign in. You will see the following page, choose “NFT assets / public archives” and click “Setup vault”.',
+          image: ArweaveStep2Image,
         },
         {
           text: '3. Give it a title and click “Create vault”.',
-          image: CreateVaultImage,
+          image: ArweaveStep3Image,
         },
         {
           text: '4. Click “Upload a file”.',
-          image: UploadFileImage,
+          image: ArweaveStep4Image,
         },
         {
           text: (
@@ -169,27 +169,78 @@ function getStepsData(
               </div>
             </>
           ),
-          image: DownloadFileImage,
+          image: ArweaveStep5Image,
         },
         {
           text: '6. Click on the file you uploaded to see its content.',
-          image: FileContentImage,
+          image: ArweaveStep6Image,
         },
         {
-          text: (
-            <>
-              7. Click on “info” button on the right to see the file info. Copy
-              the URL starting with “https://arweave.net” and paste it into the
-              field below.
-            </>
-          ),
-          image: CopyFromFileImage,
+          text: '7. Click on “info” button on the right to see the file info. Copy the URL starting with “https://arweave.net” and paste it into the input above',
+          image: ArweaveStep7Image,
         },
       ];
     case 'P':
       return [];
     case 'F':
-      return [];
+      return [
+        {
+          text: (
+            <>
+              1. Go to
+              <Link.default
+                className='text-blue-400'
+                href={'https://console.storacha.network/'}
+              >
+                {' '}
+                https://console.storacha.network/{' '}
+              </Link.default>
+              and create an account.
+            </>
+          ),
+          image: FilecoinStep1Image,
+        },
+        {
+          text: '2. Subscribe to free plan and create a space.',
+          image: FilecoinStep2Image,
+        },
+        {
+          text: '3. You’ll see the following page. Click on the space you created then “Upload a file”.',
+          image: FilecoinStep3Image,
+        },
+        {
+          text: (
+            <>
+              <div>
+                4.{' '}
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onDownload();
+                  }}
+                  className='hover:text-white/70 underline'
+                >
+                  Download
+                </button>{' '}
+                the file here and upload it to the website.
+              </div>
+            </>
+          ),
+          image: FilecoinStep4Image,
+        },
+        {
+          text: '5. Uncheck “Wrap in directory” checkbox. Then click “Start Upload”.',
+          image: FilecoinStep5Image,
+        },
+        {
+          text: '6. Wait for some time for it to be uploaded. Then, click the logo on top left and select the space you created.',
+          image: FilecoinStep6Image,
+        },
+        {
+          text: '7. Copy the Root CID of your data and paste it in the above input.',
+          image: FilecoinStep7Image,
+        },
+      ];
     default:
       return [];
   }

@@ -1,12 +1,10 @@
 'use client';
 
-import { Dispatch, SetStateAction, createContext, useState, useContext, useEffect, PropsWithChildren } from 'react';
+import { createContext, useState, useEffect, PropsWithChildren } from 'react';
 import { Buffer } from 'buffer';
 import { initialize as initAvailAPI, ApiPromise } from 'avail-js-sdk';
 import { KeypairType, } from '@polkadot/util-crypto/types';
 import { DispatchError } from '@polkadot/types/interfaces';
-
-import { ToastContext } from '@/contexts/ToastContext.jsx';
 
 type Account = {
   source: string;
@@ -21,60 +19,43 @@ type Account = {
 
 export interface SubWalletContextInterface {
   accounts: Account[];
-  setAccounts: Dispatch<
-    SetStateAction<SubWalletContextInterface['accounts']>
-  >;
-  selectedAccount: Account | null;
-  setSelectedAccount: Dispatch<
-    SetStateAction<SubWalletContextInterface['selectedAccount']>
-  >;
+  subWalletAddress: string;
   api: ApiPromise | null;
-  setApi: Dispatch<
-    SetStateAction<SubWalletContextInterface['api']>
-  >;
   isSubmitting: boolean;
-  setIsSubmitting: Dispatch<
-    SetStateAction<SubWalletContextInterface['isSubmitting']>
-  >;
-  generatedAppId: string;
-  setGeneratedAppId: Dispatch<
-    SetStateAction<SubWalletContextInterface['generatedAppId']>
-  >;
-  connectWallet: () => Promise<void>;
+  generatedAppId: number;
+  connectSubWallet: () => Promise<boolean>;
   selectAccount: (account: Account) => Promise<void>;
-  disconnectWallet: () => void;
+  disconnectSubWallet: () => void;
   sendTransactionSubwallet: (zkProofData: string) => Promise<boolean>;
-  createAppId: () => Promise<any>;
+  createAppId: () => Promise<{
+    id: number,
+    owner: string,
+    name: string,
+    appName: string,
+  }>;
 };
 
 export const SubwalletContext = createContext<SubWalletContextInterface>({
   accounts: [],
-  setAccounts: () => {},
-  selectedAccount: null,
-  setSelectedAccount: () => {},
+  subWalletAddress: '',
   api: null,
-  setApi: () => {},
   isSubmitting: false,
-  setIsSubmitting: () => {},
-  generatedAppId: '',
-  setGeneratedAppId: () => {},
-  connectWallet: async () => {},
+  generatedAppId: 0,
+  connectSubWallet: async () => false,
   selectAccount: async () => {},
-  disconnectWallet: () => {},
+  disconnectSubWallet: () => {},
   sendTransactionSubwallet: async () => false,
-  createAppId: async () => {}
+  createAppId: async () => {return { id: 0, owner: '', name: '', appName: ''}}
 });
 
 export const SubwalletProvider = ({
   children
 }: PropsWithChildren<{}>) => {
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+  const [subWalletAccount, setSubWalletAccount] = useState<Account | null>(null);
   const [api, setApi] = useState<ApiPromise | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [generatedAppId, setGeneratedAppId] = useState<string>('');
-
-  const { showToast } = useContext(ToastContext);
+  const [generatedAppId, setGeneratedAppId] = useState<number>(0);
 
   useEffect(() => {
     const initializeApi = async (): Promise<void> => {
@@ -97,18 +78,15 @@ export const SubwalletProvider = ({
     };
   }, []);
 
-  const connectWallet = async () => {
+  const connectSubWallet = async (): Promise<boolean> => {
     try {
       const { web3Enable, web3Accounts } = await import(
         '@polkadot/extension-dapp'
       );
       const extensions = await web3Enable('Your App Name');
 
-      if (extensions.length === 0) {
-        console.warn('No extensions installed.');
-        showToast('No extensions installed.', 'error');
-        return;
-      }
+      if (extensions.length === 0)
+        throw new Error('No extensions installed.');
 
       const injectedAccounts = await web3Accounts();
       const accountsWithSource = injectedAccounts.map((account) => ({
@@ -119,18 +97,17 @@ export const SubwalletProvider = ({
       setAccounts(accountsWithSource);
 
       if (accountsWithSource.length > 0) {
-        setSelectedAccount(accountsWithSource[0]);
+        setSubWalletAccount(accountsWithSource[0]);
       }
 
-      showToast('Subwallet connected.', 'success');
+      return true;
     } catch (error) {
-      console.error('Failed to connect wallet:', error);
-      showToast('Failed to connect wallet.', 'error');
+      throw new Error('Failed to connect wallet.');
     }
   };
 
-  const selectAccount = async (account: Account) => {
-    setSelectedAccount(account);
+  const selectAccount = async (account: Account): Promise<void> => {
+    setSubWalletAccount(account);
 
     if (api) {
       try {
@@ -142,32 +119,26 @@ export const SubwalletProvider = ({
           const metadata = getInjectorMetadata(api, signedExtensions, types);
           await injector.metadata.provide(metadata as any);
         }
-
-        showToast('Account selected.', 'success');
       } catch (error) {
-        console.error('Failed to select account:', error);
-        showToast('Failed to select account.', 'error');
+        throw new Error('Failed to select account.');
       }
     }
   };
 
-  const disconnectWallet = () => {
+  const disconnectSubWallet = () => {
     setAccounts([]);
-    setSelectedAccount(null);
-    showToast('Wallet disconnected.', 'success');
+    setSubWalletAccount(null);
   };
 
-  const sendTransactionSubwallet = async (zkProofData: string) => {
-    if (!api || !selectedAccount) {
-      showToast('Please connect a wallet first.', 'error');
-      return false;
-    }
+  const sendTransactionSubwallet = async (zkProofData: string): Promise<boolean> => {
+    if (!api || !subWalletAccount)
+      throw new Error ('Please connect a wallet first.');
 
     try {
       setIsSubmitting(true);
 
       const { web3FromSource } = await import('@polkadot/extension-dapp');
-      const injector = await web3FromSource(selectedAccount.source);
+      const injector = await web3FromSource(subWalletAccount.source);
       api.setSigner(injector.signer as any);
 
       const encodedData = Buffer.from(JSON.stringify(zkProofData)).toString(
@@ -179,18 +150,16 @@ export const SubwalletProvider = ({
         let alreadyHandled = false;
 
         tx.signAndSend(
-          selectedAccount.address,
+          subWalletAccount.address,
           { signer: injector.signer as any },
           ({ status, events, dispatchError }) => {
             if (alreadyHandled) return;
 
             if (dispatchError) {
-              handleDispatchError(dispatchError as any);
               setIsSubmitting(false);
               alreadyHandled = true;
-              resolve(false);
-              return;
-            }
+              throw new Error(formatDispatchError(dispatchError as any));
+            };
 
             if (status.isFinalized) {
               const successEvent = events.find(
@@ -200,11 +169,6 @@ export const SubwalletProvider = ({
               );
 
               if (successEvent) {
-                console.log(
-                  'Data submitted:',
-                  successEvent.event.data.toHuman()
-                );
-                showToast('Transaction successful.', 'success');
                 setIsSubmitting(false);
                 alreadyHandled = true;
                 resolve(true);
@@ -213,10 +177,9 @@ export const SubwalletProvider = ({
                 alreadyHandled = true;
                 resolve(false);
               }
-            }
+            };
           }
         ).catch((error) => {
-          console.error('Transaction error:', error);
           setIsSubmitting(false);
           resolve(false);
         });
@@ -224,18 +187,19 @@ export const SubwalletProvider = ({
 
       return result;
     } catch (error) {
-      console.error('Error sending transaction:', error);
-      showToast('Error sending transaction.', 'error');
       setIsSubmitting(false);
-      return false;
+      throw new Error('Error sending transaction.');
     }
   };
 
-  const createAppId = async () => {
-    if (!api || !selectedAccount) {
-      showToast('Please connect your wallet and select an account.', 'error');
-      return null;
-    }
+  const createAppId = async (): Promise<{
+    id: number,
+    owner: string,
+    name: string,
+    appName: string,
+  }> => {
+    if (!api || !subWalletAccount)
+      throw new Error('Please connect your wallet and select an account.');
 
     const randomNumber = Math.floor(100000 + Math.random() * 900000);
     const appName = `zkVot - ${randomNumber}`;
@@ -245,20 +209,19 @@ export const SubwalletProvider = ({
     return new Promise(async (resolve, reject) => {
       try {
         const { web3FromSource } = await import('@polkadot/extension-dapp');
-        const injector = await web3FromSource(selectedAccount.source);
+        const injector = await web3FromSource(subWalletAccount.source);
 
         const unsub = await api.tx.dataAvailability
           .createApplicationKey(appName)
           .signAndSend(
-            selectedAccount.address,
+            subWalletAccount.address,
             { signer: injector.signer as any },
             ({ status, events, dispatchError }) => {
               if (status.isInBlock || status.isFinalized) {
                 if (dispatchError) {
-                  handleDispatchError(dispatchError as any);
                   setIsSubmitting(false);
                   unsub();
-                  reject(new Error('Transaction failed'));
+                  reject(new Error(formatDispatchError(dispatchError as any)));
                 } else {
                   events.forEach(({ event }) => {
                     if (
@@ -267,7 +230,7 @@ export const SubwalletProvider = ({
                     ) {
                       console.log('Event data:', event.data);
 
-                      const appId = event.data[0].toString();
+                      const appId = Number(event.data[0].toString());
                       const owner = event.data[1].toString();
                       const keyName = event.data[2].toString();
 
@@ -279,10 +242,6 @@ export const SubwalletProvider = ({
                       };
 
                       setGeneratedAppId(appData.id);
-                      showToast(
-                        'Application Key created successfully!',
-                        'success'
-                      );
 
                       setIsSubmitting(false);
                       unsub();
@@ -294,11 +253,6 @@ export const SubwalletProvider = ({
             }
           );
       } catch (error) {
-        console.error('Error creating Application Key:', error);
-        showToast(
-          'An error occurred while creating the Application Key.',
-          'error'
-        );
         setIsSubmitting(false);
         reject(error);
       }
@@ -324,8 +278,8 @@ export const SubwalletProvider = ({
     };
   };
 
-  const handleDispatchError = (dispatchError: DispatchError) => {
-    if (!api) return;
+  const formatDispatchError = (dispatchError: DispatchError): string => {
+    if (!api) return 'Transaction failed: Unknown error.';
 
     if (dispatchError.isModule) {
       const decoded = api.registry.findMetaError(dispatchError.asModule);
@@ -342,32 +296,25 @@ export const SubwalletProvider = ({
       };
 
       const userMessage = errorMessages[name as keyof typeof errorMessages] || `${section}.${name}: ${docs.join(' ')}`;
-      showToast(`Transaction failed: ${userMessage}`, 'error');
-      console.error(`Dispatch Error: ${section}.${name}: ${docs.join(' ')}`);
+      return `Transaction failed: ${userMessage}`;
     } else {
       const errorString = dispatchError.toString();
-      console.error('Dispatch Error:', errorString);
-      showToast(`Transaction failed: ${errorString}`, 'error');
+      return `Transaction failed: ${errorString}`;
     }
   };
 
   return (
     <SubwalletContext.Provider value={{
       accounts,
-      setAccounts,
-      selectedAccount,
-      setSelectedAccount,
+      subWalletAddress: subWalletAccount?.address || 'string',
       api,
-      setApi,
       isSubmitting,
-      setIsSubmitting,
       generatedAppId,
-      setGeneratedAppId,
-      connectWallet,
+      connectSubWallet,
       selectAccount,
-      disconnectWallet,
+      disconnectSubWallet,
       sendTransactionSubwallet,
-      createAppId,
+      createAppId
     }}>
       {children}
     </SubwalletContext.Provider>

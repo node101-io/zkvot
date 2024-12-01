@@ -1,4 +1,4 @@
-export default (color?: string) => {
+export default ({ color }: { color?: string }) => {
   return (
     <svg
       width='12'

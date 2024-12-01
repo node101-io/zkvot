@@ -1,15 +1,14 @@
-import React from 'react';
 import Image from 'next/image.js';
 import { motion } from 'framer-motion';
 
-import Logo1 from '@/public/PoweredBy/1.svg';
-import Logo2 from '@/public/PoweredBy/2.svg';
-import Logo3 from '@/public/PoweredBy/3.svg';
-import Logo4 from '@/public/PoweredBy/4.svg';
-import Logo5 from '@/public/PoweredBy/5.svg';
+import ArweaveLogo from '@/public/general/blockchain-logos/arweave.png';
+import AvailLogo from '@/public/general/blockchain-logos/avail.png';
+import CelestiaLogo from '@/public/general/blockchain-logos/celestia.png';
+import FilecoinLogo from '@/public/general/blockchain-logos/filecoin.png';
+import MinaLogo from '@/public/general/blockchain-logos/mina.png';
 
 const InitialLoadingPage = ({ isExiting }: { isExiting: boolean }) => {
-  const logos = [Logo1, Logo2, Logo3, Logo4, Logo5];
+  const logos = [ArweaveLogo, CelestiaLogo, MinaLogo, AvailLogo, FilecoinLogo];
 
   return (
     <motion.div

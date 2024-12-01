@@ -1,4 +1,3 @@
-import React from 'react';
 import Image from 'next/image.js';
 import { IoClose } from 'react-icons/io5';
 
@@ -30,18 +29,18 @@ const WalletSelectionModal = ({
             availableWallets.length <= 2 ? 'grid-cols-1' : 'grid-cols-2'
           } justify-center`}
         >
-          {availableWallets.includes('Mina') && (
+          {availableWallets.includes('Auro') && (
             <button
               className='w-[216px] h-[54px] flex justify-start items-center rounded-3xl bg-[#222222] hover:bg-[#333333] text-white hover:text-[#91C1F2] gap-[23px] px-3 transition-colors duration-300'
-              onClick={() => onSelectWallet('Mina')}
+              onClick={() => onSelectWallet('Auro')}
             >
               <Image.default
                 src={AuroIcon}
-                alt='Mina Wallet'
+                alt='Auro Wallet'
                 width={24}
                 height={24}
               />
-              Mina Wallet
+              Auro Wallet
             </button>
           )}
           {/* {availableWallets.includes('Metamask') && (

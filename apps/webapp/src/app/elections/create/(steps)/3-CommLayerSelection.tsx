@@ -1,93 +1,79 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useContext, useEffect } from 'react';
 
 import { types } from 'zkvot-core';
 
 import Button from '@/app/(partials)/Button.jsx';
 
-import AvailLogo from '@/public/DaLogos/Avail.jsx';
-import CelestiaLogo from '@/public/blockchain-logos/Celestia.jsx';
+import { ToastContext } from '@/contexts/ToastContext.jsx';
 
-const CreationData = {
-  CommunicationChoicesName: ['Avail', 'Celestia'],
-  CommunicationChoicesDescription: [
-    'Avail is a decentralized data availability layer.',
-    'Celestia is a modular consensus and data network.',
-  ],
-  CommunicationChoicesFee: [0.1, 0.2],
-  CommunicationChoicesCurrency: ['ETH', 'ETH'],
-};
+import { fetchAvailBlockHeightFromBackend, fetchCelestiaBlockInfoFromBackend } from '@/utils/backend.js';
+import { CommunicationLayerDetails } from '@/utils/constants.jsx';
+import generateRandomCelestiaNamespace from '@/utils/generateRandomCelestiaNamespace.js';
 
-export default ({ onPrevious, onNext, loading }: {
+export default ({ onPrevious, onNext, initialData, loading }: {
   onPrevious: () => void;
   onNext: (data: types.ElectionStaticData) => void;
+  initialData: types.ElectionStaticData;
   loading: boolean;
 }) => {
-  const communicationLogos = {
-    Avail: <AvailLogo className='w-12 h-12' />,
-    Celestia: <CelestiaLogo className='w-12 h-12' />,
-  };
+  const [selectedCommunicationLayer, setSelectedCommunicationLayer] = useState<'avail' | 'celestia' | null>(null);
 
-  const [selectedCommunicationLayer, setSelectedCommunicationLayer] = useState<number | null>(null);
+  const { showToast } = useContext(ToastContext);
 
-  useEffect(() => {
-    setSelectedCommunicationLayer(null);
-  }, []);
+  useEffect(() => setSelectedCommunicationLayer(null), []);
 
-  const handleCommunicationSelection = (index: number) => setSelectedCommunicationLayer(index);
+  const handleCommunicationSelection = (layer: 'avail' | 'celestia') => setSelectedCommunicationLayer(layer);
 
-  const handleSubmit = () => {
-    if (selectedCommunicationLayer === null) return;
+  const handleNext = async () => {
+    if (selectedCommunicationLayer == null) return;
 
-    const selectedLayer =
-      CreationData.CommunicationChoicesName[selectedCommunicationLayer];
-    let communicationLayer = {
-      type: selectedName.toLowerCase(),
-    };
+    showToast('Fetching communication layer data...', 'success');
 
-    if (selectedLayer.type === 'celestia') {
-      const updatedCommunicationLayer = {
-        ...selectedLayer,
-        namespace: generateRandomCelestiaNamespace(),
+    if (selectedCommunicationLayer == 'avail') {
+      let communicationLayer: types.AvailDaLayerInfo = {
+        name: selectedCommunicationLayer,
+        start_block_height: 0,
+        app_id: 0
       };
-      setElectionData((prevData) => ({
-        ...prevData,
-        communication_layers: [updatedCommunicationLayer],
-      }));
 
-      const data = await fetchCelestiaBlockInfo();
-      setBlockHeight(data.blockHeight);
-      setBlockHash(data.blockHash);
-      setElectionData((prevData) => {
-        const updatedData = { ...prevData };
-        if (updatedData.communication_layers[0]) {
-          updatedData.communication_layers[0].block_height =
-            data.blockHeight;
-          updatedData.communication_layers[0].block_hash = data.blockHash;
-        }
-        return updatedData;
-      });
-    } else if (selectedLayer.type === 'avail') {
-      const height = await fetchAvailBlockHeight();
-      setBlockHeight(height);
-      setElectionData((prevData) => ({
-        ...prevData,
-        communication_layers: [
-          {
-            ...selectedLayer,
-            block_height: height,
-          },
-        ],
-      }));
-    } else {
-      setElectionData((prevData) => ({
-        ...prevData,
-        communication_layers: communicationLayersData,
-      }));
+      try {
+        communicationLayer.start_block_height = await fetchAvailBlockHeightFromBackend();
+        onNext({
+          ...initialData,
+          communication_layers: [communicationLayer]
+        });
+      } catch (_) {
+        onNext({
+          ...initialData,
+          communication_layers: [communicationLayer]
+        });
+      }
+    } else if (selectedCommunicationLayer == 'celestia') {
+      const communicationLayer: types.CelestiaDaLayerInfo = {
+        name: selectedCommunicationLayer,
+        start_block_height: 0,
+        namespace: generateRandomCelestiaNamespace(),
+        start_block_hash: '',
+      };
+
+      try {
+        const blockInfo = await fetchCelestiaBlockInfoFromBackend();
+        communicationLayer.start_block_height = blockInfo.blockHeight;
+        communicationLayer.start_block_hash = blockInfo.blockHash;
+
+        onNext({
+          ...initialData,
+          communication_layers: [communicationLayer]
+        });
+      } catch (_) {
+        onNext({
+          ...initialData,
+          communication_layers: [communicationLayer]
+        });
+      };
     }
-
-    onNext([communicationLayer]);
   };
 
   return (
@@ -95,32 +81,32 @@ export default ({ onPrevious, onNext, loading }: {
       <div className='w-full space-y-6 p'>
         <h2 className='text-white text-2xl'>Select Communication Layer</h2>
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 w-full'>
-          {CreationData.CommunicationChoicesName.map((layer, index) => (
+          {Object.keys(CommunicationLayerDetails).map((layer, index) => (
             <div
               key={index}
               className={`p-4 bg-[#222222] rounded-2xl flex items-center transition duration-200 cursor-pointer ${
-                selectedCommunicationLayer === index
+                layer === selectedCommunicationLayer
                   ? 'border-[1px] border-primary shadow-lg'
                   : 'hover:bg-[#333333]'
               }`}
-              onClick={() => handleCommunicationSelection(index)}
+              onClick={() => handleCommunicationSelection(layer as 'avail' | 'celestia')}
             >
               <div className='flex-shrink-0 mr-4'>
-                {communicationLogos[layer as keyof typeof communicationLogos] || (
+                {CommunicationLayerDetails[layer as keyof typeof CommunicationLayerDetails].logo || (
                   <div className='w-12 h-12 bg-gray-500 rounded-full' />
                 )}
               </div>
               <div className='flex flex-col h-full justify-between'>
                 <h3 className='text-white text-[24px] mb-2'>{layer}</h3>
                 <p className='text-[16px] mb-2'>
-                  {CreationData.CommunicationChoicesDescription[index]}
+                  {CommunicationLayerDetails[layer as keyof typeof CommunicationLayerDetails].description}
                 </p>
-                <div className='flex items-center justify-between'>
+                {/* <div className='flex items-center justify-between'>
                   <span className='text-[16px]'>
                     Fee: {CreationData.CommunicationChoicesFee[index]}{' '}
                     {CreationData.CommunicationChoicesCurrency[index]}
                   </span>
-                </div>
+                </div> */}
               </div>
             </div>
           ))}
@@ -129,7 +115,7 @@ export default ({ onPrevious, onNext, loading }: {
       <div className='w-full flex justify-between pt-4'>
         <Button onClick={onPrevious}>Previous</Button>
         <Button
-          onClick={handleSubmit}
+          onClick={handleNext}
           disabled={selectedCommunicationLayer === null}
           className={
             selectedCommunicationLayer === null

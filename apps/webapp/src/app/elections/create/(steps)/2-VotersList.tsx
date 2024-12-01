@@ -1,16 +1,15 @@
 'use client';
 
 import { useState, KeyboardEvent } from 'react';
-import Image from 'next/image.js';
 import ChevronDownIcon from '@heroicons/react/solid/ChevronDownIcon.js';
 
 import { types } from 'zkvot-core';
 
 import Button from '@/app/(partials)/Button.jsx';
 
-import PlusIcon from '@/public/CreateElection/PlusIcon.svg';
-import DeleteIcon from '@/public/CreateElection/DeleteIcon.svg';
-import EditIcon from '@/public/CreateElection/EditIcon.svg';
+import DeleteIcon from '@/public/general/icons/delete.jsx';
+import EditIcon from '@/public/general/icons/edit.jsx';
+import PlusIcon from '@/public/general/icons/plus.jsx';
 
 const VoterItem = ({
   index,
@@ -178,12 +177,7 @@ const VoterItem = ({
             onClick={cancelEdit}
             className='rounded-full flex items-center justify-center mx-1'
           >
-            <Image.default
-              src={DeleteIcon}
-              alt='Delete'
-              width={20}
-              height={20}
-            />
+            <DeleteIcon size={20}/>
           </button>
         </>
       ) : (
@@ -223,23 +217,13 @@ const VoterItem = ({
             onClick={() => setIsEditing(true)}
             className='rounded-full flex items-center justify-center mx-1'
           >
-            <Image.default
-              src={EditIcon}
-              alt='Edit'
-              width={24}
-              height={24}
-            />
+            <EditIcon />
           </button>
           <button
             onClick={deleteVoter}
             className='rounded-full flex items-center justify-center mx-1'
           >
-            <Image.default
-              src={DeleteIcon}
-              alt='Delete'
-              width={20}
-              height={20}
-            />
+            <DeleteIcon size={20}/>
           </button>
         </>
       )}
@@ -460,12 +444,7 @@ const VoterInput = ({
         onClick={addVoter}
         className='w-12 h-12 bg-[#222] text-white rounded-[23px] border border-[#1E1E1E] flex items-center justify-center'
       >
-        <Image.default
-          width={20}
-          height={20}
-          src={PlusIcon}
-          alt='Plus Icon'
-        />
+        <PlusIcon />
       </button>
     </div>
   );
