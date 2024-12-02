@@ -1,4 +1,4 @@
-import { Field, PublicKey, PrivateKey, verify } from "o1js";
+import { Field, PublicKey, verify } from "o1js";
 import {
   AggregateProof,
   fieldToUInt32BigEndian,
@@ -16,7 +16,7 @@ dotenv.config();
 
 const addRandom = false;
 
-export const runAggregate = async (electionId: PublicKey) => {
+export const runAggregate = async (electionPubKey: PublicKey) => {
   console.time("Compiling vote program");
   let { verificationKey } = await Vote.compile();
   console.timeEnd("Compiling vote program");
@@ -30,14 +30,6 @@ export const runAggregate = async (electionId: PublicKey) => {
   const voteProofsJson = await fs.readFile("voteProofs.json");
   const voteProofs = JSON.parse(voteProofsJson.toString());
   console.log("Vote proofs read, there are", voteProofs.length, "proofs found");
-
-  // const voteProofsRandomJson = await fs.readFile("voteProofsRandom.json");
-  // const voteProofsRandom = JSON.parse(voteProofsRandomJson.toString());
-  // console.log(
-  //   "Random vote proofs read, there are",
-  //   voteProofsRandom.length,
-  //   "proofs found"
-  // );
 
   console.log("Reading voters root");
   const votersRootJson = await fs.readFile("votersRoot.json");
@@ -77,30 +69,6 @@ export const runAggregate = async (electionId: PublicKey) => {
     "Expected results:",
     expectedResults.map((x, i) => [i, x])
   );
-
-  // if (addRandom) {
-  //   console.log("Adding random votes");
-  //   for (let i = 0; i < voteProofsRandom.length; i++) {
-  //     const voteProof = await VoteProof.fromJSON(voteProofsRandom[i]);
-
-  //     const nullifier = voteProof.publicOutput.nullifier.toBigInt();
-
-  //     const leaf = new LeafNode(nullifier, voteProof);
-
-  //     const ok = await verify(leaf.voteProof, verificationKey);
-
-  //     if (ok) {
-  //       leaves.push(leaf);
-  //       console.log(
-  //         "Vote proof is valid, vote for:",
-  //         leaf.voteProof.publicOutput.vote.toString()
-  //       );
-  //     } else {
-  //       console.log("Vote proof is invalid skipping");
-  //       continue;
-  //     }
-  //   }
-  // }
 
   const segmentTree = SegmentTree.build(leaves);
   console.log("Votes tree built");
@@ -142,7 +110,7 @@ export const runAggregate = async (electionId: PublicKey) => {
     const rightChild = node.rightChild;
     const includedVotesHash = SegmentTree.includedVotesHash(node.includedVotes);
 
-    let aggregateProof;
+    let aggregateProof: AggregateProof | undefined;
 
     if (segmentTree.cachedAggregatorProofs.has(includedVotesHash)) {
       console.log("Cache hit!");
@@ -170,14 +138,16 @@ export const runAggregate = async (electionId: PublicKey) => {
     }
     if (leftChild && rightChild) {
       if (leftChild instanceof LeafNode && rightChild instanceof LeafNode) {
-        aggregateProof = await RangeAggregationProgram.base_two(
-          {
-            votersRoot: votersRoot,
-            electionId,
-          },
-          leftChild.voteProof,
-          rightChild.voteProof
-        );
+        aggregateProof = (
+          await RangeAggregationProgram.base_two(
+            {
+              votersRoot: votersRoot,
+              electionPubKey,
+            },
+            leftChild.voteProof,
+            rightChild.voteProof
+          )
+        ).proof;
       } else if (
         leftChild instanceof LeafNode &&
         rightChild instanceof InnerNode &&
@@ -187,14 +157,16 @@ export const runAggregate = async (electionId: PublicKey) => {
           SegmentTree.includedVotesHash(rightChild.includedVotes) as bigint
         );
 
-        aggregateProof = await RangeAggregationProgram.append_left(
-          {
-            votersRoot: votersRoot,
-            electionId,
-          },
-          rightChildAggregatorProof as AggregateProof,
-          leftChild.voteProof
-        );
+        aggregateProof = (
+          await RangeAggregationProgram.append_left(
+            {
+              votersRoot: votersRoot,
+              electionPubKey,
+            },
+            rightChildAggregatorProof as AggregateProof,
+            leftChild.voteProof
+          )
+        ).proof;
       } else if (
         leftChild instanceof InnerNode &&
         rightChild instanceof LeafNode &&
@@ -204,14 +176,16 @@ export const runAggregate = async (electionId: PublicKey) => {
           SegmentTree.includedVotesHash(leftChild.includedVotes) as bigint
         );
 
-        aggregateProof = await RangeAggregationProgram.append_right(
-          {
-            votersRoot: votersRoot,
-            electionId,
-          },
-          leftChildAggregatorProof as AggregateProof,
-          rightChild.voteProof
-        );
+        aggregateProof = (
+          await RangeAggregationProgram.append_right(
+            {
+              votersRoot: votersRoot,
+              electionPubKey,
+            },
+            leftChildAggregatorProof as AggregateProof,
+            rightChild.voteProof
+          )
+        ).proof;
       } else if (
         leftChild instanceof InnerNode &&
         rightChild instanceof InnerNode
@@ -223,48 +197,54 @@ export const runAggregate = async (electionId: PublicKey) => {
           SegmentTree.includedVotesHash(rightChild.includedVotes) as bigint
         );
 
-        aggregateProof = await RangeAggregationProgram.merge(
-          {
-            votersRoot: votersRoot,
-            electionId,
-          },
-          leftChildAggregatorProof as AggregateProof,
-          rightChildAggregatorProof as AggregateProof
-        );
+        aggregateProof = (
+          await RangeAggregationProgram.merge(
+            {
+              votersRoot: votersRoot,
+              electionPubKey,
+            },
+            leftChildAggregatorProof as AggregateProof,
+            rightChildAggregatorProof as AggregateProof
+          )
+        ).proof;
       }
     } else if (leftChild) {
       if (leftChild instanceof InnerNode) {
         aggregateProof = segmentTree.getCachedAggregatorProof(
           SegmentTree.includedVotesHash(leftChild.includedVotes) as bigint
-        );
+        ) as AggregateProof;
       } else if (
         leftChild instanceof LeafNode &&
         leftChild.voteProof instanceof VoteProof
       ) {
-        aggregateProof = await RangeAggregationProgram.base_one(
-          {
-            votersRoot: votersRoot,
-            electionId,
-          },
-          leftChild.voteProof
-        );
+        aggregateProof = (
+          await RangeAggregationProgram.base_one(
+            {
+              votersRoot: votersRoot,
+              electionPubKey,
+            },
+            leftChild.voteProof
+          )
+        ).proof;
       }
     } else if (rightChild) {
       if (rightChild instanceof InnerNode) {
         aggregateProof = segmentTree.getCachedAggregatorProof(
           SegmentTree.includedVotesHash(rightChild.includedVotes) as bigint
-        );
+        ) as AggregateProof;
       } else if (
         rightChild instanceof LeafNode &&
         rightChild.voteProof instanceof VoteProof
       ) {
-        aggregateProof = await RangeAggregationProgram.base_one(
-          {
-            votersRoot: votersRoot,
-            electionId,
-          },
-          rightChild.voteProof
-        );
+        aggregateProof = (
+          await RangeAggregationProgram.base_one(
+            {
+              votersRoot: votersRoot,
+              electionPubKey,
+            },
+            rightChild.voteProof
+          )
+        ).proof;
       }
     }
 
@@ -274,7 +254,10 @@ export const runAggregate = async (electionId: PublicKey) => {
     );
 
     const includedVotesHashString = includedVotesHash.toString();
-    const proofJson = (aggregateProof as AggregateProof).toJSON();
+    if (!aggregateProof) {
+      throw new Error("Aggregate proof is undefined");
+    }
+    const proofJson = aggregateProof.toJSON();
     const proofString = JSON.stringify(proofJson);
 
     try {

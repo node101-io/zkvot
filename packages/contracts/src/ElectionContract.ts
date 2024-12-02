@@ -70,6 +70,7 @@ export class ElectionContract extends SmartContract {
     this.account.permissions.set({
       ...Permissions.default(),
       send: Permissions.proof(),
+      setPermissions: Permissions.impossible(),
       setVerificationKey:
         Permissions.VerificationKey.impossibleDuringCurrentVersion(),
     });
@@ -89,17 +90,14 @@ export class ElectionContract extends SmartContract {
     aggregateProof: AggregateProof,
     lastAggregatorPubKey: PublicKey
   ) {
-    // this.account.provedState.requireEquals(Bool(true));
-
     aggregateProof.verify();
 
-    aggregateProof.publicInput.electionId.assertEquals(this.address);
+    aggregateProof.publicInput.electionPubKey.assertEquals(this.address);
     aggregateProof.publicInput.votersRoot.assertEquals(Field.from(VOTERS_ROOT));
 
-    // this.network.globalSlotSinceGenesis.requireBetween(
-    //   UInt32.from(ELECTION_START_BLOCK),
-    //   UInt32.from(ELECTION_FINALIZE_BLOCK)
-    // );
+    const currentBlock = this.network.blockchainLength.getAndRequireEquals();
+    currentBlock.assertGreaterThan(UInt32.from(ELECTION_START_BLOCK));
+    currentBlock.assertLessThan(UInt32.from(ELECTION_FINALIZE_BLOCK));
 
     let currentMaximumCountedVotes =
       this.maximumCountedVotes.getAndRequireEquals();
@@ -137,11 +135,9 @@ export class ElectionContract extends SmartContract {
   @method.returns(VoteOptions)
   async getFinalizedResults() {
     this.account.provedState.requireEquals(Bool(true));
-    // this.network.blockchainLength.getAndRequireEquals();
-    // this.network.blockchainLength.requireBetween(
-    //   UInt32.from(ELECTION_FINALIZE_BLOCK),
-    //   UInt32.MAXINT()
-    // );
+    const currentBlock = this.network.blockchainLength.getAndRequireEquals();
+    currentBlock.assertGreaterThan(UInt32.from(ELECTION_FINALIZE_BLOCK));
+
     return this.voteOptions.getAndRequireEquals();
   }
 
@@ -152,12 +148,8 @@ export class ElectionContract extends SmartContract {
     reedemerPubKey: PublicKey,
     amount: UInt64
   ) {
-    this.account.provedState.requireEquals(Bool(true));
-    // this.network.blockchainLength.getAndRequireEquals();
-    // this.network.blockchainLength.requireBetween(
-    //   UInt32.from(ELECTION_FINALIZE_BLOCK),
-    //   UInt32.MAXINT()
-    // );
+    const currentBlock = this.network.blockchainLength.getAndRequireEquals();
+    currentBlock.assertGreaterThan(UInt32.from(ELECTION_FINALIZE_BLOCK));
 
     const lastAggregatorPubKeyHash =
       this.lastAggregatorPubKeyHash.getAndRequireEquals();
