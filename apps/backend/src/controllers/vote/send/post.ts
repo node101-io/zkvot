@@ -6,10 +6,10 @@ export default (
   req: Request,
   res: Response
 ) => {
-  Vote.createAndSubmitVote(req.body, (err, result) => {
+  Vote.createAndSubmitVote(req.body, (err, vote) => {
     if (err)
       return res.json({ success: false, error: err });
 
-    return res.json({ success: true, result });
+    return res.json({ success: true, vote });
   });
 };

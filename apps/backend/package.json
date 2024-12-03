@@ -11,6 +11,7 @@
   "author": "node101",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.701.0",
     "@polkadot/api": "^14.2.2",
     "@polkadot/util": "^13.2.2",
     "avail-js-sdk": "^0.2.18",
@@ -21,7 +22,8 @@
     "mongoose": "^8.7.2",
     "o1js": "^2",
     "path": "^0.12.7",
-    "zkvot-contracts": "*"
+    "sharp": "^0.33.5",
+    "zkvot-core": "*"
   },
   "devDependencies": {
     "@repo/config": "*",

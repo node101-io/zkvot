@@ -17,7 +17,8 @@ const nextConfig = {
     }
     config.experiments = { ...config.experiments, topLevelAwait: true };
     config.resolve.extensionAlias = {
-      '.js': ['.ts', '.js']
+      '.js': ['.ts', '.js'],
+      '.jsx': ['.tsx', '.jsx']
     }
     return config;
   },

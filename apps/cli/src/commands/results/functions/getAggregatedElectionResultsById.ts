@@ -1,14 +1,16 @@
-import db from '../../../utils/db.js';
+import { JsonProof } from 'o1js';
 
-import { AggregatedElectionResult } from '../../../types/election.js';
-import { JsonProof, PublicKey } from 'o1js';
+import db from '../../../utils/db.js';
 
 export default (
   electionResultsSublevelIdentifier: string,
-  electionId: PublicKey,
+  electionId: string,
   callback: (
     err: Error | string | null,
-    aggregatedElectionResult?: AggregatedElectionResult
+    aggregatedElectionResult?: {
+      electionId: string,
+      result: JsonProof
+    }
   ) => void
 ) => {
   const electionResultsSublevel = db.sublevel(electionResultsSublevelIdentifier, { valueEncoding: 'json' });

@@ -1,7 +1,6 @@
 import os from 'os';
 
-import { AvailDaLayerInfo, CelestiaDaLayerInfo } from '../../../types/daLayers.js';
-import { Election } from '../../../types/election.js';
+import { types } from 'zkvot-core';
 
 import Avail from '../../../da-layers/avail/Avail.js';
 import Celestia from '../../../da-layers/celestia/Celestia.js';
@@ -29,10 +28,10 @@ const returnDockerInstallationUrlIfNotLinux = (
 };
 
 const installAvailLightNodeIfRequired = (
-  daLayerInfo: (AvailDaLayerInfo | CelestiaDaLayerInfo)[],
+  daLayerInfo: (types.AvailDaLayerInfo | types.CelestiaDaLayerInfo)[],
   callback: (err: string | null) => void
 ) => {
-  const availInfo: AvailDaLayerInfo | undefined = (daLayerInfo as AvailDaLayerInfo[]).find(daLayer => daLayer.name === 'avail');
+  const availInfo: types.AvailDaLayerInfo | undefined = (daLayerInfo as types.AvailDaLayerInfo[]).find(daLayer => daLayer.name === 'avail');
 
   if (!availInfo)
     return callback(null);
@@ -53,10 +52,10 @@ const installAvailLightNodeIfRequired = (
 };
 
 const installCelestialLightNodeIfRequired = (
-  daLayerInfo: (AvailDaLayerInfo | CelestiaDaLayerInfo)[],
+  daLayerInfo: (types.AvailDaLayerInfo | types.CelestiaDaLayerInfo)[],
   callback: (err: Error | string | null) => void
 ) => {
-  const celestiaInfo: CelestiaDaLayerInfo | undefined = (daLayerInfo as CelestiaDaLayerInfo[]).find(daLayer => daLayer.name === 'celestia');
+  const celestiaInfo: types.CelestiaDaLayerInfo | undefined = (daLayerInfo as types.CelestiaDaLayerInfo[]).find(daLayer => daLayer.name === 'celestia');
 
   if (!celestiaInfo)
     return callback(null);
@@ -77,7 +76,7 @@ const installCelestialLightNodeIfRequired = (
 };
 
 export default (
-  election: Election,
+  election: types.ElectionStaticData,
   callback: (err: Error | string | null) => void
 ) => {
   dockerChecker.isInstalled((err, isInstalled) => {
@@ -109,11 +108,11 @@ export default (
           logger.log('warn', 'Please start Docker.');
           return callback('docker_not_active');
         } else {
-          installAvailLightNodeIfRequired(election.da_layers, err => {
+          installAvailLightNodeIfRequired(election.communication_layers, err => {
             if (err)
               return callback(err);
 
-            installCelestialLightNodeIfRequired(election.da_layers, err => {
+            installCelestialLightNodeIfRequired(election.communication_layers, err => {
               if (err)
                 return callback(err);
 

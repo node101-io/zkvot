@@ -2,7 +2,9 @@
   "extends": "@repo/config/typescript/tsconfig.webapp.json",
   "compilerOptions": {
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./src/*"
+      ]
     },
   },
   "include": [

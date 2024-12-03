@@ -1,9 +1,11 @@
-import aggregateSavedVotes from "./functions/aggregateSavedVotes.js";
-import getAndSaveElectionDataByElectionIdIfNotExist from "./functions/getAndSaveElectionDataByElectionIdIfNotExist.js";
-import installRequiredLightNodeByElectionIdIfNotExists from "./functions/installRequiredLightNodeByElectionIdIfNotExists.js";
-import saveAllVotesFromBlockHeightToCurrentViaLightNode from "./functions/saveAllVotesFromBlockHeightToCurrentViaLightNode.js";
+import { types } from 'zkvot-core';
 
-import logger from "../../utils/logger.js";
+import aggregateSavedVotes from './functions/aggregateSavedVotes.js';
+import getAndSaveElectionDataByElectionIdIfNotExist from './functions/getAndSaveElectionDataByElectionIdIfNotExist.js';
+import installRequiredLightNodeByElectionIdIfNotExists from './functions/installRequiredLightNodeByElectionIdIfNotExists.js';
+import saveAllVotesFromBlockHeightToCurrentViaLightNode from './functions/saveAllVotesFromBlockHeightToCurrentViaLightNode.js';
+
+import logger from '../../utils/logger.js';
 
 const args = JSON.parse(process.argv[2]);
 
@@ -18,14 +20,15 @@ await new Promise((resolve) => setTimeout(resolve, 1000));
 
 const election = {
   mina_contract_id: 'B62qospDjUj43x2yMKiNehojWWRUsE1wpdUDVpfxH8V3n5Y1QgJKFfw',
-  end_block: 0,
+  start_date: new Date,
+  end_date: new Date,
   question: 'What is your favorite color?',
   options: ['Red', 'Green', 'Blue'],
   description: 'This is a test election.',
   image_url: 'https://www.google.com',
   image_raw: 'https://www.google.com',
   voters_list: [],
-  da_layers: [
+  communication_layers: [
     {
       name: 'celestia' as const,
       start_block_height: 2960050,
@@ -47,10 +50,10 @@ const election = {
 //   return logger.log('info', 'result');
 // });
 
-saveAllVotesFromBlockHeightToCurrentViaLightNode(election, (err: any) => {
-  if (err) return logger.log("error", err);
+saveAllVotesFromBlockHeightToCurrentViaLightNode(election.mina_contract_id, election as types.ElectionStaticData, (err: any) => {
+  if (err) return logger.log('error', err);
 
-  return logger.log("info", "result");
+  return logger.log('info', 'result');
 });
 
 // installRequiredLightNodeByElectionIdIfNotExists(election, err => {

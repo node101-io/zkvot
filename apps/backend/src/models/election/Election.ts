@@ -1,13 +1,12 @@
 import { model, Model, Schema } from 'mongoose';
 
-import { ElectionModel } from '../../types/election.js';
+import {
+  Election as ElectionProgram,
+  MerkleTree,
+  types,
+  utils
+} from 'zkvot-core';
 
-import convertStorageInfoToFields from './functions/convertStorageInfoToFields.js';
-import deployElection from './functions/deployElection.js';
-import fetchDataFromStorageLayer from './functions/fetchDataFromStorageLayer.js';
-import fetchElectionStateFromMina from './functions/fetchElectionStateFromMina.js';
-import generateMerkleRootFromVotersList from './functions/generateMerkleRootFromVotersList.js';
-import getStorageInfoFromFields from './functions/getStorageInfoFromFields.js';
 import uploadImageRaw from './functions/uploadImageRaw.js';
 
 const DEFAULT_QUERY_LIMIT = 100;
@@ -19,14 +18,14 @@ interface ElectionStatics {
     data: { mina_contract_id: string },
     callback: (
       error: string | null,
-      election?: ElectionModel
+      election?: types.ElectionBackendData
     ) => any
   ) => any;
   findElectionByContractId: (
     mina_contract_id: string,
     callback: (
       error: string | null,
-      election?: ElectionModel
+      election?: types.ElectionBackendData
     ) => any
   ) => any;
   findElectionsByFilter: (
@@ -35,10 +34,11 @@ interface ElectionStatics {
       text?: string;
       start_after?: Date;
       end_before?: Date;
+      is_ongoing?: boolean;
     },
     callback: (
       error: string | null,
-      elections?: ElectionModel[]
+      elections?: types.ElectionBackendData[]
     ) => any
   ) => any;
 };
@@ -157,7 +157,7 @@ ElectionSchema.statics.createElection = function (
   data: { mina_contract_id: string },
   callback: (
     error: string | null,
-    election?: ElectionModel
+    election?: types.ElectionBackendData
   ) => any
 ) {
   const Election = this;
@@ -167,60 +167,49 @@ ElectionSchema.statics.createElection = function (
   Election.findOne({
     mina_contract_id
   })
-  .then((election: ElectionModel) => {
+  .then((election: types.ElectionBackendData) => {
     if (election)
       return callback('duplicated_unique_field');
 
-    fetchElectionStateFromMina(mina_contract_id, (error, state) => {
+    ElectionProgram.fetchElectionState(mina_contract_id, (error, state) => {
       if (error)
         return callback(error);
       if (!state)
         return callback('bad_request');
 
-      getStorageInfoFromFields([
-        state.electionData.first,
-        state.electionData.last
-      ], (err, storageInfo) => {
-        if (err)
-          return callback(err);
-        if (!storageInfo)
+      const storageInfo = utils.decodeStorageLayerInfo(state.storageLayerInfoEncoding);
+
+      utils.fetchDataFromStorageLayer(storageInfo, (error, data) => {
+        if (error)
+          return callback('bad_request');
+        if (!data)
           return callback('bad_request');
 
-        const storage_layer_id = storageInfo.id;
-        const storage_layer_platform = storageInfo.platform;
+        const voters_merkle_root = MerkleTree.createFromStringArray(data.voters_list.map(voter => voter.public_key));
 
-        fetchDataFromStorageLayer(storage_layer_platform, storage_layer_id, (error, data) => {
+        uploadImageRaw(data.image_raw, (error, url) => {
           if (error)
-            return callback('bad_request');
-          if (!data)
-            return callback('bad_request');
+            return callback(error);
 
-          const voters_merkle_root = generateMerkleRootFromVotersList(data.voters_list);
+          const electionData = {
+            mina_contract_id,
+            storage_layer_id: storageInfo.id,
+            storage_layer_platform: storageInfo.platform,
+            image_url: url,
+            voters_merkle_root,
+            ...data
+          };
 
-          uploadImageRaw(data.image_raw, (error, url) => {
-            if (error)
-              return callback(error);
+          const election = new Election(electionData);
 
-            const electionData = {
-              mina_contract_id,
-              storage_layer_id,
-              storage_layer_platform,
-              image_url: url,
-              voters_merkle_root,
-              ...data
-            };
+          election.save((error: { code: number; }, election: any) => {
+            if (error) {
+              if (error.code == DUPLICATED_UNIQUE_FIELD_ERROR_CODE)
+                return callback('duplicated_unique_field');
+              return callback('database_error');
+            }
 
-            const election = new Election(electionData);
-
-            election.save((error: { code: number; }, election: any) => {
-              if (error) {
-                if (error.code == DUPLICATED_UNIQUE_FIELD_ERROR_CODE)
-                  return callback('duplicated_unique_field');
-                return callback('database_error');
-              }
-
-              return callback(null, election);
-            });
+            return callback(null, election);
           });
         });
       });
@@ -229,91 +218,18 @@ ElectionSchema.statics.createElection = function (
   .catch((err: any) => callback('database_error'));
 };
 
-ElectionSchema.statics.deployAndCreateElection = function (
-  data: {
-    startBlock: number,
-    endBlock: number,
-    votersRoot: bigint,
-    storageLayerPlatform: 'A' | 'F' | 'P',
-    storageLayerID: string,
-    image_raw: string
-  },
-  callback: (
-    error: string | null,
-    election?: ElectionModel
-  ) => any
-) {
-  const Election = this;
-
-  const storageLayerID = data.storageLayerID;
-  const storageLayerPlatform = data.storageLayerPlatform;
-
-  convertStorageInfoToFields({
-    storageLayerPlatform,
-    storageLayerID
-  }, (err, storageLayerFieldEncoding) => {
-    if (err || !storageLayerFieldEncoding)
-      return callback(err);
-
-    deployElection({
-      startBlock: data.startBlock,
-      endBlock: data.endBlock,
-      votersRoot: data.votersRoot,
-      storageLayerFieldEncoding
-    }, (err, deployResult) => {
-      if (err || !deployResult)
-        return callback(err);
-
-      fetchDataFromStorageLayer(storageLayerPlatform, storageLayerID, (error, data) => {
-        if (error)
-          return callback('bad_request');
-        if (!data)
-          return callback('bad_request');
-    
-        const voters_merkle_root = generateMerkleRootFromVotersList(data.voters_list);
-    
-        uploadImageRaw(data.image_raw, (error, url) => {
-          if (error)
-            return callback(error);
-    
-          const electionData = {
-            mina_contract_id: deployResult.contractPublicKey,
-            storage_layer_id: storageLayerID,
-            storage_layer_platform: storageLayerPlatform,
-            image_url: url,
-            voters_merkle_root,
-            ...data
-          };
-    
-          const election = new Election(electionData);
-    
-          election.save((error: { code: number; }, election: any) => {
-            if (error) {
-              if (error.code == DUPLICATED_UNIQUE_FIELD_ERROR_CODE)
-                return callback('duplicated_unique_field');
-              return callback('database_error');
-            }
-    
-            return callback(null, election);
-          });
-        });
-      });
-    });
-  });
-};
-
 ElectionSchema.statics.findElectionByContractId = function (
   mina_contract_id: string,
   callback: (
     error: string | null,
-    election?: ElectionModel
+    election?: types.ElectionBackendData
   ) => any
 ) {
   const Election = this;
 
   Election
     .findOne({ mina_contract_id })
-    .then((election: ElectionModel) => {
+    .then((election: types.ElectionBackendData) => {
       if (!election)
         return callback('document_not_found');
 
@@ -328,10 +244,11 @@ ElectionSchema.statics.findElectionsByFilter = function (
     text?: string;
     start_after?: Date;
     end_before?: Date;
+    is_ongoing?: boolean;
   },
   callback: (
     error: string | null,
-    elections?: ElectionModel[]
+    elections?: types.ElectionBackendData[]
   ) => any
 ) {
   const Election = this;
@@ -356,12 +273,18 @@ ElectionSchema.statics.findElectionsByFilter = function (
       end_date: { $lte: data.end_before }
     });
 
+  if (data.is_ongoing)
+    filters.push({
+      start_date: { $lte: new Date() },
+      end_date: { $gte: new Date() }
+    });
+
   Election
     .find((filters.length > 0) ? { $and: filters } : {})
     .sort({ _id: 1 })
     .skip(data.skip || 0)
     .limit(DEFAULT_QUERY_LIMIT)
-    .then((elections: ElectionModel[]) => callback(null, elections))
+    .then((elections: types.ElectionBackendData[]) => callback(null, elections))
     .catch((err: any) => callback('database_error'));
 };
 

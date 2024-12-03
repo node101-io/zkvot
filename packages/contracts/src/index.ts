@@ -1,34 +1,17 @@
-import {
-  ElectionContract,
-  ElectionData,
-  setElectionContractConstants,
-} from "./ElectionContract.js";
-import {
-  AggregateProof,
-  RangeAggregationProgram,
-} from "./RangeAggregationProgram.js";
-import { InnerNode, LeafNode, SegmentTree } from "./SegmentTree.js";
-import {
-  Vote,
-  VoteProof,
-  VotePrivateInputs,
-  VotePublicInputs,
-} from "./VoteProgram.js";
-
-import { MerkleWitnessClass } from "./utils.js";
+import Aggregation from './Aggregation.js';
+import AggregationTree from './AggregationTree.js';
+import Election from './Election.js';
+import MerkleTree from './MerkleTree.js';
+import Vote from './Vote.js';
+import types from './types.js';
+import utils from './utils.js';
 
 export {
-  AggregateProof,
-  ElectionData,
-  ElectionContract,
-  InnerNode,
-  LeafNode,
-  MerkleWitnessClass,
-  RangeAggregationProgram,
-  SegmentTree,
-  setElectionContractConstants,
+  Aggregation,
+  AggregationTree,
+  Election,
+  MerkleTree,
   Vote,
-  VoteProof,
-  VotePrivateInputs,
-  VotePublicInputs,
+  types,
+  utils
 };

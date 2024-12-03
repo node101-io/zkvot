@@ -17,6 +17,5 @@
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true,
     "useDefineForClassFields": false,
-    "resolveJsonModule": true
   }
 }

@@ -1,4 +1,4 @@
-import { AvailDataTx } from '../../types/daLayers.js';
+import { types } from 'zkvot-core';
 
 import isPortInUse from '../../utils/isPortInUse.js';
 
@@ -45,7 +45,7 @@ const Avail = {
   },
   getData: (
     data: { block_height: number },
-    callback: (err: string | null, blockData?: AvailDataTx[]) => void
+    callback: (err: string | null, blockData?: types.AvailDataTx[]) => void
   ) => {
     availRequest(`${DEFAULT_RPC_URL}/v2/blocks/${data.block_height}/data?fields=data`, {
       method: 'GET'

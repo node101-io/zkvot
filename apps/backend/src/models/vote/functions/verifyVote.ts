@@ -1,5 +1,7 @@
 import { JsonProof, verify } from 'o1js';
-import { VoteProof } from 'zkvot-contracts';
+
+import { Vote } from 'zkvot-core';
+
 import { getVerificationKey } from '../../../utils/compileZkProgram.js';
 
 export default (
@@ -15,7 +17,7 @@ export default (
   if (!verificationKey)
     return callback('try_again_in_a_few_minutes');
 
-  VoteProof
+  Vote.Proof
     .fromJSON(data.vote)
     .catch(_ => callback('invalid_vote'))
     .then(async (voteProof) => {

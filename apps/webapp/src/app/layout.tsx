@@ -1,19 +1,24 @@
-import "../styles/globals.css";
+import '../styles/globals.css';
 
-import { Montserrat } from "next/font/google";
-import Navbar from "../components/NavBar/NavBar.jsx";
-import { WalletProvider } from "../components/providers.jsx";
-import ToastProvider from "../components/ToastProvider.jsx";
-import { IsCompiledProvider } from "../contexts/IsCompiledContext.js";
+import Navbar from '@/app/(partials)/navigation-bar.jsx';
 
-const montserrat = Montserrat({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
+import WalletProvider from '@/components/wallet-provider.jsx';
+
+import { ZKProgramCompileProvider } from '@/contexts/zk-program-compile-context.jsx';
+import { ToastProvider } from '@/contexts/toast-context.jsx';
+
+// TODO: uncomment
+// const montserrat = Montserrat({
+//   subsets: ['latin'],
+//   weight: ['400', '700'],
+// });
 
 export const metadata = {
-  title: "zkVot",
-  description: "A zero-knowledge voting platform",
+  title: 'zkVot - World\'s first fully live anonymous voting application!',
+  description: `
+    zkVot is a client side trustless distributed computation protocol designed to achieve anonymous and censorship resistant voting while ensuring scalability. The protocol is created as an example of how modular and distributed computation may improve both decentralization and scalability of the internet.
+    zkVot brings various distributed layers (e.g. blockchains), zero knowledge proving technology, and client side computation together to make most of the distributed value on an actual use case. By implementing this project, our main goal is to show that the technology is ready, and it is just a matter of time and perspective to bring decentralization into the life of the actual end user.
+  `
 };
 
 export default function RootLayout({
@@ -22,32 +27,33 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={montserrat.className}>
-        <div className="mobile-warning flex flex-col">
-          <div className="icon-container mb-[1rem] animate-pulse">
+    <html lang='en'>
+    <body>
+      {/* <body className={montserrat.className}> */}
+        <div className='mobile-warning flex flex-col'>
+          <div className='icon-container mb-[1rem] animate-pulse'>
             <svg
-              width="80"
-              height="80"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="computer-icon"
+              width='80'
+              height='80'
+              viewBox='0 0 24 24'
+              fill='none'
+              xmlns='http://www.w3.org/2000/svg'
+              className='computer-icon'
             >
               <rect
-                x="2"
-                y="4"
-                width="20"
-                height="14"
-                rx="2"
-                fill="#ffffff"
+                x='2'
+                y='4'
+                width='20'
+                height='14'
+                rx='2'
+                fill='#ffffff'
               />
               <rect
-                x="5"
-                y="18"
-                width="14"
-                height="2"
-                fill="#ffffff"
+                x='5'
+                y='18'
+                width='14'
+                height='2'
+                fill='#ffffff'
               />
             </svg>
           </div>
@@ -56,15 +62,15 @@ export default function RootLayout({
           </span>
         </div>
 
-        <main className="flex flex-col px-4 overflow-hidden">
-          <IsCompiledProvider>
+        <main className='flex flex-col px-4 overflow-hidden'>
+          <ZKProgramCompileProvider>
             <ToastProvider>
               <WalletProvider>
                 <Navbar />
                 {children}
               </WalletProvider>
             </ToastProvider>
-          </IsCompiledProvider>
+          </ZKProgramCompileProvider>
         </main>
       </body>
     </html>
