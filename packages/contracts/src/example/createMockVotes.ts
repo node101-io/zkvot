@@ -1,12 +1,11 @@
 import fs from 'fs/promises';
 import { Field, Mina, MerkleTree, PrivateKey, Poseidon, Nullifier } from 'o1js';
 import dotenv from 'dotenv';
-dotenv.config();
-
-import { MerkleWitnessClass } from '../utils.js';
-import { Vote, VotePrivateInputs, VotePublicInputs } from '../VoteProgram.js';
-import { RangeAggregationProgram } from '../RangeAggregationProgram.js';
 import { votersArray } from '../local/mock.js';
+import Vote from '../Vote.js';
+import MerkleTreeNamespace from '../MerkleTree.js';
+import Aggregation from '../Aggregation.js';
+dotenv.config();
 
 let Local = await Mina.LocalBlockchain({ proofsEnabled: true });
 Mina.setActiveInstance(Local);
@@ -41,7 +40,7 @@ export const mockVotes = async (electionPrivateKey: PrivateKey) => {
   await fs.writeFile('votersRoot.json', JSON.stringify(votersRoot, null, 2));
 
   console.log('compiling vote program');
-  let { verificationKey } = await Vote.compile();
+  let { verificationKey } = await Vote.Program.compile();
   console.log('verification key', verificationKey.data.slice(0, 10) + '..');
 
   console.log('casting votes');
@@ -55,9 +54,11 @@ export const mockVotes = async (electionPrivateKey: PrivateKey) => {
     let privateKey = votersArray[i][0];
     let voterKey = privateKey.toPublicKey();
     let merkleTreeWitness = votersTree.getWitness(BigInt(i));
-    let votersMerkleWitness = new MerkleWitnessClass(merkleTreeWitness);
+    let votersMerkleWitness = new MerkleTreeNamespace.Witness(
+      merkleTreeWitness
+    );
 
-    let votePublicInputs = new VotePublicInputs({
+    let votePublicInputs = new Vote.PublicInputs({
       electionPubKey: electionPubKey,
       vote: Field.from(vote),
       votersRoot: votersRoot,
@@ -66,14 +67,17 @@ export const mockVotes = async (electionPrivateKey: PrivateKey) => {
       Nullifier.createTestNullifier(electionPubKey.toFields(), privateKey)
     );
 
-    let votePrivateInputs = new VotePrivateInputs({
+    let votePrivateInputs = new Vote.PrivateInputs({
       voterKey,
       nullifier,
       votersMerkleWitness,
     });
 
     let time = Date.now();
-    let voteProof = await Vote.vote(votePublicInputs, votePrivateInputs);
+    let voteProof = await Vote.Program.vote(
+      votePublicInputs,
+      votePrivateInputs
+    );
 
     console.log(`vote ${i} proof took ${(Date.now() - time) / 1000} seconds `);
     voteProofs.push(voteProof.proof);
@@ -95,7 +99,7 @@ export const mockVotes = async (electionPrivateKey: PrivateKey) => {
 
   await fs.writeFile('voteProofs.json', JSON.stringify(voteProofs, null, 2));
   let { verificationKey: voteAggregatorVerificationKey } =
-    await RangeAggregationProgram.compile();
+    await Aggregation.Program.compile();
 
   await fs.writeFile(
     'voteAggregatorVerificationKey.json',

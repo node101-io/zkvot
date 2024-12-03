@@ -4,7 +4,7 @@ import {
   Mina,
   Poseidon,
   PrivateKey,
-  PublicKey
+  PublicKey,
 } from 'o1js';
 
 import Aggregation from '../Aggregation.js';
@@ -48,10 +48,11 @@ export default async function deploy(
     return 0;
   });
 
-  let votersTree = MerkleTree.createFromFieldsArray(votersList.map(voter => voter.toFields()));
+  let votersTree = MerkleTree.createFromFieldsArray(
+    votersList.map((voter) => voter.toFields())
+  );
 
-  if (!votersTree)
-    throw new Error('Error creating voters tree');
+  if (!votersTree) throw new Error('Error creating voters tree');
 
   let votersRoot = votersTree.getRoot();
   console.log(`Voters root: ${votersRoot.toString()}`);
@@ -81,7 +82,9 @@ export default async function deploy(
   const electionContractPubKey = electionContractPk.toPublicKey();
   console.log(electionContractPubKey.toBase58());
 
-  const electionContractInstance = new Election.Contract(electionContractPubKey);
+  const electionContractInstance = new Election.Contract(
+    electionContractPubKey
+  );
 
   const electionData = new Election.StorageLayerInfoEncoding({
     first: fileCoinDatas[0],

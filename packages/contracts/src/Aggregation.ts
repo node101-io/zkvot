@@ -21,8 +21,8 @@ namespace AggregationNamespace {
       shift = shift.mul(4294967296);
     }
     return acc;
-  };
-  
+  }
+
   export function fieldToUInt32BigEndian(options: Field): UInt32[] {
     let bytes = Provable.witness(Provable.Array(UInt32, 7), () => {
       let w = options.toBigInt();
@@ -30,17 +30,17 @@ namespace AggregationNamespace {
         return UInt32.from((w >> BigInt(32 * (6 - k))) & 0xffffffffn);
       });
     });
-  
+
     UInt32ToFieldBigEndian(bytes).assertEquals(options);
-  
+
     return bytes;
-  };
-  
+  }
+
   export class PublicInputs extends Struct({
     votersRoot: Field,
-    electionId: PublicKey,
+    electionPubKey: PublicKey,
   }) {}
-  
+
   export class PublicOutputs extends Struct({
     totalAggregatedCount: Field,
     rangeLowerBound: Field,
@@ -50,12 +50,12 @@ namespace AggregationNamespace {
     voteOptions_3: Field,
     voteOptions_4: Field,
   }) {}
-  
+
   export const Program = ZkProgram({
-    name: 'Aggregation',
+    name: 'RangeAggregationProgram',
     publicInput: PublicInputs,
     publicOutput: PublicOutputs,
-  
+
     methods: {
       base_empty: {
         privateInputs: [Field, Field],
@@ -65,13 +65,15 @@ namespace AggregationNamespace {
           upperBound: Field
         ) {
           return {
-            totalAggregatedCount: Field.from(0),
-            rangeLowerBound: lowerBound,
-            rangeUpperBound: upperBound,
-            voteOptions_1: Field.from(0),
-            voteOptions_2: Field.from(0),
-            voteOptions_3: Field.from(0),
-            voteOptions_4: Field.from(0),
+            publicOutput: {
+              totalAggregatedCount: Field.from(0),
+              rangeLowerBound: lowerBound,
+              rangeUpperBound: upperBound,
+              voteOptions_1: Field.from(0),
+              voteOptions_2: Field.from(0),
+              voteOptions_3: Field.from(0),
+              voteOptions_4: Field.from(0),
+            },
           };
         },
       },
@@ -79,12 +81,14 @@ namespace AggregationNamespace {
         privateInputs: [Vote.Proof],
         async method(publicInput: PublicInputs, vote: Vote.Proof) {
           vote.verify();
-  
+
           vote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
-          vote.publicInput.electionId.assertEquals(publicInput.electionId);
-  
+          vote.publicInput.electionPubKey.assertEquals(
+            publicInput.electionPubKey
+          );
+
           const nullifier = vote.publicOutput.nullifier;
-  
+
           let batchOptionsArray: Field[] = new Array(4).fill(Field.from(0));
           for (let i = 0; i <= 3; i++) {
             let optionsArray: UInt32[] = new Array(7).fill(UInt32.from(0));
@@ -97,15 +101,17 @@ namespace AggregationNamespace {
             }
             batchOptionsArray[i] = UInt32ToFieldBigEndian(optionsArray);
           }
-  
+
           return {
-            totalAggregatedCount: Field.from(1),
-            rangeLowerBound: nullifier,
-            rangeUpperBound: nullifier,
-            voteOptions_1: batchOptionsArray[0],
-            voteOptions_2: batchOptionsArray[1],
-            voteOptions_3: batchOptionsArray[2],
-            voteOptions_4: batchOptionsArray[3],
+            publicOutput: {
+              totalAggregatedCount: Field.from(1),
+              rangeLowerBound: nullifier,
+              rangeUpperBound: nullifier,
+              voteOptions_1: batchOptionsArray[0],
+              voteOptions_2: batchOptionsArray[1],
+              voteOptions_3: batchOptionsArray[2],
+              voteOptions_4: batchOptionsArray[3],
+            },
           };
         },
       },
@@ -118,17 +124,21 @@ namespace AggregationNamespace {
         ) {
           lowerVote.verify();
           upperVote.verify();
-  
+
           lowerVote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
           upperVote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
-          lowerVote.publicInput.electionId.assertEquals(publicInput.electionId);
-          upperVote.publicInput.electionId.assertEquals(publicInput.electionId);
-  
+          lowerVote.publicInput.electionPubKey.assertEquals(
+            publicInput.electionPubKey
+          );
+          upperVote.publicInput.electionPubKey.assertEquals(
+            publicInput.electionPubKey
+          );
+
           const lowerNullifier = lowerVote.publicOutput.nullifier;
           const upperNullifier = upperVote.publicOutput.nullifier;
-  
+
           lowerNullifier.assertLessThan(upperNullifier);
-  
+
           let batchOptionsArray: Field[] = new Array(4).fill(Field.from(0));
           for (let i = 0; i <= 3; i++) {
             let optionsArray: UInt32[] = new Array(7).fill(UInt32.from(0));
@@ -147,15 +157,17 @@ namespace AggregationNamespace {
             }
             batchOptionsArray[i] = UInt32ToFieldBigEndian(optionsArray);
           }
-  
+
           return {
-            totalAggregatedCount: Field.from(2),
-            rangeLowerBound: lowerNullifier,
-            rangeUpperBound: upperNullifier,
-            voteOptions_1: batchOptionsArray[0],
-            voteOptions_2: batchOptionsArray[1],
-            voteOptions_3: batchOptionsArray[2],
-            voteOptions_4: batchOptionsArray[3],
+            publicOutput: {
+              totalAggregatedCount: Field.from(2),
+              rangeLowerBound: lowerNullifier,
+              rangeUpperBound: upperNullifier,
+              voteOptions_1: batchOptionsArray[0],
+              voteOptions_2: batchOptionsArray[1],
+              voteOptions_3: batchOptionsArray[2],
+              voteOptions_4: batchOptionsArray[3],
+            },
           };
         },
       },
@@ -163,32 +175,31 @@ namespace AggregationNamespace {
         privateInputs: [SelfProof, Vote.Proof],
         async method(
           publicInput: PublicInputs,
-          previousProof: SelfProof<
-            PublicInputs,
-            PublicOutputs
-          >,
+          previousProof: SelfProof<PublicInputs, PublicOutputs>,
           vote: Vote.Proof
         ) {
           previousProof.verify();
-          previousProof.publicInput.electionId.assertEquals(
-            publicInput.electionId
+          previousProof.publicInput.electionPubKey.assertEquals(
+            publicInput.electionPubKey
           );
           previousProof.publicInput.votersRoot.assertEquals(
             publicInput.votersRoot
           );
-  
+
           vote.verify();
-  
+
           vote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
-          vote.publicInput.electionId.assertEquals(publicInput.electionId);
-  
+          vote.publicInput.electionPubKey.assertEquals(
+            publicInput.electionPubKey
+          );
+
           const previousLowerBound = previousProof.publicOutput.rangeLowerBound;
           const previousUpperBound = previousProof.publicOutput.rangeUpperBound;
-  
+
           const nullifier = vote.publicOutput.nullifier;
-  
+
           previousLowerBound.assertGreaterThan(nullifier);
-  
+
           let batchOptionsArray: Field[] = new Array(4).fill(Field.from(0));
           for (let i = 0; i <= 3; i++) {
             let optionsArray: UInt32[] = new Array(7).fill(UInt32.from(0));
@@ -202,22 +213,24 @@ namespace AggregationNamespace {
             batchOptionsArray[i] = UInt32ToFieldBigEndian(optionsArray);
           }
           return {
-            totalAggregatedCount:
-              previousProof.publicOutput.totalAggregatedCount.add(1),
-            rangeLowerBound: nullifier,
-            rangeUpperBound: previousUpperBound,
-            voteOptions_1: batchOptionsArray[0].add(
-              previousProof.publicOutput.voteOptions_1
-            ),
-            voteOptions_2: batchOptionsArray[1].add(
-              previousProof.publicOutput.voteOptions_2
-            ),
-            voteOptions_3: batchOptionsArray[2].add(
-              previousProof.publicOutput.voteOptions_3
-            ),
-            voteOptions_4: batchOptionsArray[3].add(
-              previousProof.publicOutput.voteOptions_4
-            ),
+            publicOutput: {
+              totalAggregatedCount:
+                previousProof.publicOutput.totalAggregatedCount.add(1),
+              rangeLowerBound: nullifier,
+              rangeUpperBound: previousUpperBound,
+              voteOptions_1: batchOptionsArray[0].add(
+                previousProof.publicOutput.voteOptions_1
+              ),
+              voteOptions_2: batchOptionsArray[1].add(
+                previousProof.publicOutput.voteOptions_2
+              ),
+              voteOptions_3: batchOptionsArray[2].add(
+                previousProof.publicOutput.voteOptions_3
+              ),
+              voteOptions_4: batchOptionsArray[3].add(
+                previousProof.publicOutput.voteOptions_4
+              ),
+            },
           };
         },
       },
@@ -225,31 +238,30 @@ namespace AggregationNamespace {
         privateInputs: [SelfProof, Vote.Proof],
         async method(
           publicInput: PublicInputs,
-          previousProof: SelfProof<
-            PublicInputs,
-            PublicOutputs
-          >,
+          previousProof: SelfProof<PublicInputs, PublicOutputs>,
           vote: Vote.Proof
         ) {
           previousProof.verify();
-          previousProof.publicInput.electionId.assertEquals(
-            publicInput.electionId
+          previousProof.publicInput.electionPubKey.assertEquals(
+            publicInput.electionPubKey
           );
           previousProof.publicInput.votersRoot.assertEquals(
             publicInput.votersRoot
           );
           vote.verify();
-  
+
           vote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
-          vote.publicInput.electionId.assertEquals(publicInput.electionId);
-  
+          vote.publicInput.electionPubKey.assertEquals(
+            publicInput.electionPubKey
+          );
+
           const previousLowerBound = previousProof.publicOutput.rangeLowerBound;
           const previousUpperBound = previousProof.publicOutput.rangeUpperBound;
-  
+
           const nullifier = vote.publicOutput.nullifier;
-  
+
           previousUpperBound.assertLessThan(nullifier);
-  
+
           let batchOptionsArray: Field[] = new Array(4).fill(Field.from(0));
           for (let i = 0; i <= 3; i++) {
             let optionsArray: UInt32[] = new Array(7).fill(UInt32.from(0));
@@ -262,24 +274,26 @@ namespace AggregationNamespace {
             }
             batchOptionsArray[i] = UInt32ToFieldBigEndian(optionsArray);
           }
-  
+
           return {
-            totalAggregatedCount:
-              previousProof.publicOutput.totalAggregatedCount.add(1),
-            rangeLowerBound: previousLowerBound,
-            rangeUpperBound: nullifier,
-            voteOptions_1: batchOptionsArray[0].add(
-              previousProof.publicOutput.voteOptions_1
-            ),
-            voteOptions_2: batchOptionsArray[1].add(
-              previousProof.publicOutput.voteOptions_2
-            ),
-            voteOptions_3: batchOptionsArray[2].add(
-              previousProof.publicOutput.voteOptions_3
-            ),
-            voteOptions_4: batchOptionsArray[3].add(
-              previousProof.publicOutput.voteOptions_4
-            ),
+            publicOutput: {
+              totalAggregatedCount:
+                previousProof.publicOutput.totalAggregatedCount.add(1),
+              rangeLowerBound: previousLowerBound,
+              rangeUpperBound: nullifier,
+              voteOptions_1: batchOptionsArray[0].add(
+                previousProof.publicOutput.voteOptions_1
+              ),
+              voteOptions_2: batchOptionsArray[1].add(
+                previousProof.publicOutput.voteOptions_2
+              ),
+              voteOptions_3: batchOptionsArray[2].add(
+                previousProof.publicOutput.voteOptions_3
+              ),
+              voteOptions_4: batchOptionsArray[3].add(
+                previousProof.publicOutput.voteOptions_4
+              ),
+            },
           };
         },
       },
@@ -287,62 +301,65 @@ namespace AggregationNamespace {
         privateInputs: [SelfProof, SelfProof],
         async method(
           publicInput: PublicInputs,
-          leftProof: SelfProof<
-            PublicInputs,
-            PublicOutputs
-          >,
-          rightProof: SelfProof<
-            PublicInputs,
-            PublicOutputs
-          >
+          leftProof: SelfProof<PublicInputs, PublicOutputs>,
+          rightProof: SelfProof<PublicInputs, PublicOutputs>
         ) {
           leftProof.verify();
           rightProof.verify();
-  
+
           leftProof.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
-          rightProof.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
-          leftProof.publicInput.electionId.assertEquals(publicInput.electionId);
-          rightProof.publicInput.electionId.assertEquals(publicInput.electionId);
-  
+          rightProof.publicInput.votersRoot.assertEquals(
+            publicInput.votersRoot
+          );
+          leftProof.publicInput.electionPubKey.assertEquals(
+            publicInput.electionPubKey
+          );
+          rightProof.publicInput.electionPubKey.assertEquals(
+            publicInput.electionPubKey
+          );
+
           const leftLowerBound = leftProof.publicOutput.rangeLowerBound;
           const leftUpperBound = leftProof.publicOutput.rangeUpperBound;
           const rightLowerBound = rightProof.publicOutput.rangeLowerBound;
           const rightUpperBound = rightProof.publicOutput.rangeUpperBound;
-  
+
           leftUpperBound.assertLessThan(rightLowerBound);
-  
+
           const voteOptions_1 = leftProof.publicOutput.voteOptions_1.add(
             rightProof.publicOutput.voteOptions_1
           );
           const voteOptions_2 = leftProof.publicOutput.voteOptions_2.add(
             rightProof.publicOutput.voteOptions_2
           );
-  
+
           const voteOptions_3 = leftProof.publicOutput.voteOptions_3.add(
             rightProof.publicOutput.voteOptions_3
           );
-  
+
           const voteOptions_4 = leftProof.publicOutput.voteOptions_4.add(
             rightProof.publicOutput.voteOptions_4
           );
-  
+
           return {
-            totalAggregatedCount: leftProof.publicOutput.totalAggregatedCount.add(
-              rightProof.publicOutput.totalAggregatedCount
-            ),
-            rangeLowerBound: leftLowerBound,
-            rangeUpperBound: rightUpperBound,
-            voteOptions_1: voteOptions_1,
-            voteOptions_2: voteOptions_2,
-            voteOptions_3: voteOptions_3,
-            voteOptions_4: voteOptions_4,
+            publicOutput: {
+              totalAggregatedCount:
+                leftProof.publicOutput.totalAggregatedCount.add(
+                  rightProof.publicOutput.totalAggregatedCount
+                ),
+              rangeLowerBound: leftLowerBound,
+              rangeUpperBound: rightUpperBound,
+              voteOptions_1: voteOptions_1,
+              voteOptions_2: voteOptions_2,
+              voteOptions_3: voteOptions_3,
+              voteOptions_4: voteOptions_4,
+            },
           };
         },
       },
     },
   });
-  
+
   export class Proof extends ZkProgram.Proof(Program) {}
-};
+}
 
 export default AggregationNamespace;
