@@ -7,11 +7,14 @@ export default class {
   remoteApi: Comlink.Remote<typeof import('@/utils/ZKProgramWorker.js').api>;
 
   constructor() {
-    const worker = new Worker(new URL('@/utils/ZKProgramWorker.js', import.meta.url), {
-      type: 'module',
-    });
+    const worker = new Worker(
+      new URL('@/utils/ZKProgramWorker.js', import.meta.url),
+      {
+        type: 'module',
+      }
+    );
     this.remoteApi = Comlink.wrap(worker);
-  };
+  }
 
   setActiveInstanceToDevnet() {
     return this.remoteApi.setActiveInstanceToDevnet();
@@ -19,15 +22,15 @@ export default class {
 
   async loadProgram() {
     return this.remoteApi.loadProgram();
-  };
+  }
 
   async compileProgram() {
     return this.remoteApi.compileProgram();
-  };
+  }
 
   async createVote(data: {
-    electionId: string;
-    signedElectionId: string;
+    electionPubKey: string;
+    nullifier: string;
     vote: number;
     votersArray: string[];
     publicKey: string;
@@ -35,7 +38,7 @@ export default class {
     const result = await this.remoteApi.createVote(data);
 
     return result;
-  };
+  }
 
   async deployElection(
     electionDeployer: string,
@@ -55,7 +58,7 @@ export default class {
     );
 
     return result;
-  };
+  }
 
   async loadAndCompileContracts(
     electionStartBlock: number,
@@ -67,5 +70,5 @@ export default class {
       electionFinalizeBlock,
       votersRoot
     );
-  };
-};
+  }
+}

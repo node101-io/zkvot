@@ -1,16 +1,8 @@
-import {
-  AggregateProof,
-  InnerNode,
-  LeafNode,
-  RangeAggregationProgram,
-  SegmentTree,
-  Vote,
-  VoteProof,
-} from 'zkvot-contracts';
 import { Field, JsonProof, PublicKey } from 'o1js';
 import { EntryStream } from 'level-read-stream';
 import { Level } from 'level';
 import async from 'async';
+import { Aggregation, AggregationTree, Vote } from 'zkvot-core';
 
 const db = new Level('./cachedProofsDb', { valueEncoding: 'json' });
 
@@ -98,7 +90,7 @@ const aggregateNodeProofs = (
   data: {
     node: any;
     votersRoot: Field;
-    electionId: PublicKey;
+    electionPubKey: PublicKey;
     segmentTree: AggregationTree.Tree<bigint, unknown, Vote.Proof>;
   },
   callback: (
@@ -125,13 +117,14 @@ const aggregateNodeProofs = (
       return Aggregation.Program.base_two(
         {
           votersRoot: data.votersRoot,
-          electionId: data.electionId,
+          electionPubKey: data.electionPubKey,
         },
         leftChild.voteProof,
         rightChild.voteProof
       )
-        .then((proof: { proof: AggregateProof; auxiliaryOutput: undefined }) =>
-          callback(null, proof.proof)
+        .then(
+          (proof: { proof: Aggregation.Proof; auxiliaryOutput: undefined }) =>
+            callback(null, proof.proof)
         )
         .catch((err) => callback(err));
     } else if (
@@ -149,13 +142,14 @@ const aggregateNodeProofs = (
       return Aggregation.Program.append_left(
         {
           votersRoot: data.votersRoot,
-          electionId: data.electionId,
+          electionPubKey: data.electionPubKey,
         },
         rightChildAggregatorProof as Aggregation.Proof,
         leftChild.voteProof
       )
-        .then((proof: { proof: AggregateProof; auxiliaryOutput: undefined }) =>
-          callback(null, proof.proof)
+        .then(
+          (proof: { proof: Aggregation.Proof; auxiliaryOutput: undefined }) =>
+            callback(null, proof.proof)
         )
         .catch((err) => callback(err));
     } else if (
@@ -173,13 +167,14 @@ const aggregateNodeProofs = (
       return Aggregation.Program.append_right(
         {
           votersRoot: data.votersRoot,
-          electionId: data.electionId,
+          electionPubKey: data.electionPubKey,
         },
         leftChildAggregatorProof as Aggregation.Proof,
         rightChild.voteProof
       )
-        .then((proof: { proof: AggregateProof; auxiliaryOutput: undefined }) =>
-          callback(null, proof.proof)
+        .then(
+          (proof: { proof: Aggregation.Proof; auxiliaryOutput: undefined }) =>
+            callback(null, proof.proof)
         )
         .catch((err) => callback(err));
     } else if (
@@ -203,13 +198,14 @@ const aggregateNodeProofs = (
       return Aggregation.Program.merge(
         {
           votersRoot: data.votersRoot,
-          electionId: data.electionId,
+          electionPubKey: data.electionPubKey,
         },
         leftChildAggregatorProof as Aggregation.Proof,
         rightChildAggregatorProof as Aggregation.Proof
       )
-        .then((proof: { proof: AggregateProof; auxiliaryOutput: undefined }) =>
-          callback(null, proof.proof)
+        .then(
+          (proof: { proof: Aggregation.Proof; auxiliaryOutput: undefined }) =>
+            callback(null, proof.proof)
         )
         .catch((err) => callback(err));
     }
@@ -227,12 +223,13 @@ const aggregateNodeProofs = (
       return Aggregation.Program.base_one(
         {
           votersRoot: data.votersRoot,
-          electionId: data.electionId,
+          electionPubKey: data.electionPubKey,
         },
         leftChild.voteProof
       )
-        .then((proof: { proof: AggregateProof; auxiliaryOutput: undefined }) =>
-          callback(null, proof.proof)
+        .then(
+          (proof: { proof: Aggregation.Proof; auxiliaryOutput: undefined }) =>
+            callback(null, proof.proof)
         )
         .catch((err) => callback(err));
     }
@@ -250,12 +247,13 @@ const aggregateNodeProofs = (
       return Aggregation.Program.base_one(
         {
           votersRoot: data.votersRoot,
-          electionId: data.electionId,
+          electionPubKey: data.electionPubKey,
         },
         rightChild.voteProof
       )
-        .then((proof: { proof: AggregateProof; auxiliaryOutput: undefined }) =>
-          callback(null, proof.proof)
+        .then(
+          (proof: { proof: Aggregation.Proof; auxiliaryOutput: undefined }) =>
+            callback(null, proof.proof)
         )
         .catch((err) => callback(err));
     }
@@ -292,7 +290,7 @@ const processSegmentTreeForAggregation = (
   data: {
     segmentTree: AggregationTree.Tree<bigint, unknown, Vote.Proof>;
     votersRoot: Field;
-    electionId: PublicKey;
+    electionPubKey: PublicKey;
   },
   callback: (err: Error | string | null) => void
 ) => {
@@ -309,7 +307,7 @@ const processSegmentTreeForAggregation = (
         {
           node,
           votersRoot: data.votersRoot,
-          electionId: data.electionId,
+          electionPubKey: data.electionPubKey,
           segmentTree: data.segmentTree,
         },
         (err, aggregateProof) => {
@@ -364,7 +362,7 @@ const getRootAggregatorProof = (
 
 export default async (
   data: {
-    electionId: PublicKey;
+    electionPubKey: PublicKey;
     voteProofs: JsonProof[];
     votersRoot: Field;
   },
@@ -385,7 +383,7 @@ export default async (
         {
           segmentTree,
           votersRoot: data.votersRoot,
-          electionId: data.electionId,
+          electionPubKey: data.electionPubKey,
         },
         (err) => {
           if (err) return callback(err);
@@ -396,7 +394,7 @@ export default async (
             if (!rootAggregatorProof) return callback('root_error');
 
             db.put(
-              `${data.electionId.toBase58()}.aggregatorProof`,
+              `${data.electionPubKey.toBase58()}.aggregatorProof`,
               JSON.stringify(rootAggregatorProof.toJSON()),
               (err) => {
                 if (err) return callback(err);

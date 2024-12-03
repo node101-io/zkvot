@@ -1,18 +1,7 @@
-import {
-  Field,
-  Mina,
-  PublicKey,
-  PrivateKey,
-  Signature
-} from 'o1js';
+import { Field, Mina, PublicKey, PrivateKey, Nullifier } from 'o1js';
 import * as Comlink from 'comlink';
 
-import {
-  Aggregation,
-  Election,
-  MerkleTree,
-  Vote
-} from 'zkvot-core';
+import { Aggregation, Election, MerkleTree, Vote } from 'zkvot-core';
 
 import encodeDataToBase64String from '@/utils/encodeDataToBase64String.js';
 
@@ -23,6 +12,14 @@ const state = {
 };
 
 export const api = {
+  setActiveInstanceToDevnet: async () => {
+    const Network = Mina.Network({
+      mina: 'https://api.minascan.io/node/devnet/v1/graphql',
+      archive: 'https://api.minascan.io/archive/devnet/v1/graphql',
+    });
+    console.log('Devnet network instance configured.');
+    Mina.setActiveInstance(Network);
+  },
   async loadProgram() {
     const { Vote } = await import('zkvot-core');
     state.Program = Vote.Program;
@@ -73,8 +70,8 @@ export const api = {
     return state.ElectionContractInstance;
   },
   async createVote(data: {
-    electionId: string;
-    signedElectionId: string;
+    electionPubKey: string;
+    nullifier: string;
     vote: number;
     votersArray: string[];
     publicKey: string;
@@ -84,7 +81,7 @@ export const api = {
 
     console.log('data', data);
 
-    const { electionId, signedElectionId, vote, votersArray, publicKey } = data;
+    const { electionPubKey, nullifier, vote, votersArray, publicKey } = data;
 
     const votersTree = MerkleTree.createFromStringArray(votersArray);
     console.log('votersTree', votersTree);
@@ -101,7 +98,7 @@ export const api = {
     console.log('witness', witness);
 
     const votePublicInputs = new Vote.PublicInputs({
-      electionId: PublicKey.fromJSON(electionId),
+      electionPubKey: PublicKey.fromJSON(electionPubKey),
       vote: Field.from(vote),
       votersRoot: votersTree.getRoot(),
     });
@@ -109,7 +106,7 @@ export const api = {
 
     const votePrivateInputs = new Vote.PrivateInputs({
       voterKey: PublicKey.fromJSON(publicKey),
-      signedElectionId: Signature.fromBase58(signedElectionId),
+      nullifier: Nullifier.fromJSON(JSON.parse(nullifier)),
       votersMerkleWitness: new MerkleTree.Witness(witness),
     });
     console.log('votePrivateInputs', votePrivateInputs);
@@ -126,19 +123,22 @@ export const api = {
       console.timeEnd('vote proof generation');
 
       const encodedVoteProof = await new Promise<string>((resolve, reject) => {
-        encodeDataToBase64String(voteProof.toJSON(), (error, base64String) => {
-          if (error) {
-            console.error('Error encoding vote proof:', error);
-            reject(error);
-          } else {
-            console.log('Encoded Vote Proof:', base64String);
-            if (base64String !== undefined) {
-              resolve(base64String);
+        encodeDataToBase64String(
+          voteProof.proof.toJSON(),
+          (error, base64String) => {
+            if (error) {
+              console.error('Error encoding vote proof:', error);
+              reject(error);
             } else {
-              reject(new Error('Encoded vote proof is undefined'));
+              console.log('Encoded Vote Proof:', base64String);
+              if (base64String !== undefined) {
+                resolve(base64String);
+              } else {
+                reject(new Error('Encoded vote proof is undefined'));
+              }
             }
           }
-        });
+        );
       });
 
       console.log('Returning encodedVoteProof:', encodedVoteProof);
