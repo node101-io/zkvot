@@ -12,9 +12,9 @@ import {
   ZkProgram,
   createEcdsaV2,
   Keccak,
-} from "o1js";
+} from 'o1js';
 
-import MerkleTree from "./MerkleTree.js";
+import MerkleTree from './MerkleTree.js';
 
 class Bytes64 extends Bytes(64) {}
 
@@ -62,7 +62,7 @@ namespace VoteNamespace {
   }) {}
 
   export const Program = ZkProgram({
-    name: "Vote",
+    name: 'Vote',
     publicInput: PublicInputs,
     publicOutput: PublicOutputs,
 

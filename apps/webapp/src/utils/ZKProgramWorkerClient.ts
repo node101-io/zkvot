@@ -1,28 +1,25 @@
-import * as Comlink from "comlink";
+import * as Comlink from 'comlink';
 
-import { Election } from "zkvot-core";
+import { Election } from 'zkvot-core';
 
 export default class {
   worker: Worker;
-  remoteApi: Comlink.Remote<typeof import("@/utils/ZKProgramWorker").api>;
+  remoteApi: Comlink.Remote<typeof import('@/utils/ZKProgramWorker.js').api>;
 
   constructor() {
-    const worker = new Worker(
-      new URL("@/utils/ZKProgramWorker", import.meta.url),
-      {
-        type: "module",
-      }
-    );
+    const worker = new Worker(new URL('@/utils/ZKProgramWorker.js', import.meta.url), {
+      type: 'module',
+    });
     this.remoteApi = Comlink.wrap(worker);
-  }
+  };
 
   async loadProgram() {
     return this.remoteApi.loadProgram();
-  }
+  };
 
   async compileProgram() {
     return this.remoteApi.compileProgram();
-  }
+  };
 
   async createVote(data: {
     electionId: string;
@@ -34,7 +31,7 @@ export default class {
     const result = await this.remoteApi.createVote(data);
 
     return result;
-  }
+  };
 
   async deployElection(
     electionDeployer: string,
@@ -54,7 +51,7 @@ export default class {
     );
 
     return result;
-  }
+  };
 
   async loadAndCompileContracts(
     electionStartBlock: number,
@@ -66,5 +63,5 @@ export default class {
       electionFinalizeBlock,
       votersRoot
     );
-  }
-}
+  };
+};

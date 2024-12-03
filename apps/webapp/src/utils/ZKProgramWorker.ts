@@ -1,9 +1,20 @@
-import { Field, Mina, PublicKey, PrivateKey, Signature } from "o1js";
-import * as Comlink from "comlink";
+import {
+  Field,
+  Mina,
+  PublicKey,
+  PrivateKey,
+  Signature
+} from 'o1js';
+import * as Comlink from 'comlink';
 
-import { Aggregation, Election, MerkleTree, Vote } from "zkvot-core";
+import {
+  Aggregation,
+  Election,
+  MerkleTree,
+  Vote
+} from 'zkvot-core';
 
-import encodeDataToBase64String from "@/utils/encodeDataToBase64String";
+import encodeDataToBase64String from '@/utils/encodeDataToBase64String.js';
 
 const state = {
   Program: null as null | typeof Vote.Program,
@@ -13,7 +24,7 @@ const state = {
 
 export const api = {
   async loadProgram() {
-    const { Vote } = await import("zkvot-core");
+    const { Vote } = await import('zkvot-core');
     state.Program = Vote.Program;
   },
   async compileProgram() {
@@ -26,13 +37,13 @@ export const api = {
     votersRoot: bigint
   ) {
     if (!state.ElectionContract) {
-      const { Election } = await import("zkvot-core");
+      const { Election } = await import('zkvot-core');
       console.log(
-        "electionStartBlock",
+        'electionStartBlock',
         electionStartBlock,
-        "electionFinalizeBlock",
+        'electionFinalizeBlock',
         electionFinalizeBlock,
-        "votersRoot",
+        'votersRoot',
         votersRoot
       );
 
@@ -43,15 +54,15 @@ export const api = {
       });
       state.ElectionContract = Election.Contract;
     }
-    console.log("Compiling ElectionContract");
+    console.log('Compiling ElectionContract');
 
     await state.ElectionContract.compile();
-    console.log("ElectionContract compiled");
+    console.log('ElectionContract compiled');
   },
   getElectionContractInstance(contractAddress: string) {
     if (!state.ElectionContract) {
       throw new Error(
-        "ElectionContract not loaded. Call loadAndCompileContracts() first."
+        'ElectionContract not loaded. Call loadAndCompileContracts() first.'
       );
     }
     if (!state.ElectionContractInstance) {
@@ -69,71 +80,71 @@ export const api = {
     publicKey: string;
   }): Promise<string> {
     if (!state.Program)
-      throw new Error("Program not loaded. Call loadProgram() first.");
+      throw new Error('Program not loaded. Call loadProgram() first.');
 
-    console.log("data", data);
+    console.log('data', data);
 
     const { electionId, signedElectionId, vote, votersArray, publicKey } = data;
 
     const votersTree = MerkleTree.createFromStringArray(votersArray);
-    console.log("votersTree", votersTree);
+    console.log('votersTree', votersTree);
 
     if (!votersTree)
-      throw new Error("Error creating voters tree from voters array.");
+      throw new Error('Error creating voters tree from voters array.');
 
     const voterIndex = votersArray.indexOf(publicKey);
     if (voterIndex === -1) {
-      throw new Error("Public key not found in voters array.");
+      throw new Error('Public key not found in voters array.');
     }
 
     const witness = votersTree.getWitness(BigInt(voterIndex));
-    console.log("witness", witness);
+    console.log('witness', witness);
 
     const votePublicInputs = new Vote.PublicInputs({
       electionId: PublicKey.fromJSON(electionId),
       vote: Field.from(vote),
       votersRoot: votersTree.getRoot(),
     });
-    console.log("votePublicInputs", votePublicInputs);
+    console.log('votePublicInputs', votePublicInputs);
 
     const votePrivateInputs = new Vote.PrivateInputs({
       voterKey: PublicKey.fromJSON(publicKey),
       signedElectionId: Signature.fromBase58(signedElectionId),
       votersMerkleWitness: new MerkleTree.Witness(witness),
     });
-    console.log("votePrivateInputs", votePrivateInputs);
+    console.log('votePrivateInputs', votePrivateInputs);
 
-    console.time("vote proof generation");
+    console.time('vote proof generation');
 
     try {
       const voteProof = await state.Program.vote(
         votePublicInputs,
         votePrivateInputs
       );
-      console.log("voteProof", voteProof);
+      console.log('voteProof', voteProof);
 
-      console.timeEnd("vote proof generation");
+      console.timeEnd('vote proof generation');
 
       const encodedVoteProof = await new Promise<string>((resolve, reject) => {
         encodeDataToBase64String(voteProof.toJSON(), (error, base64String) => {
           if (error) {
-            console.error("Error encoding vote proof:", error);
+            console.error('Error encoding vote proof:', error);
             reject(error);
           } else {
-            console.log("Encoded Vote Proof:", base64String);
+            console.log('Encoded Vote Proof:', base64String);
             if (base64String !== undefined) {
               resolve(base64String);
             } else {
-              reject(new Error("Encoded vote proof is undefined"));
+              reject(new Error('Encoded vote proof is undefined'));
             }
           }
         });
       });
 
-      console.log("Returning encodedVoteProof:", encodedVoteProof);
+      console.log('Returning encodedVoteProof:', encodedVoteProof);
       return encodedVoteProof;
     } catch (error) {
-      console.error("Error generating zk-proof:", error);
+      console.error('Error generating zk-proof:', error);
       throw error;
     }
   },
@@ -172,7 +183,7 @@ export const api = {
       await deployTx.prove();
       return deployTx.toJSON();
     } catch (error) {
-      console.error("Error deploying election contract:", error);
+      console.error('Error deploying election contract:', error);
     }
   },
 };

@@ -1,23 +1,21 @@
-"use client";
+'use client';
 
-import { useContext, useState, useEffect } from "react";
-import { types } from "zkvot-core";
+import { useContext, useState, useEffect } from 'react';
+import { types } from 'zkvot-core'
 
-import VotingStep from "@/app/vote/(steps)/1-VotingStep";
-import SubmissionStep from "@/app/vote/(steps)/2-SubmissionStep";
-import ResultPage from "@/app/vote/(steps)/3-ResultPage";
+import VotingStep from '@/app/vote/(steps)/1-voting.jsx';
+import SubmissionStep from '@/app/vote/(steps)/2-submission.jsx';
+import ResultPage from '@/app/vote/(steps)/3-results.jsx';
 
-import ProgressBar from "@/app/vote/(partials)/ProgressBar";
+import ProgressBar from '@/app/vote/(partials)/progress-bar.jsx';
 
-import { ToastContext } from "@/contexts/ToastContext";
+import { ToastContext } from '@/contexts/toast-context.jsx';
 
-import { fetchElectionByContractIdFromBackend } from "@/utils/backend";
+import { fetchElectionByContractIdFromBackend }  from '@/utils/backend.js';
 
 // TODO: remov
 
-const Page = ({
-  params,
-}: {
+const Page = ({ params }: {
   params: {
     id: string;
   };
@@ -28,29 +26,26 @@ const Page = ({
   const [loading, setLoading] = useState(false);
   const [stepErrors, setStepErrors] = useState({});
   const [selectedOption, setSelectedOption] = useState<number>(-1);
-  const [selectedDA, setSelectedDA] = useState<types.DaLayerInfo["name"] | "">(
-    ""
-  );
-  const [zkProofData, setZkProofData] = useState<string>("");
+  const [selectedDA, setSelectedDA] = useState<types.DaLayerInfo['name'] | ''>('');
+  const [zkProofData, setZkProofData] = useState<string>('');
 
   let electionData: types.ElectionBackendData = {
-    mina_contract_id: "",
-    storage_layer_id: "",
-    storage_layer_platform: "A",
-    start_date: new Date(),
-    end_date: new Date(),
-    question: "",
+    mina_contract_id: '',
+    storage_layer_id: '',
+    storage_layer_platform: 'A',
+    start_date: new Date,
+    end_date: new Date,
+    question: '',
     options: [],
-    description: "",
-    image_url: "",
+    description: '',
+    image_url: '',
     voters_list: [],
     voters_merkle_root: 0n,
     communication_layers: [],
   };
 
   const fetchElectionData = async () => {
-    const electionData: types.ElectionBackendData =
-      await fetchElectionByContractIdFromBackend(params.id);
+    const electionData: types.ElectionBackendData = await fetchElectionByContractIdFromBackend(params.id);
     return electionData;
   };
 
@@ -60,27 +55,24 @@ const Page = ({
 
   useEffect(() => {
     fetchElectionData()
-      .then((data) => {
+      .then(data => {
         electionData = data;
       })
       .catch((error) => {
-        showToast(
-          "Failed to fetch election data, please try again later.",
-          "error"
-        );
+        showToast('Failed to fetch election data, please try again later.', 'error');
       });
   }, []);
 
   return (
-    <div className="flex w-full justify-center h-full">
-      <div className="h-full max-w-[1216px] flex flex-col w-full">
+    <div className='flex w-full justify-center h-full'>
+      <div className='h-full max-w-[1216px] flex flex-col w-full'>
         <ProgressBar
           currentStep={currentStep}
           totalSteps={3}
           stepErrors={stepErrors}
           loading={loading}
         />
-        <div className="w-full h-full pb-12">
+        <div className='w-full h-full pb-12'>
           {currentStep === 1 && (
             <VotingStep
               electionData={electionData}
