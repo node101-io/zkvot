@@ -1,13 +1,13 @@
-import { useState, KeyboardEvent } from 'react';
-import ChevronDownIcon from '@heroicons/react/solid/ChevronDownIcon.js';
+import { useState, KeyboardEvent } from "react";
+import ChevronDownIcon from "@heroicons/react/solid/ChevronDownIcon.js";
 
-import { types } from 'zkvot-core';
+import { types } from "zkvot-core";
 
-import Button from '@/app/(partials)/Button.jsx';
+import Button from "@/app/(partials)/Button";
 
-import DeleteIcon from '@/public/general/icons/delete.jsx';
-import EditIcon from '@/public/general/icons/edit.jsx';
-import PlusIcon from '@/public/general/icons/plus.jsx';
+import DeleteIcon from "@/public/general/icons/delete";
+import EditIcon from "@/public/general/icons/edit";
+import PlusIcon from "@/public/general/icons/plus";
 
 const VoterItem = ({
   index,
@@ -32,15 +32,15 @@ const VoterItem = ({
     requiredFields.forEach((field) => {
       let key;
 
-      if (field === 'Twitter Handle') {
-        key = 'twitter';
+      if (field === "Twitter Handle") {
+        key = "twitter";
       } else {
         key =
-          customOptionNames[field]?.replace(' ', '_').toLowerCase() ||
-          field.replace(' ', '_').toLowerCase();
+          customOptionNames[field]?.replace(" ", "_").toLowerCase() ||
+          field.replace(" ", "_").toLowerCase();
       }
 
-      fields[field] = voterData[key] || '';
+      fields[field] = voterData[key] || "";
     });
 
     return fields;
@@ -72,14 +72,14 @@ const VoterItem = ({
     const updatedVoterData: types.Voter = { public_key: publicKey.trim() };
 
     requiredFields.forEach((field) => {
-      const key = field.replace(' ', '_').toLowerCase();
+      const key = field.replace(" ", "_").toLowerCase();
 
       updatedVoterData[key] = optionalFields[field].trim();
     });
 
     const updatedVoters = [...voters];
     updatedVoters[index] = updatedVoterData;
-    console.log(updatedVoters)
+    console.log(updatedVoters);
     setVoters(updatedVoters);
     setIsEditing(false);
     setInputError({});
@@ -91,8 +91,8 @@ const VoterItem = ({
     setOptionalFields(() => {
       const fields: types.VoterCustomFields = {};
       requiredFields.forEach((field) => {
-        const key = field.replace(' ', '_').toLowerCase();
-        fields[field] = voterData[key] || '';
+        const key = field.replace(" ", "_").toLowerCase();
+        fields[field] = voterData[key] || "";
       });
       return fields;
     });
@@ -100,7 +100,7 @@ const VoterItem = ({
   };
 
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       saveEdit();
     }
   };
@@ -113,41 +113,38 @@ const VoterItem = ({
     if (index === 0 && updatedVoters.length > 0) {
       const newFirstVoter = updatedVoters[0];
       const newRequiredFields = requiredFields.filter((field) => {
-        const key = field.replace(' ', '_').toLowerCase();
+        const key = field.replace(" ", "_").toLowerCase();
         return newFirstVoter[key];
       });
     }
   };
 
   return (
-    <div className='w-[740px] max-h-12 min-h-12 flex items-center px-4 bg-[#1E1E1E] text-white rounded-[73px] border border-[#1E1E1E]'>
+    <div className="w-[740px] max-h-12 min-h-12 flex items-center px-4 bg-[#1E1E1E] text-white rounded-[73px] border border-[#1E1E1E]">
       {isEditing ? (
         <>
           <input
-            type='text'
+            type="text"
             value={publicKey}
             onChange={(e) => setPublicKey(e.target.value)}
             onKeyDown={handleKeyPress}
             className={`flex-1 h-8 p-1 bg-[#222] text-white rounded-[73px] border ${
-              inputError.publicKey ? 'border-red-500' : 'border-[#1E1E1E]'
+              inputError.publicKey ? "border-red-500" : "border-[#1E1E1E]"
             } mr-2`}
           />
 
           {requiredFields.map((field) => {
             const displayName =
-              field === 'Twitter Handle'
+              field === "Twitter Handle"
                 ? field
                 : customOptionNames[field] || field;
             return (
-              <div
-                key={field}
-                className='flex items-center '
-              >
-                {field === 'Twitter Handle' && (
-                  <span className='text-white mr-1'>@</span>
+              <div key={field} className="flex items-center ">
+                {field === "Twitter Handle" && (
+                  <span className="text-white mr-1">@</span>
                 )}
                 <input
-                  type='text'
+                  type="text"
                   placeholder={displayName}
                   value={optionalFields[field]}
                   onChange={(e) =>
@@ -158,7 +155,7 @@ const VoterItem = ({
                   }
                   onKeyDown={handleKeyPress}
                   className={`w-[130px] max-w-[150px] overflow-x-scroll h-8 p-1 bg-[#222222] text-white rounded-[73px] border ${
-                    inputError[field] ? 'border-red-500' : 'border-[#1E1E1E]'
+                    inputError[field] ? "border-red-500" : "border-[#1E1E1E]"
                   }`}
                 />
               </div>
@@ -166,44 +163,44 @@ const VoterItem = ({
           })}
 
           <button
-            onClick={saveEdit}
-            className='w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center ml-2'
+            onClick={() => saveEdit}
+            className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center ml-2"
           >
             ✓
           </button>
           <button
-            onClick={cancelEdit}
-            className='rounded-full flex items-center justify-center mx-1'
+            onClick={() => cancelEdit}
+            className="rounded-full flex items-center justify-center mx-1"
           >
-            <DeleteIcon size={20}/>
+            <DeleteIcon size={20} />
           </button>
         </>
       ) : (
         <>
-          <span className='flex-1 text-[#B7B7B7] text-[14px]  overflow-x-scroll'>
+          <span className="flex-1 text-[#B7B7B7] text-[14px]  overflow-x-scroll">
             {voterData.public_key}
-          </span>{' '}
+          </span>{" "}
           {requiredFields.map((field) => {
             let key;
-            if (field === 'Twitter Handle') {
-              key = 'twitter';
+            if (field === "Twitter Handle") {
+              key = "twitter";
             } else {
               key =
-                customOptionNames[field]?.replace(' ', '_').toLowerCase() ||
-                field.replace(' ', '_').toLowerCase();
+                customOptionNames[field]?.replace(" ", "_").toLowerCase() ||
+                field.replace(" ", "_").toLowerCase();
             }
             const displayName =
-              field === 'Twitter Handle'
+              field === "Twitter Handle"
                 ? field
                 : customOptionNames[field] || field;
             return (
               voterData[key] && (
                 <div
                   key={field}
-                  className='flex items-center px-2 py-1 bg-[#222222] rounded-full mx-2 text-[#B7B7B7] text-[14px]  max-w-[150px] overflow-x-scroll'
+                  className="flex items-center px-2 py-1 bg-[#222222] rounded-full mx-2 text-[#B7B7B7] text-[14px]  max-w-[150px] overflow-x-scroll"
                 >
-                  <span className='text-nowrap'>
-                    {field === 'Twitter Handle'
+                  <span className="text-nowrap">
+                    {field === "Twitter Handle"
                       ? `@${voterData[key]}`
                       : `${displayName}: ${voterData[key]}`}
                   </span>
@@ -213,15 +210,15 @@ const VoterItem = ({
           })}
           <button
             onClick={() => setIsEditing(true)}
-            className='rounded-full flex items-center justify-center mx-1'
+            className="rounded-full flex items-center justify-center mx-1"
           >
             <EditIcon />
           </button>
           <button
-            onClick={deleteVoter}
-            className='rounded-full flex items-center justify-center mx-1'
+            onClick={() => deleteVoter}
+            className="rounded-full flex items-center justify-center mx-1"
           >
-            <DeleteIcon size={20}/>
+            <DeleteIcon size={20} />
           </button>
         </>
       )}
@@ -242,14 +239,19 @@ const VoterInput = ({
   setRequiredFields: (fields: string[]) => void;
   setCustomOptionNamesInParent: (names: types.VoterCustomFields) => void;
 }) => {
-  const [publicKey, setPublicKey] = useState('');
-  const [optionalFields, setOptionalFields] = useState<types.VoterCustomFields>({});
-  const [selectedOptionalFields, setSelectedOptionalFields] = useState<string[]>([]);
+  const [publicKey, setPublicKey] = useState("");
+  const [optionalFields, setOptionalFields] = useState<types.VoterCustomFields>(
+    {}
+  );
+  const [selectedOptionalFields, setSelectedOptionalFields] = useState<
+    string[]
+  >([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [inputError, setInputError] = useState<{ [key: string]: boolean }>({});
   const [shake, setShake] = useState(false);
-  const [customOptionNames, setCustomOptionNames] = useState<types.VoterCustomFields>({});
-  const [newCustomOption, setNewCustomOption] = useState('');
+  const [customOptionNames, setCustomOptionNames] =
+    useState<types.VoterCustomFields>({});
+  const [newCustomOption, setNewCustomOption] = useState("");
 
   const isFirstVoter = voters.length === 0;
 
@@ -284,12 +286,12 @@ const VoterInput = ({
 
     fieldsToValidate.forEach((field) => {
       let key;
-      if (field === 'Twitter Handle') {
-        key = 'twitter';
+      if (field === "Twitter Handle") {
+        key = "twitter";
       } else {
         key =
-          customOptionNames[field]?.replace(' ', '_').toLowerCase() ||
-          field.replace(' ', '_').toLowerCase();
+          customOptionNames[field]?.replace(" ", "_").toLowerCase() ||
+          field.replace(" ", "_").toLowerCase();
       }
       voterData[key] = optionalFields[field].trim();
     });
@@ -301,27 +303,27 @@ const VoterInput = ({
       setCustomOptionNamesInParent(customOptionNames);
     }
 
-    setPublicKey('');
+    setPublicKey("");
     setOptionalFields({});
     setInputError({});
   };
 
   const handleAddTwitterHandle = () => {
-    if (!selectedOptionalFields.includes('Twitter Handle')) {
-      setSelectedOptionalFields((prev) => [...prev, 'Twitter Handle']);
+    if (!selectedOptionalFields.includes("Twitter Handle")) {
+      setSelectedOptionalFields((prev) => [...prev, "Twitter Handle"]);
       setShowDropdown(false);
     }
   };
 
   const handleAddCustomOption = () => {
-    if (newCustomOption.trim() === '') return;
+    if (newCustomOption.trim() === "") return;
 
     setSelectedOptionalFields((prev) => [...prev, newCustomOption]);
     setCustomOptionNames((prev) => ({
       ...prev,
       [newCustomOption]: newCustomOption,
     }));
-    setNewCustomOption('');
+    setNewCustomOption("");
     setShowDropdown(false);
   };
 
@@ -335,7 +337,7 @@ const VoterInput = ({
   };
 
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       addVoter();
     }
@@ -344,93 +346,88 @@ const VoterInput = ({
   return (
     <div
       className={`flex items-center space-x-2 w-full justify-start ${
-        shake ? 'animate-shake' : ''
+        shake ? "animate-shake" : ""
       }`}
     >
       <input
-        type='text'
-        placeholder='types.Voter ID'
+        type="text"
+        placeholder="types.Voter ID"
         value={publicKey}
         onChange={(e) => setPublicKey(e.target.value)}
         onKeyDown={handleKeyPress}
         className={`w-[578px] h-12 p-2 bg-[#222] text-white rounded-[23px] border ${
-          inputError.publicKey ? 'border-red-500' : 'border-[#1E1E1E]'
+          inputError.publicKey ? "border-red-500" : "border-[#1E1E1E]"
         }`}
       />
 
-      {(isFirstVoter ? selectedOptionalFields : requiredFields).map(
-        (field) => {
-          const customName = customOptionNames[field] || field;
-          return (
-            <div
-              key={field}
-              className='flex items-center'
-            >
-              {field === 'Twitter Handle' && (
-                <span className='text-white mr-1'>@</span>
-              )}
-              <input
-                type='text'
-                placeholder={customName}
-                value={optionalFields[field] || ''}
-                onChange={(e) =>
-                  setOptionalFields((prev) => ({
-                    ...prev,
-                    [field]: e.target.value,
-                  }))
-                }
-                onKeyPress={handleKeyPress}
-                className={`w-[140px] h-12 p-2 bg-[#222] text-white rounded-[23px] border ${
-                  inputError[field] ? 'border-red-500' : 'border-[#1E1E1E]'
-                }`}
-              />
-              {isFirstVoter && (
-                <button
-                  onClick={() => removeOptionalField(field)}
-                  className='ml-2 w-6 h-6 bg-[#1E1E1E] text-white rounded-full flex items-center justify-center'
-                >
-                  ×
-                </button>
-              )}
-            </div>
-          );
-        }
-      )}
+      {(isFirstVoter ? selectedOptionalFields : requiredFields).map((field) => {
+        const customName = customOptionNames[field] || field;
+        return (
+          <div key={field} className="flex items-center">
+            {field === "Twitter Handle" && (
+              <span className="text-white mr-1">@</span>
+            )}
+            <input
+              type="text"
+              placeholder={customName}
+              value={optionalFields[field] || ""}
+              onChange={(e) =>
+                setOptionalFields((prev) => ({
+                  ...prev,
+                  [field]: e.target.value,
+                }))
+              }
+              onKeyPress={handleKeyPress}
+              className={`w-[140px] h-12 p-2 bg-[#222] text-white rounded-[23px] border ${
+                inputError[field] ? "border-red-500" : "border-[#1E1E1E]"
+              }`}
+            />
+            {isFirstVoter && (
+              <button
+                onClick={() => removeOptionalField(field)}
+                className="ml-2 w-6 h-6 bg-[#1E1E1E] text-white rounded-full flex items-center justify-center"
+              >
+                ×
+              </button>
+            )}
+          </div>
+        );
+      })}
 
       {isFirstVoter && (
-        <div className='relative'>
+        <div className="relative">
           <button
             onClick={() => setShowDropdown(!showDropdown)}
-            className='w-12 h-12 flex items-center justify-center'
+            className="w-12 h-12 flex items-center justify-center"
           >
-            <ChevronDownIcon.default
+            <ChevronDownIcon
               className={`w-6 h-6 text-white transform transition-transform duration-200 ${
-                showDropdown ? 'rotate-180' : 'rotate-0'
+                showDropdown ? "rotate-180" : "rotate-0"
               }`}
             />
           </button>
 
           {showDropdown && (
-            <div className='absolute top-full mt-2 right-0 w-40 bg-[#222] border border-[#1E1E1E] rounded-[23px] text-white z-10 overflow-hidden'>
-              {!selectedOptionalFields.includes('Twitter Handle') && (
+            <div className="absolute top-full mt-2 right-0 w-40 bg-[#222] border border-[#1E1E1E] rounded-[23px] text-white z-10 overflow-hidden">
+              {!selectedOptionalFields.includes("Twitter Handle") && (
                 <button
                   onClick={handleAddTwitterHandle}
-                  className='w-full text-left px-4 py-3 hover:bg-[#555]'
+                  className="w-full text-left px-4 py-3 hover:bg-[#555]"
                 >
                   Twitter Handle
                 </button>
               )}
 
               <input
-                type='text'
-                placeholder='Add custom field'
+                type="text"
+                placeholder="Add custom field"
                 value={newCustomOption}
                 onChange={(e) => setNewCustomOption(e.target.value)}
-                className='w-full h-12 bg-[#333] text-white focus:outline-none border-transparent focus:border-transparent focus:ring-0 px-2 '
+                className="w-full h-12 bg-[#333] text-white focus:outline-none border-transparent focus:border-transparent focus:ring-0 px-2 "
               />
               <button
-                onClick={handleAddCustomOption}
-                className='w-full bg-[#444] px-2 py-3 rounded text-white hover:bg-[#555]'
+                onClick={() => handleAddCustomOption}
+                className="w-full bg-[#444] px-2 py-3 rounded text-white hover:bg-[#555]"
               >
                 Add Field
               </button>
@@ -439,8 +436,8 @@ const VoterInput = ({
         </div>
       )}
       <button
-        onClick={addVoter}
-        className='w-12 h-12 bg-[#222] text-white rounded-[23px] border border-[#1E1E1E] flex items-center justify-center'
+        onClick={() => addVoter}
+        className="w-12 h-12 bg-[#222] text-white rounded-[23px] border border-[#1E1E1E] flex items-center justify-center"
       >
         <PlusIcon />
       </button>
@@ -448,14 +445,19 @@ const VoterInput = ({
   );
 };
 
-export default ({ onPrevious, onNext, initialData }: {
+export default ({
+  onPrevious,
+  onNext,
+  initialData,
+}: {
   onPrevious: () => void;
   onNext: (data: types.ElectionStaticData) => void;
   initialData: types.ElectionStaticData;
 }) => {
   const [voters, setVoters] = useState<types.Voter[]>(initialData.voters_list);
   const [requiredFields, setRequiredFields] = useState<string[]>([]);
-  const [customOptionNames, setCustomOptionNames] = useState<types.VoterCustomFields>({});
+  const [customOptionNames, setCustomOptionNames] =
+    useState<types.VoterCustomFields>({});
 
   const isNextEnabled = voters.length > 0;
 
@@ -468,11 +470,11 @@ export default ({ onPrevious, onNext, initialData }: {
   };
 
   return (
-    <div className='flex flex-col h-[calc(100vh-215px)] p-4'>
-      <div className='mb-4'>
-        <h3 className='text-white text-xl'>Step 2: Add types.Voter Addresses</h3>
+    <div className="flex flex-col h-[calc(100vh-215px)] p-4">
+      <div className="mb-4">
+        <h3 className="text-white text-xl">Add Voter Addresses</h3>
       </div>
-      <div className='mb-8'>
+      <div className="mb-8">
         <VoterInput
           voters={voters}
           setVoters={setVoters}
@@ -481,8 +483,8 @@ export default ({ onPrevious, onNext, initialData }: {
           setCustomOptionNamesInParent={setCustomOptionNames}
         />
       </div>
-      <div className='flex-1 overflow-y-auto'>
-        <div className='w-full overflow-y-scroll flex flex-col space-y-2 items-start'>
+      <div className="flex-1 overflow-y-auto">
+        <div className="w-full overflow-y-scroll flex flex-col space-y-2 items-start">
           {voters.map((eachVoter, index) => (
             <VoterItem
               key={index}
@@ -496,17 +498,11 @@ export default ({ onPrevious, onNext, initialData }: {
           ))}
         </div>
       </div>
-      <div className='flex justify-between mt-4'>
-        <Button
-          variant='back'
-          onClick={onPrevious}
-        >
+      <div className="flex justify-between mt-4">
+        <Button variant="back" onClick={() => onPrevious}>
           Previous
         </Button>
-        <Button
-          onClick={handleNext}
-          disabled={!isNextEnabled}
-        >
+        <Button onClick={() => handleNext} disabled={!isNextEnabled}>
           Next
         </Button>
       </div>

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { PropsWithChildren, useContext, createContext, useState } from 'react';
-import { Signature } from 'o1js';
+import { PropsWithChildren, useContext, createContext, useState } from "react";
+import { Signature } from "o1js";
 
-import { ZKProgramCompileContext } from '@/contexts/ZKProgramCompileContext.jsx';
+import { ZKProgramCompileContext } from "@/contexts/ZKProgramCompileContext";
 
 interface AuroWalletContextInterface {
   auroWalletAddress: string;
@@ -17,38 +17,38 @@ interface AuroWalletContextInterface {
     publicKey: string;
   }) => Promise<string | Error>;
   disconnectAuroWallet: () => void;
-};
+}
 
 export const AuroWalletContext = createContext<AuroWalletContextInterface>({
-  auroWalletAddress: '',
+  auroWalletAddress: "",
   connectAuroWallet: async () => false,
-  signElectionId: async () => '',
-  generateEncodedVoteProof: async () => '',
+  signElectionId: async () => "",
+  generateEncodedVoteProof: async () => "",
   disconnectAuroWallet: () => {},
 });
 
-export const AuroWalletProvider = ({
-  children
-}: PropsWithChildren<{}>) => {
-  const [auroWalletAddress, setAuroWalletAddress] = useState<AuroWalletContextInterface['auroWalletAddress']>('');
+export const AuroWalletProvider = ({ children }: PropsWithChildren<{}>) => {
+  const [auroWalletAddress, setAuroWalletAddress] =
+    useState<AuroWalletContextInterface["auroWalletAddress"]>("");
 
-  const { zkProgramWorkerClientInstance, hasBeenSetup, isSettingUp } = useContext(ZKProgramCompileContext);
+  const { zkProgramWorkerClientInstance, hasBeenSetup, isSettingUp } =
+    useContext(ZKProgramCompileContext);
 
   const connectAuroWallet = async (): Promise<boolean> => {
     try {
       if (!(window as any).auro)
-        throw new Error('Auro wallet extension not found. Please install it.');
+        throw new Error("Auro wallet extension not found. Please install it.");
 
       const accounts = await (window as any).auro.requestAccounts();
 
       if (accounts.length === 0)
-        throw new Error('No accounts found in Auro wallet.');
+        throw new Error("No accounts found in Auro wallet.");
 
       const address = accounts[0];
       setAuroWalletAddress(address);
       return true;
     } catch (error) {
-      throw new Error('Failed to connect to Auro wallet.');
+      throw new Error("Failed to connect to Auro wallet.");
     }
   };
 
@@ -57,27 +57,28 @@ export const AuroWalletProvider = ({
   ): Promise<string | Error> => {
     try {
       if (!(window as any).auro)
-        throw new Error('Auro wallet extension not found. Please install it.');
+        throw new Error("Auro wallet extension not found. Please install it.");
 
-      const signature = await (window as any).auro.signMessage({ message: electionId });
-      console.log('Raw signature from Auro wallet:', signature);
+      const signature = await (window as any).auro.signMessage({
+        message: electionId,
+      });
+      console.log("Raw signature from Auro wallet:", signature);
 
-      if (!signature)
-        throw new Error('Failed to sign the election ID.');
+      if (!signature) throw new Error("Failed to sign the election ID.");
 
       if (
         !signature.signature ||
-        typeof signature.signature.field != 'string' ||
-        typeof signature.signature.scalar != 'string'
+        typeof signature.signature.field != "string" ||
+        typeof signature.signature.scalar != "string"
       )
-        throw new Error('Unexpected signature format.');
+        throw new Error("Unexpected signature format.");
 
       return Signature.fromObject({
         r: signature.signature.field,
         s: signature.signature.scalar,
       }).toBase58();
     } catch (error) {
-      throw new Error('Failed to sign the election ID.');
+      throw new Error("Failed to sign the election ID.");
     }
   };
 
@@ -105,24 +106,26 @@ export const AuroWalletProvider = ({
 
     try {
       if (isSettingUp)
-        throw new Error('System is initializing. Please wait...');
+        throw new Error("System is initializing. Please wait...");
 
       if (!hasBeenSetup)
-        throw new Error('System not ready yet. Please try again later.');
+        throw new Error("System not ready yet. Please try again later.");
 
       if (!zkProgramWorkerClientInstance)
-        throw new Error('Zkapp Worker Client not found.');
+        throw new Error("Zkapp Worker Client not found.");
 
-      const encodedVoteProof = await zkProgramWorkerClientInstance.createVote(vote);
+      const encodedVoteProof = await zkProgramWorkerClientInstance.createVote(
+        vote
+      );
 
       return encodedVoteProof;
     } catch (error) {
-      throw new Error('Failed to generate zk-proof.');
+      throw new Error("Failed to generate zk-proof.");
     }
   };
 
   const disconnectAuroWallet = () => {
-    setAuroWalletAddress('');
+    setAuroWalletAddress("");
   };
 
   return (

@@ -1,27 +1,27 @@
-'use client';
+"use client";
 
-import { useContext, useState, useEffect } from 'react';
-import Image from 'next/image.js';
-import { FaImage } from 'react-icons/fa';
-import { IoClose } from 'react-icons/io5';
+import { useContext, useState, useEffect } from "react";
+import Image from "next/image.js";
+import { FaImage } from "react-icons/fa";
+import { IoClose } from "react-icons/io5";
 
-import { types } from 'zkvot-core';
+import { types } from "zkvot-core";
 
-import Button from '@/app/(partials)/Button.jsx';
-import CopyButton from '@/app/(partials)/CopyButton.jsx';
-import DateFormatter from '@/app/(partials)/DateFormatter.jsx';
-import LoadingOverlay from '@/app/(partials)/LoadingOverlay.jsx';
-import ToolTip from '@/app/(partials)/ToolTip.jsx';
-import WalletSelectionModal from '@/app/(partials)/WalletSelectionModal.jsx';
+import Button from "@/app/(partials)/Button";
+import CopyButton from "@/app/(partials)/CopyButton";
+import DateFormatter from "@/app/(partials)/DateFormatter";
+import LoadingOverlay from "@/app/(partials)/LoadingOverlay";
+import ToolTip from "@/app/(partials)/ToolTip";
+import WalletSelectionModal from "@/app/(partials)/WalletSelectionModal";
 
-import { AuroWalletContext } from '@/contexts/AuroWalletContext.jsx';
+import { AuroWalletContext } from "@/contexts/AuroWalletContext";
 // import { MetamaskWalletContext } from '@/contexts/MetamaskWalletContext';
-import { SelectedWalletContext } from '@/contexts/SelectedWalletContext.jsx';
-import { ToastContext } from '@/contexts/ToastContext.jsx';
-import { ZKProgramCompileContext } from '@/contexts/ZKProgramCompileContext.jsx';
+import { SelectedWalletContext } from "@/contexts/SelectedWalletContext";
+import { ToastContext } from "@/contexts/ToastContext";
+import { ZKProgramCompileContext } from "@/contexts/ZKProgramCompileContext";
 
-import LearnMoreIcon from '@/public/elections/partials/learn-more-icon.jsx';
-import Clock from '@/public/elections/partials/clock-icon.jsx';
+import LearnMoreIcon from "@/public/elections/partials/learn-more-icon";
+import Clock from "@/public/elections/partials/clock-icon";
 
 export default ({
   electionData,
@@ -47,7 +47,7 @@ export default ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
-  const [eligibilityStatus, setEligibilityStatus] = useState('not_connected');
+  const [eligibilityStatus, setEligibilityStatus] = useState("not_connected");
 
   const {
     auroWalletAddress,
@@ -79,31 +79,35 @@ export default ({
       electionData.voters_list &&
       Array.isArray(electionData.voters_list)
     ) {
-      console.log('Voters List:', electionData.voters_list);
-      setEligibilityStatus('checking');
+      console.log("Voters List:", electionData.voters_list);
+      setEligibilityStatus("checking");
 
-      const votersPublicKeyList = electionData.voters_list.map((voter) => voter.public_key.trim().toLowerCase());
-      const eligible = userWalletAddresses.some((wallet) => votersPublicKeyList.includes(wallet));
+      const votersPublicKeyList = electionData.voters_list.map((voter) =>
+        voter.public_key.trim().toLowerCase()
+      );
+      const eligible = userWalletAddresses.some((wallet) =>
+        votersPublicKeyList.includes(wallet)
+      );
 
       if (eligible) {
-        setEligibilityStatus('eligible');
+        setEligibilityStatus("eligible");
       } else {
-        setEligibilityStatus('not_eligible');
+        setEligibilityStatus("not_eligible");
       }
     } else {
-      setEligibilityStatus('not_connected');
+      setEligibilityStatus("not_connected");
     }
   }, [userWalletAddresses, electionData]);
 
   useEffect(() => {
     return () => {
-      setEligibilityStatus('not_connected');
+      setEligibilityStatus("not_connected");
     };
   }, []);
 
   const handleWalletSelection = async (wallet: string) => {
     try {
-      if (selectedWallet === 'Mina') {
+      if (selectedWallet === "Mina") {
         disconnectAuroWallet();
       }
       // else if (selectedWallet === 'Metamask') {
@@ -115,7 +119,7 @@ export default ({
 
       let connectionSuccess = false;
 
-      if (wallet === 'Mina') {
+      if (wallet === "Mina") {
         connectionSuccess = await connectAuroWallet();
       }
       // else if (wallet === 'Metamask') {
@@ -123,45 +127,45 @@ export default ({
       // }
 
       if (connectionSuccess) {
-        showToast('Wallet connected successfully!', 'success');
+        showToast("Wallet connected successfully!", "success");
       } else {
-        setSelectedWallet('');
-        showToast('Wallet connection was not successful.', 'error');
+        setSelectedWallet("");
+        showToast("Wallet connection was not successful.", "error");
       }
     } catch (error) {
-      console.error('Error during wallet selection:', error);
-      showToast('An error occurred while selecting the wallet.', 'error');
+      console.error("Error during wallet selection:", error);
+      showToast("An error occurred while selecting the wallet.", "error");
     }
   };
 
   const handleVoteClick = async () => {
     if (
       selectedOption === null &&
-      eligibilityStatus !== 'not_eligible' &&
-      eligibilityStatus !== 'not_connected'
+      eligibilityStatus !== "not_eligible" &&
+      eligibilityStatus !== "not_connected"
     ) {
-      showToast('Please select an option to proceed.', 'error');
+      showToast("Please select an option to proceed.", "error");
       return;
     }
 
-    if (eligibilityStatus === 'eligible') {
+    if (eligibilityStatus === "eligible") {
       await handleConfirmAndContinue();
       return;
     }
 
-    if (eligibilityStatus === 'not_eligible') {
-      if (selectedWallet === 'Mina') {
+    if (eligibilityStatus === "not_eligible") {
+      if (selectedWallet === "Mina") {
         disconnectAuroWallet();
       }
       // else if (selectedWallet === 'Metamask') {
       //   await disconnectMetamaskWallet();
       // }
-      setSelectedWallet('');
+      setSelectedWallet("");
       setIsWalletModalOpen(true);
       return;
     }
 
-    if (eligibilityStatus === 'not_connected') {
+    if (eligibilityStatus === "not_connected") {
       setIsWalletModalOpen(true);
     }
   };
@@ -171,7 +175,7 @@ export default ({
   };
 
   const checkWalletConnection = () => {
-    if (selectedWallet === 'Mina') {
+    if (selectedWallet === "Mina") {
       return !!auroWalletAddress;
     }
     // else if (selectedWallet === 'Metamask') {
@@ -200,7 +204,7 @@ export default ({
 
   const handleConfirmAndContinue = async () => {
     if (!hasBeenSetup) {
-      showToast('Please wait for the setup to complete.', 'error');
+      showToast("Please wait for the setup to complete.", "error");
       return;
     }
     try {
@@ -208,36 +212,40 @@ export default ({
       setIsModalOpen(false);
 
       if (!checkWalletConnection()) {
-        showToast('Wallet not connected.', 'error');
+        showToast("Wallet not connected.", "error");
         setLoading(false); // Ensure loading is turned off
         return;
       }
 
-      if (eligibilityStatus !== 'eligible') {
-        showToast('You are not eligible to vote in this election.', 'error');
+      if (eligibilityStatus !== "eligible") {
+        showToast("You are not eligible to vote in this election.", "error");
         setLoading(false); // Ensure loading is turned off
         return;
       }
 
-      const signedElectionId = await signElectionId(electionData.mina_contract_id);
-      console.log('signedElectionId', signedElectionId);
+      const signedElectionId = await signElectionId(
+        electionData.mina_contract_id
+      );
+      console.log("signedElectionId", signedElectionId);
 
       if (signedElectionId instanceof Error) {
-        showToast('Failed to generate the signed election ID.', 'error');
+        showToast("Failed to generate the signed election ID.", "error");
         setLoading(false); // Ensure loading is turned off
         return;
-      };
+      }
 
       if (!signedElectionId?.length) {
-        showToast('Failed to generate the signed election ID.', 'error');
+        showToast("Failed to generate the signed election ID.", "error");
         setLoading(false); // Ensure loading is turned off
         return;
-      };
+      }
 
-      const votersArray = electionData.voters_list.map((voter) => voter.public_key).filter(each => each && each.trim().length)
+      const votersArray = electionData.voters_list
+        .map((voter) => voter.public_key)
+        .filter((each) => each && each.trim().length);
 
       if (votersArray.length === 0) {
-        showToast('No valid voters found.', 'error');
+        showToast("No valid voters found.", "error");
         setLoading(false); // Ensure loading is turned off
         return;
       }
@@ -253,19 +261,19 @@ export default ({
         publicKey
       );
 
-      console.log('electionJson', electionJson);
+      console.log("electionJson", electionJson);
 
       const proof = await generateEncodedVoteProof(electionJson);
 
       if (proof instanceof Error) {
-        showToast('Failed to generate the zkProof.', 'error');
+        showToast("Failed to generate the zkProof.", "error");
         setLoading(false); // Ensure loading is turned off
         return;
-      };
+      }
 
       setZkProofData(proof);
 
-      if (selectedWallet === 'Mina') {
+      if (selectedWallet === "Mina") {
         disconnectAuroWallet();
       }
       // else if (selectedWallet === 'Metamask') {
@@ -274,8 +282,11 @@ export default ({
 
       goToNextStep();
     } catch (error) {
-      console.error('Error submitting zkProof:', (error as any).message || error);
-      showToast('Error submitting zkProof.', 'error');
+      console.error(
+        "Error submitting zkProof:",
+        (error as any).message || error
+      );
+      showToast("Error submitting zkProof.", "error");
     } finally {
       setLoading(false);
     }
@@ -283,80 +294,80 @@ export default ({
 
   const Placeholder = ({ className }: { className: string }) => (
     <div className={`${className} flex items-center justify-center h-full`}>
-      <FaImage className='text-gray-500 text-6xl' />
+      <FaImage className="text-gray-500 text-6xl" />
     </div>
   );
 
   return (
-    <div className='flex flex-col items-center px-4 sm:px-6 md:px-8'>
-      {loading && <LoadingOverlay text='Generating zk Proof...' />}
+    <div className="flex flex-col items-center px-4 sm:px-6 md:px-8">
+      {loading && <LoadingOverlay text="Generating zk Proof..." />}
 
-      <div className='py-4 w-full text-start'>
-        Already voted?{' '}
-        <button className='relative inline-flex items-center font-medium text-gray-300 transition duration-300 ease-out hover:text-white'>
+      <div className="py-4 w-full text-start">
+        Already voted?{" "}
+        <button className="relative inline-flex items-center font-medium text-gray-300 transition duration-300 ease-out hover:text-white">
           See Results
         </button>
       </div>
 
-      <div className='flex flex-col md:flex-row items-start w-full h-full text-white mb-6 flex-grow'>
-        <div className='w-full md:w-1/2 flex'>
-          <div className='flex w-full h-64 rounded-3xl overflow-hidden'>
-            <div className='w-full relative'>
+      <div className="flex flex-col md:flex-row items-start w-full h-full text-white mb-6 flex-grow">
+        <div className="w-full md:w-1/2 flex">
+          <div className="flex w-full h-64 rounded-3xl overflow-hidden">
+            <div className="w-full relative">
               {electionData.image_url.length ? (
-                <div className='w-full h-full relative'>
-                  <Image.default
+                <div className="w-full h-full relative">
+                  <Image
                     src={electionData.image_url}
-                    alt='Candidate 1'
+                    alt="Candidate 1"
                     fill
-                    style={{ objectFit: 'cover' }}
-                    className='rounded-l-lg'
+                    style={{ objectFit: "cover" }}
+                    className="rounded-l-lg"
                   />
                 </div>
               ) : (
-                <Placeholder className='rounded-l-lg' />
+                <Placeholder className="rounded-l-lg" />
               )}
             </div>
           </div>
         </div>
-        <div className='p-4 w-full h-full flex flex-col justify-between'>
-          <div className='flex flex-row w-full justify-between'>
-            <div className='text-[#B7B7B7] text-sm mb-2 flex flex-row items-center'>
-              <span className='mr-2 group relative'>
+        <div className="p-4 w-full h-full flex flex-col justify-between">
+          <div className="flex flex-row w-full justify-between">
+            <div className="text-[#B7B7B7] text-sm mb-2 flex flex-row items-center">
+              <span className="mr-2 group relative">
                 <ToolTip
-                  content='It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.'
-                  position='top'
-                  arrowPosition='start'
+                  content="It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout."
+                  position="top"
+                  arrowPosition="start"
                 >
-                  <LearnMoreIcon color='#B7B7B7' />
+                  <LearnMoreIcon color="#B7B7B7" />
                 </ToolTip>
               </span>
-              Election id:{' '}
-              {String(electionData.mina_contract_id).slice(0, 12) + '...'}
-              <div className='ml-2'>
+              Election id:{" "}
+              {String(electionData.mina_contract_id).slice(0, 12) + "..."}
+              <div className="ml-2">
                 <CopyButton
                   textToCopy={electionData.mina_contract_id}
-                  iconColor='#B7B7B7'
+                  iconColor="#B7B7B7"
                   position={{ top: -20, left: -38 }}
                 />
               </div>
             </div>
-            <span className='flex flex-row justify-center items-center'>
+            <span className="flex flex-row justify-center items-center">
               <span>
                 <Clock />
               </span>
-              <span className='ml-1 text-sm text-[#B7B7B7]'>
+              <span className="ml-1 text-sm text-[#B7B7B7]">
                 <DateFormatter date={electionData.start_date} />
               </span>
             </span>
           </div>
-          <div className='flex-grow min-h-52'>
-            <h2 className='text-[24px] mb-2'>{electionData.question}</h2>
+          <div className="flex-grow min-h-52">
+            <h2 className="text-[24px] mb-2">{electionData.question}</h2>
             <p className={`my-4 text-[16px] italic text-[#F6F6F6]`}>
               {electionData.description}
             </p>
           </div>
 
-          <div className='flex flex-col md:flex-row justify-between py-2 gap-y-1'>
+          <div className="flex flex-col md:flex-row justify-between py-2 gap-y-1">
             {/* <span>
               <span className='text-[#B7B7B7] text-sm mr-1 flex flex-row items-center'>
                 {electionData.voters_list} Assigned Voters
@@ -374,7 +385,7 @@ export default ({
                 </button>
               </span>
             </span> */}
-            <span className='flex flex-row items-center'>
+            <span className="flex flex-row items-center">
               {/* <span className='text-primary mr-2 italic text-sm'>
                 zkVote by
               </span>
@@ -393,21 +404,22 @@ export default ({
         </div>
       </div>
 
-      <div className='w-full my-5'>
-        <h3 className='text-xl mb-4'>Options</h3>
+      <div className="w-full my-5">
+        <h3 className="text-xl mb-4">Options</h3>
 
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {electionData.options.map((option, index) => (
             <button
               key={index}
               className={`p-4 text-center bg-[#222222] rounded-2xl
-        ${selectedOption === index
-                  ? 'border-primary border-[1px] shadow-lg'
-                  : 'hover:bg-[#333333]'
-                }
-        ${eligibilityStatus !== 'eligible' ? 'cursor-not-allowed' : ''}`}
+        ${
+          selectedOption === index
+            ? "border-primary border-[1px] shadow-lg"
+            : "hover:bg-[#333333]"
+        }
+        ${eligibilityStatus !== "eligible" ? "cursor-not-allowed" : ""}`}
               onClick={() => setSelectedOption(index)}
-              disabled={loading || eligibilityStatus !== 'eligible'}
+              disabled={loading || eligibilityStatus !== "eligible"}
             >
               {option}
             </button>
@@ -415,41 +427,38 @@ export default ({
         </div>
       </div>
 
-      <div className='w-full pt-8 flex justify-end space-x-4'>
-        <Button
-          onClick={handleVoteClick}
-          loading={loading}
-        >
-          {eligibilityStatus === 'eligible'
-            ? 'Vote'
-            : eligibilityStatus === 'not_eligible'
-              ? 'Switch Wallet'
-              : 'Connect wallet to check eligibility'}
+      <div className="w-full pt-8 flex justify-end space-x-4">
+        <Button onClick={() => handleVoteClick} loading={loading}>
+          {eligibilityStatus === "eligible"
+            ? "Vote"
+            : eligibilityStatus === "not_eligible"
+            ? "Switch Wallet"
+            : "Connect wallet to check eligibility"}
         </Button>
 
         {isWalletModalOpen && (
           <WalletSelectionModal
-            availableWallets={['Mina', 'Metamask']}
+            availableWallets={["Mina", "Metamask"]}
             onClose={() => setIsWalletModalOpen(false)}
             onSelectWallet={handleWalletSelection}
           />
         )}
 
         {isModalOpen && (
-          <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'>
-            <div className='bg-[#141414] rounded-[50px] p-8 shadow-lg w-[680px] h-auto border-[1px] border-primary text-center relative'>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-[#141414] rounded-[50px] p-8 shadow-lg w-[680px] h-auto border-[1px] border-primary text-center relative">
               <button
-                onClick={handleCloseModal}
-                className='flex w-full justify-end'
+                onClick={() => handleCloseModal}
+                className="flex w-full justify-end"
               >
                 <IoClose size={28} />
               </button>
-              <div className='px-[57px] py-2'>
-                <h3 className='text-xl mb-4'>
+              <div className="px-[57px] py-2">
+                <h3 className="text-xl mb-4">
                   Wait a sec, have you voted before?
                 </h3>
 
-                <p className='mb-8'>
+                <p className="mb-8">
                   Since it is fully anonymous, it is not really easy to
                   understand if you have voted before or not. Nevertheless, if
                   you send your vote twice, it will not be counted for the
@@ -458,10 +467,10 @@ export default ({
                   sequencers.
                 </p>
 
-                <div className='flex justify-center pt-9'>
+                <div className="flex justify-center pt-9">
                   <Button
                     loading={loading}
-                    onClick={handleConfirmAndContinue}
+                    onClick={() => handleConfirmAndContinue}
                   >
                     Nope, please continue
                   </Button>
@@ -472,8 +481,8 @@ export default ({
         )}
       </div>
 
-      {eligibilityStatus === 'not_eligible' && (
-        <div className='w-full mt-2 text-center text-gray-300 text-sm'>
+      {eligibilityStatus === "not_eligible" && (
+        <div className="w-full mt-2 text-center text-gray-300 text-sm">
           You’re not eligible for this election. You might be connected to the
           wrong wallet. Please try switching wallets.
         </div>

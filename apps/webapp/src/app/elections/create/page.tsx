@@ -1,35 +1,36 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 
-import { types } from 'zkvot-core';
+import { types } from "zkvot-core";
 
-import ElectionInfoStep from '@/app/elections/create/(steps)/ElectionInfo.jsx';
-import VotersListStep from '@/app/elections/create/(steps)/VotersList.jsx';
-import CommLayerSelectionStep from '@/app/elections/create/(steps)/CommLayerSelection.jsx';
-import CommLayerSubmissionStep from '@/app/elections/create/(steps)/CommLayerSubmission.jsx';
-import StorageLayerSelectionStep from '@/app/elections/create/(steps)/StorageLayerSelection.jsx';
-import StorageLayerSubmissionStep from '@/app/elections/create/(steps)/StorageLayerSubmission.jsx';
-import DeployElectionStep from '@/app/elections/create/(steps)/DeployElection.jsx';
+import ElectionInfoStep from "@/app/elections/create/(steps)/ElectionInfo";
+import VotersListStep from "@/app/elections/create/(steps)/VotersList";
+import CommLayerSelectionStep from "@/app/elections/create/(steps)/CommLayerSelection";
+import CommLayerSubmissionStep from "@/app/elections/create/(steps)/CommLayerSubmission";
+import StorageLayerSelectionStep from "@/app/elections/create/(steps)/StorageLayerSelection";
+import StorageLayerSubmissionStep from "@/app/elections/create/(steps)/StorageLayerSubmission";
+import DeployElectionStep from "@/app/elections/create/(steps)/DeployElection";
 
 const HomePage = () => {
   const [step, setStep] = useState<number>(1);
   const [electionData, setElectionData] = useState<types.ElectionStaticData>({
     start_date: new Date(),
     end_date: new Date(),
-    question: '',
+    question: "",
     options: [],
-    description: '',
-    image_raw: '',
+    description: "",
+    image_raw: "",
     voters_list: [],
     communication_layers: [],
   });
-  const [storageLayerPlatform, setStorageLayerPlatform] = useState<types.StorageLayerPlatformCodes>('A');
-  const [storageLayerId, setStorageLayerId] = useState<string>('');
+  const [storageLayerPlatform, setStorageLayerPlatform] =
+    useState<types.StorageLayerPlatformCodes>("A");
+  const [storageLayerId, setStorageLayerId] = useState<string>("");
 
   return (
-    <div className='flex justify-center items-center h-full overflow-y-scroll pb-2'>
-      <div className='w-[1062px] h-full p-6 rounded-lg '>
+    <div className="flex justify-center items-center h-full overflow-y-scroll pb-2">
+      <div className="w-[1062px] h-full p-6 rounded-lg ">
         {step === 1 && (
           <ElectionInfoStep
             onNext={(data: types.ElectionStaticData) => {
@@ -73,8 +74,8 @@ const HomePage = () => {
           <StorageLayerSelectionStep
             onPrevious={() => setStep(4)}
             onNext={(data: {
-              election: types.ElectionStaticData,
-              storage_layer_platform: types.StorageLayerPlatformCodes
+              election: types.ElectionStaticData;
+              storage_layer_platform: types.StorageLayerPlatformCodes;
             }) => {
               setStorageLayerPlatform(data.storage_layer_platform);
               setStep(6);
@@ -86,16 +87,16 @@ const HomePage = () => {
           <StorageLayerSubmissionStep
             onPrevious={() => setStep(5)}
             onNext={(data: {
-              election: types.ElectionStaticData,
-              storage_layer_platform: types.StorageLayerPlatformCodes
-              storage_layer_id: string
+              election: types.ElectionStaticData;
+              storage_layer_platform: types.StorageLayerPlatformCodes;
+              storage_layer_id: string;
             }) => {
               setStorageLayerId(data.storage_layer_id);
               setStep(7);
             }}
             initialData={{
               election: electionData,
-              storage_layer_platform: storageLayerPlatform
+              storage_layer_platform: storageLayerPlatform,
             }}
           />
         )}
@@ -105,7 +106,7 @@ const HomePage = () => {
             data={{
               election: electionData,
               storage_layer_platform: storageLayerPlatform,
-              storage_layer_id: storageLayerId
+              storage_layer_id: storageLayerId,
             }}
           />
         )}

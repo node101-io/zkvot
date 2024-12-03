@@ -32,3 +32,6 @@ src/local/mock.js
 *.tgz
 
 *.tsbuildinfo
+
+local/
+ecdsa256/

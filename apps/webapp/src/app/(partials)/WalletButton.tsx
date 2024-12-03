@@ -1,31 +1,35 @@
-'use client';
+"use client";
 
-import { useContext, useEffect, useState } from 'react';
-import Image from 'next/image.js';
+import { useContext, useEffect, useState } from "react";
+import Image from "next/image.js";
 
-import Button from '@/app/(partials)/Button.jsx';
+import Button from "@/app/(partials)/Button";
 
-import WalletSelectionModal from '@/app/(partials)/WalletSelectionModal.jsx';
+import WalletSelectionModal from "@/app/(partials)/WalletSelectionModal";
 
-import { AuroWalletContext } from '@/contexts/AuroWalletContext.jsx';
-import { SelectedWalletContext } from '@/contexts/SelectedWalletContext.jsx';
-import { SubwalletContext } from '@/contexts/SubwalletContext.jsx';
+import { AuroWalletContext } from "@/contexts/AuroWalletContext";
+import { SelectedWalletContext } from "@/contexts/SelectedWalletContext";
+import { SubwalletContext } from "@/contexts/SubwalletContext";
 // import { MetamaskWalletContext } from '@/contexts/MetamaskWalletContext';
 
-import LogoutIcon from '@/public/general/icons/logout.jsx';
+import LogoutIcon from "@/public/general/icons/logout";
 
-import AuroIcon from '@/public/general/wallet-logos/auro.png';
-import SubwalletIcon from '@/public/general/wallet-logos/subwallet.png';
+import AuroIcon from "@/public/general/wallet-logos/auro.png";
+import SubwalletIcon from "@/public/general/wallet-logos/subwallet.png";
 // import MetamaskIcon from '@/public/wallets/Metamask.svg';
 
 const WalletButton = () => {
-  const { auroWalletAddress, connectAuroWallet, disconnectAuroWallet } = useContext(AuroWalletContext);
-  const { selectedWallet, setSelectedWallet } = useContext(SelectedWalletContext);
-  const { subWalletAddress, connectSubWallet, disconnectSubWallet } = useContext(SubwalletContext);
+  const { auroWalletAddress, connectAuroWallet, disconnectAuroWallet } =
+    useContext(AuroWalletContext);
+  const { selectedWallet, setSelectedWallet } = useContext(
+    SelectedWalletContext
+  );
+  const { subWalletAddress, connectSubWallet, disconnectSubWallet } =
+    useContext(SubwalletContext);
   // const { metamaskWalletAddress, connectMetamaskWallet, disconnectMetamaskWallet } = useContext(MetamaskWalletContext);
 
   const [isClient, setIsClient] = useState<boolean>(false);
-  const [walletAddress, setWalletAddress] = useState<string>('');
+  const [walletAddress, setWalletAddress] = useState<string>("");
   const [isWalletModalOpen, setIsWalletModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
@@ -34,17 +38,17 @@ const WalletButton = () => {
 
   useEffect(() => {
     if (auroWalletAddress) {
-      setSelectedWallet('Auro');
+      setSelectedWallet("Auro");
       setWalletAddress(auroWalletAddress);
     } else if (subWalletAddress) {
-      setSelectedWallet('Subwallet');
+      setSelectedWallet("Subwallet");
       setWalletAddress(subWalletAddress);
-    // } else if (metamaskWalletAddress) {
-    //   setSelectedWallet('Metamask');
-    //   setWalletAddress(metamaskWalletAddress);
+      // } else if (metamaskWalletAddress) {
+      //   setSelectedWallet('Metamask');
+      //   setWalletAddress(metamaskWalletAddress);
     } else {
-      setSelectedWallet('');
-      setWalletAddress('');
+      setSelectedWallet("");
+      setWalletAddress("");
     }
   }, [
     auroWalletAddress,
@@ -60,77 +64,79 @@ const WalletButton = () => {
   const handleWalletSelection = async (wallet: string) => {
     setIsWalletModalOpen(false);
 
-    if (wallet === 'Auro') {
+    if (wallet === "Auro") {
       await connectAuroWallet();
-    // } else if (wallet === 'Metamask') {
-    //   await connectMetamaskWallet();
-    } else if (wallet === 'Subwallet') {
+      // } else if (wallet === 'Metamask') {
+      //   await connectMetamaskWallet();
+    } else if (wallet === "Subwallet") {
       await connectSubWallet();
-    };
+    }
   };
 
   const handleDisconnect = () => {
-    if (selectedWallet === 'Auro') {
+    if (selectedWallet === "Auro") {
       disconnectAuroWallet();
-    // } else if (selectedWallet === 'Metamask') {
-    //   disconnectMetamaskWallet();
-    } else if (selectedWallet === 'Subwallet') {
+      // } else if (selectedWallet === 'Metamask') {
+      //   disconnectMetamaskWallet();
+    } else if (selectedWallet === "Subwallet") {
       disconnectSubWallet();
-    };
+    }
   };
 
   const formatWalletAddress = (address: string) => {
-    if (!address) return '';
+    if (!address) return "";
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
   const getWalletIcon = (wallet: string) => {
     switch (wallet) {
-      case 'Auro':
+      case "Auro":
         return AuroIcon;
-      case 'Subwallet':
+      case "Subwallet":
         return SubwalletIcon;
       // case 'Metamask':
       //   return MetamaskIcon;
       default:
-        return '';
+        return "";
     }
   };
 
   return (
     <>
       {isClient && (
-        <div className='flex items-center md:ml-12'>
+        <div className="flex items-center md:ml-12">
           {selectedWallet ? (
-            <div className='flex items-center space-x-4 py-2'>
-              <div className='flex items-center space-x-2'>
-                <Image.default
+            <div className="flex items-center space-x-4 py-2">
+              <div className="flex items-center space-x-2">
+                <Image
                   src={getWalletIcon(selectedWallet)}
                   alt={selectedWallet}
                   width={26}
                   height={26}
-                  className='rounded-full'
+                  className="rounded-full"
                 />
-                <div className='text-white'>
+                <div className="text-white">
                   {formatWalletAddress(walletAddress)}
                 </div>
               </div>
 
               <button
-                onClick={handleDisconnect}
-                className='flex items-center space-x-2 hover:opacity-75'
+                onClick={() => handleDisconnect}
+                className="flex items-center space-x-2 hover:opacity-75"
               >
-                <LogoutIcon/>
+                <LogoutIcon />
               </button>
             </div>
           ) : (
             <>
-              <Button onClick={handleConnect}>Connect Wallet</Button>
+              <Button onClick={() => handleConnect}>Connect Wallet</Button>
               {isWalletModalOpen && (
                 <WalletSelectionModal
-                  availableWallets={['Auro',
+                  availableWallets={[
+                    "Auro",
                     // 'Metamask',
-                  'Subwallet']}
+                    "Subwallet",
+                  ]}
                   onClose={() => setIsWalletModalOpen(false)}
                   onSelectWallet={handleWalletSelection}
                 />

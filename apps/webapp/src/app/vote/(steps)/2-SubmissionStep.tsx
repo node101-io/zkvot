@@ -1,47 +1,55 @@
-'use client';
+"use client";
 
-import { Dispatch, useContext, useEffect, useState , SetStateAction } from 'react';
-import Image from 'next/image.js';
-import { FaImage } from 'react-icons/fa';
+import {
+  Dispatch,
+  useContext,
+  useEffect,
+  useState,
+  SetStateAction,
+} from "react";
+import Image from "next/image.js";
+import { FaImage } from "react-icons/fa";
 
-import { types } from 'zkvot-core';
+import Button from "@/app/(partials)/Button";
+import CopyButton from "@/app/(partials)/CopyButton";
+import DateFormatter from "@/app/(partials)/DateFormatter";
+import ToolTip from "@/app/(partials)/ToolTip";
 
-import Button from '@/app/(partials)/Button.jsx';
-import CopyButton from '@/app/(partials)/CopyButton.jsx';
-import DateFormatter from '@/app/(partials)/DateFormatter.jsx';
-import ToolTip from '@/app/(partials)/ToolTip.jsx';
+import { SubwalletContext } from "@/contexts/SubwalletContext";
+import { ToastContext } from "@/contexts/ToastContext";
 
-import { SubwalletContext } from '@/contexts/SubwalletContext.jsx';
-import { ToastContext } from '@/contexts/ToastContext.jsx';
+import LearnMoreIcon from "@/public/elections/partials/learn-more-icon";
+import Clock from "@/public/elections/partials/clock-icon";
 
-import LearnMoreIcon from '@/public/elections/partials/learn-more-icon.jsx';
-import Clock from '@/public/elections/partials/clock-icon.jsx';
+import { sendVoteViaBackend } from "@/utils/backend";
+import { CommunicationLayerDetails } from "@/utils/constants";
+import types from "zkvot-core/src/types.js";
 
-import { sendVoteViaBackend } from '@/utils/backend.js';
-import { CommunicationLayerDetails } from '@/utils/constants.jsx';
-
-const ModeSelection = ({ selectionMode, setSelectionMode }: {
+const ModeSelection = ({
+  selectionMode,
+  setSelectionMode,
+}: {
   selectionMode: string;
-  setSelectionMode: Dispatch<SetStateAction<'direct' | 'backend'>>;
+  setSelectionMode: Dispatch<SetStateAction<"direct" | "backend">>;
 }) => {
   return (
-    <div className='flex mb-6 w-full space-x-4'>
+    <div className="flex mb-6 w-full space-x-4">
       <button
-        onClick={() => setSelectionMode('direct')}
+        onClick={() => setSelectionMode("direct")}
         className={`focus:outline-none ${
-          selectionMode === 'direct'
-            ? 'text-white border-b-[1px] pb-1 border-primary'
-            : 'text-[#B7B7B7]'
+          selectionMode === "direct"
+            ? "text-white border-b-[1px] pb-1 border-primary"
+            : "text-[#B7B7B7]"
         }`}
       >
         Direct Thru Chain
       </button>
       <button
-        onClick={() => setSelectionMode('backend')}
+        onClick={() => setSelectionMode("backend")}
         className={`focus:outline-none ${
-          selectionMode === 'backend'
-            ? 'text-white border-b-[1px] pb-1 border-primary'
-            : 'text-[#B7B7B7]'
+          selectionMode === "backend"
+            ? "text-white border-b-[1px] pb-1 border-primary"
+            : "text-[#B7B7B7]"
         }`}
       >
         Through Our Backends
@@ -57,14 +65,14 @@ const DASelection = ({
   isSubmitting,
 }: {
   communicationLayers: types.DaLayerInfo[];
-  selectedDA: types.DaLayerInfo['name'] | '';
-  setSelectedDA: (da: types.DaLayerInfo['name']) => void;
+  selectedDA: types.DaLayerInfo["name"] | "";
+  setSelectedDA: (da: types.DaLayerInfo["name"]) => void;
   isSubmitting: boolean;
 }) => {
   return (
     <div
       className={`grid grid-cols-1 sm:grid-cols-2 gap-4 w-full ${
-        isSubmitting ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+        isSubmitting ? "opacity-50 cursor-not-allowed pointer-events-none" : ""
       }`}
     >
       {communicationLayers.map((layer) => (
@@ -72,23 +80,23 @@ const DASelection = ({
           key={layer.name}
           className={`p-4 bg-[#222222] rounded-2xl cursor-pointer flex items-center transition duration-200 ${
             selectedDA === layer.name
-              ? 'border-[1px] border-primary shadow-lg'
-              : 'hover:bg-[#333333]'
+              ? "border-[1px] border-primary shadow-lg"
+              : "hover:bg-[#333333]"
           }`}
           onClick={() => !isSubmitting && setSelectedDA(layer.name)}
         >
-          <div className='flex-shrink-0 mr-4'>
+          <div className="flex-shrink-0 mr-4">
             {CommunicationLayerDetails[layer.name].logo || (
-              <div className='w-12 h-12 bg-gray-500 rounded-full' />
+              <div className="w-12 h-12 bg-gray-500 rounded-full" />
             )}
           </div>
-          <div className='flex flex-col h-full justify-between'>
-            <h3 className='text-white text-[24px] mb-2'>
+          <div className="flex flex-col h-full justify-between">
+            <h3 className="text-white text-[24px] mb-2">
               {layer.name.charAt(0).toUpperCase() + layer.name.slice(1)}
             </h3>
-            <p className='text-[16px] mb-2'>
+            <p className="text-[16px] mb-2">
               {CommunicationLayerDetails[layer.name]?.description ||
-                'No description available.'}
+                "No description available."}
             </p>
             {/* <div className='flex items-center justify-between'>
               <span className='text-[16px]'>
@@ -114,8 +122,8 @@ export default ({
 }: {
   electionData: types.ElectionBackendData;
   selectedOption: number;
-  selectedDA: types.DaLayerInfo['name'] | '';
-  setSelectedDA: (da: types.DaLayerInfo['name']) => void;
+  selectedDA: types.DaLayerInfo["name"] | "";
+  setSelectedDA: (da: types.DaLayerInfo["name"]) => void;
   goToNextStep: () => void;
   zkProofData: string;
   setLoading: (loading: boolean) => void;
@@ -129,70 +137,72 @@ export default ({
   } = useContext(SubwalletContext);
   const { showToast } = useContext(ToastContext);
 
-  const [selectedWallet, setSelectedWallet] = useState<string>('');
-  const [walletAddress, setWalletAddress] = useState<string>('');
-  const [selectionMode, setSelectionMode] = useState<'direct' | 'backend'>('direct');
+  const [selectedWallet, setSelectedWallet] = useState<string>("");
+  const [walletAddress, setWalletAddress] = useState<string>("");
+  const [selectionMode, setSelectionMode] = useState<"direct" | "backend">(
+    "direct"
+  );
 
   const handleConnectWallet = async () => {
     try {
-      console.log('Connecting wallet...');
+      console.log("Connecting wallet...");
       await connectSubWallet();
-      console.log('Wallet connection initiated.');
+      console.log("Wallet connection initiated.");
     } catch (error) {
-      console.error('Error connecting wallet:', error);
-      showToast('Failed to connect wallet. Please try again', 'error');
+      console.error("Error connecting wallet:", error);
+      showToast("Failed to connect wallet. Please try again", "error");
     }
   };
 
   useEffect(() => {
     if (
-      selectionMode === 'direct' &&
-      selectedDA === 'avail' &&
+      selectionMode === "direct" &&
+      selectedDA === "avail" &&
       subWalletAddress
     ) {
       setWalletAddress(subWalletAddress);
-      console.log('Wallet connected:', subWalletAddress);
+      console.log("Wallet connected:", subWalletAddress);
     } else {
-      setWalletAddress('');
+      setWalletAddress("");
     }
 
-    if (selectedDA === 'avail' && selectionMode === 'direct') {
-      setSelectedWallet('Subwallet');
+    if (selectedDA === "avail" && selectionMode === "direct") {
+      setSelectedWallet("Subwallet");
     } else {
-      setSelectedWallet('');
+      setSelectedWallet("");
     }
   }, [subWalletAddress, selectedDA, selectionMode]);
 
   useEffect(() => {
-    setWalletAddress('');
-    if (selectedDA === 'avail') {
-      setSelectedWallet('Subwallet');
+    setWalletAddress("");
+    if (selectedDA === "avail") {
+      setSelectedWallet("Subwallet");
     }
   }, [selectedDA, subWalletAddress, disconnectSubWallet]);
 
   const handleNext = async () => {
     if (!selectedDA) {
-      showToast('Please select a DA Layer to proceed.', 'error');
+      showToast("Please select a DA Layer to proceed.", "error");
       return;
     }
 
-    if (selectionMode === 'direct') {
+    if (selectionMode === "direct") {
       if (!subWalletAddress) {
-        showToast('Please connect your wallet to proceed.', 'error');
+        showToast("Please connect your wallet to proceed.", "error");
         return;
       }
       if (!zkProofData) {
         showToast(
-          'ZK proof data is missing. Please go back and generate it.',
-          'error'
+          "ZK proof data is missing. Please go back and generate it.",
+          "error"
         );
         return;
       }
-    } else if (selectionMode === 'backend') {
+    } else if (selectionMode === "backend") {
       if (!zkProofData) {
         showToast(
-          'ZK proof data is missing. Please go back and generate it.',
-          'error'
+          "ZK proof data is missing. Please go back and generate it.",
+          "error"
         );
         return;
       }
@@ -201,119 +211,119 @@ export default ({
     try {
       setLoading(true);
 
-      if (selectionMode === 'direct') {
+      if (selectionMode === "direct") {
         let transactionSuccess = false;
 
-        if (selectedDA === 'avail') {
+        if (selectedDA === "avail") {
           transactionSuccess = await sendTransactionSubwallet(zkProofData);
         }
 
         if (transactionSuccess) {
           goToNextStep();
         } else {
-          throw new Error('Failed to send transaction.');
+          throw new Error("Failed to send transaction.");
         }
-      } else if (selectionMode === 'backend') {
+      } else if (selectionMode === "backend") {
         const payload = {
           electionId: electionData.mina_contract_id,
           selectedDA,
           zkProofData,
         };
-        console.log('Sending data to backend:', payload);
+        console.log("Sending data to backend:", payload);
         const response = await sendVoteViaBackend(
           zkProofData,
           payload.electionId,
           selectedDA
         );
-        console.log('Backend response:', response);
+        console.log("Backend response:", response);
 
         if (response.success) {
           goToNextStep();
         } else {
           throw new Error(
-            response.error || 'Failed to submit vote to backend.'
+            response.error || "Failed to submit vote to backend."
           );
         }
       }
 
       setLoading(false);
     } catch (error) {
-      console.error('Error in handleNext:', error);
-      alert('An unexpected error occurred.');
+      console.error("Error in handleNext:", error);
+      alert("An unexpected error occurred.");
       setLoading(false);
     }
   };
 
   const Placeholder = ({ className }: { className: string }) => (
     <div className={`${className} flex items-center justify-center h-full`}>
-      <FaImage className='text-gray-500 text-6xl' />
+      <FaImage className="text-gray-500 text-6xl" />
     </div>
   );
 
   const filteredLayers =
-    selectionMode === 'direct'
+    selectionMode === "direct"
       ? electionData.communication_layers.filter(
-          (layer) => layer.name === 'avail'
+          (layer) => layer.name === "avail"
         )
       : electionData.communication_layers;
 
   return (
-    <div className='flex flex-col items-center px-8 sm:px-12 md:px-24 flex-grow py-12'>
-      <div className='flex flex-col items-start w-full h-fit text-white mb-6 bg-[#222222] p-5 rounded-[30px] '>
-        <div className='flex flex-col md:flex-row w-full h-fit '>
-          <div className='w-full md:w-1/4 flex'>
-            <div className='flex w-full h-32 rounded-3xl overflow-hidden'>
-              <div className='w-full relative'>
+    <div className="flex flex-col items-center px-8 sm:px-12 md:px-24 flex-grow py-12">
+      <div className="flex flex-col items-start w-full h-fit text-white mb-6 bg-[#222222] p-5 rounded-[30px] ">
+        <div className="flex flex-col md:flex-row w-full h-fit ">
+          <div className="w-full md:w-1/4 flex">
+            <div className="flex w-full h-32 rounded-3xl overflow-hidden">
+              <div className="w-full relative">
                 {electionData.image_url.length ? (
-                  <div className='w-full h-full relative'>
-                    <Image.default
+                  <div className="w-full h-full relative">
+                    <Image
                       src={electionData.image_url}
-                      alt='Candidate 1'
+                      alt="Candidate 1"
                       fill
-                      style={{ objectFit: 'cover' }}
-                      className='rounded-l-lg'
+                      style={{ objectFit: "cover" }}
+                      className="rounded-l-lg"
                     />
                   </div>
                 ) : (
-                  <Placeholder className='rounded-l-lg' />
+                  <Placeholder className="rounded-l-lg" />
                 )}
               </div>
             </div>
           </div>
-          <div className='px-4 w-full h-fit flex flex-col justify-start'>
-            <div className='flex flex-row w-full justify-between '>
-              <div className='text-[#B7B7B7] text-sm mb-2 flex flex-row items-center '>
-                <span className='mr-2'>
+          <div className="px-4 w-full h-fit flex flex-col justify-start">
+            <div className="flex flex-row w-full justify-between ">
+              <div className="text-[#B7B7B7] text-sm mb-2 flex flex-row items-center ">
+                <span className="mr-2">
                   <ToolTip
-                    content='It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.'
-                    position='top'
-                    arrowPosition='start'
+                    content="It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout."
+                    position="top"
+                    arrowPosition="start"
                   >
-                    <LearnMoreIcon color='#B7B7B7' />
+                    <LearnMoreIcon color="#B7B7B7" />
                   </ToolTip>
                 </span>
-                Election id:{' '}
-                {String(electionData.mina_contract_id).slice(0, 12) + '...'}
-                <span className='ml-1 cursor-pointer w-fit'>
+                Election id:{" "}
+                {String(electionData.mina_contract_id).slice(0, 12) + "..."}
+                <span className="ml-1 cursor-pointer w-fit">
                   <CopyButton
                     textToCopy={electionData.mina_contract_id}
-                    iconColor='#F6F6F6'
+                    iconColor="#F6F6F6"
                     position={{ top: -26, left: -38 }}
-                  />{' '}
+                  />{" "}
                 </span>
               </div>
-              <span className='flex flex-row justify-center items-center '>
+              <span className="flex flex-row justify-center items-center ">
                 <span>
                   <Clock />
                 </span>
-                <span className='ml-1 text-sm text-[#B7B7B7]'>
+                <span className="ml-1 text-sm text-[#B7B7B7]">
                   <DateFormatter date={electionData.start_date} />
                 </span>
               </span>
             </div>
-            <div className=' flex flex-col  w-full h-fit '>
-              <h2 className='text-[24px] mb-2'>{electionData.question}</h2>
-              <div className='flex flex-col md:flex-row justify-between py-2 gap-y-1'>
+            <div className=" flex flex-col  w-full h-fit ">
+              <h2 className="text-[24px] mb-2">{electionData.question}</h2>
+              <div className="flex flex-col md:flex-row justify-between py-2 gap-y-1">
                 {/* <span>
                   <span className='text-[#B7B7B7] text-sm mr-1 flex flex-row items-center'>
                     {electionData.assignedVoters} Assigned Voters
@@ -350,9 +360,9 @@ export default ({
             </div>
           </div>
         </div>
-        <div className='pt-4 pb-2 w-full'>
-          <h3 className='text-[16px] text-[#B7B7B7] mb-4'>Your Choice</h3>
-          <div className='pl-4 rounded text-[20px]'>
+        <div className="pt-4 pb-2 w-full">
+          <h3 className="text-[16px] text-[#B7B7B7] mb-4">Your Choice</h3>
+          <div className="pl-4 rounded text-[20px]">
             {electionData.options[selectedOption]}
           </div>
         </div>
@@ -370,26 +380,26 @@ export default ({
         isSubmitting={isSubmitting}
       />
 
-      <div className='w-full pt-8 flex justify-end'>
-        {selectionMode === 'direct' ? (
+      <div className="w-full pt-8 flex justify-end">
+        {selectionMode === "direct" ? (
           subWalletAddress ? (
             <Button
-              onClick={handleNext}
+              onClick={() => handleNext}
               disabled={!selectedDA || isSubmitting}
               loading={isSubmitting}
             >
               Submit Vote
             </Button>
           ) : (
-            <div className={`${!selectedDA ? 'hidden' : 'flex'}`}>
-              <Button onClick={handleConnectWallet}>
+            <div className={`${!selectedDA ? "hidden" : "flex"}`}>
+              <Button onClick={() => handleConnectWallet}>
                 Connect {selectedWallet} Wallet
               </Button>
             </div>
           )
         ) : (
           <Button
-            onClick={handleNext}
+            onClick={() => handleNext}
             disabled={!selectedDA || isSubmitting}
             loading={isSubmitting}
           >

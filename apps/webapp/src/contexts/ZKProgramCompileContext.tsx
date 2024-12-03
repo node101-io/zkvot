@@ -1,39 +1,54 @@
-'use client';
+"use client";
 
-import { PropsWithChildren, Dispatch, useEffect, createContext, useState, SetStateAction } from 'react';
+import {
+  PropsWithChildren,
+  Dispatch,
+  useEffect,
+  createContext,
+  useState,
+  SetStateAction,
+} from "react";
 
-import ZKProgramWorkerClient from '@/utils/ZKProgramWorkerClient.js';
+import ZKProgramWorkerClient from "@/utils/ZKProgramWorkerClient";
 
 interface ZKProgramCompileContextInterface {
   zkProgramWorkerClientInstance: ZKProgramWorkerClient | null;
   setZkProgramWorkerClientInstance: Dispatch<
-    SetStateAction<ZKProgramCompileContextInterface['zkProgramWorkerClientInstance']>
+    SetStateAction<
+      ZKProgramCompileContextInterface["zkProgramWorkerClientInstance"]
+    >
   >;
   hasBeenSetup: boolean;
   setHasBeenSetup: Dispatch<
-    SetStateAction<ZKProgramCompileContextInterface['hasBeenSetup']>
+    SetStateAction<ZKProgramCompileContextInterface["hasBeenSetup"]>
   >;
   isSettingUp: boolean;
   setIsSettingUp: Dispatch<
-    SetStateAction<ZKProgramCompileContextInterface['isSettingUp']>
+    SetStateAction<ZKProgramCompileContextInterface["isSettingUp"]>
   >;
-};
+}
 
-export const ZKProgramCompileContext = createContext<ZKProgramCompileContextInterface>({
-  zkProgramWorkerClientInstance: null,
-  setZkProgramWorkerClientInstance: () => {},
-  hasBeenSetup: false,
-  setHasBeenSetup: () => {},
-  isSettingUp: false,
-  setIsSettingUp: () => {}
-});
+export const ZKProgramCompileContext =
+  createContext<ZKProgramCompileContextInterface>({
+    zkProgramWorkerClientInstance: null,
+    setZkProgramWorkerClientInstance: () => {},
+    hasBeenSetup: false,
+    setHasBeenSetup: () => {},
+    isSettingUp: false,
+    setIsSettingUp: () => {},
+  });
 
 export const ZKProgramCompileProvider = ({
-  children
+  children,
 }: PropsWithChildren<{}>) => {
-  const [zkProgramWorkerClientInstance, setZkProgramWorkerClientInstance] = useState<ZKProgramCompileContextInterface['zkProgramWorkerClientInstance']>(null);
-  const [hasBeenSetup, setHasBeenSetup] = useState<ZKProgramCompileContextInterface['hasBeenSetup']>(false);
-  const [isSettingUp, setIsSettingUp] = useState<ZKProgramCompileContextInterface['isSettingUp']>(false);
+  const [zkProgramWorkerClientInstance, setZkProgramWorkerClientInstance] =
+    useState<ZKProgramCompileContextInterface["zkProgramWorkerClientInstance"]>(
+      null
+    );
+  const [hasBeenSetup, setHasBeenSetup] =
+    useState<ZKProgramCompileContextInterface["hasBeenSetup"]>(false);
+  const [isSettingUp, setIsSettingUp] =
+    useState<ZKProgramCompileContextInterface["isSettingUp"]>(false);
 
   useEffect(() => {
     const setup = async () => {
@@ -47,10 +62,10 @@ export const ZKProgramCompileProvider = ({
 
           await zkProgramWorkerClientInstance.loadProgram();
 
-          console.log('compileProgram starting');
-          console.time('compileProgram');
+          console.log("compileProgram starting");
+          console.time("compileProgram");
           await zkProgramWorkerClientInstance.compileProgram();
-          console.timeEnd('compileProgram');
+          console.timeEnd("compileProgram");
 
           setHasBeenSetup(true);
           setIsSettingUp(false);
@@ -66,12 +81,15 @@ export const ZKProgramCompileProvider = ({
   return (
     <ZKProgramCompileContext.Provider
       value={{
-        zkProgramWorkerClientInstance, setZkProgramWorkerClientInstance,
-        hasBeenSetup, setHasBeenSetup,
-        isSettingUp, setIsSettingUp
+        zkProgramWorkerClientInstance,
+        setZkProgramWorkerClientInstance,
+        hasBeenSetup,
+        setHasBeenSetup,
+        isSettingUp,
+        setIsSettingUp,
       }}
     >
       {children}
-    </ ZKProgramCompileContext.Provider >
+    </ZKProgramCompileContext.Provider>
   );
 };

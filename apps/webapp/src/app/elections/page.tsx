@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useContext, useState } from 'react';
+import { useContext, useState } from "react";
 
-import ToolTip from '@/app/(partials)/ToolTip.jsx';
+import ToolTip from "@/app/(partials)/ToolTip";
 
-import AssignedElections from '@/app/elections/(partials)/AssignedElections.jsx';
+import AssignedElections from "@/app/elections/(partials)/AssignedElections";
 
-// import { MetamaskWalletContext } from '@/contexts/MetamaskWalletContext.jsx';
-import { AuroWalletContext } from '@/contexts/AuroWalletContext.jsx';
+// import { MetamaskWalletContext } from '@/contexts/MetamaskWalletContext';
+import { AuroWalletContext } from "@/contexts/AuroWalletContext";
 
 const Page = () => {
-  const [activePanel, setActivePanel] = useState('Assigned Elections');
+  const [activePanel, setActivePanel] = useState("Assigned Elections");
   const [onlyOngoing, setOnlyOngoing] = useState(false);
 
   // const { metamaskWalletAddress } = useContext(MetamaskWalletContext);
@@ -19,57 +19,71 @@ const Page = () => {
   // const isWalletConnected = metamaskWalletAddress || auroWalletAddress;
   const isWalletConnected = auroWalletAddress;
 
+  const handlePanelChange = (panel: string) => {
+    console.log("panel", panel);
+    setActivePanel(panel);
+  };
+
+  const handleOnlyOngoingChange = () => {
+    console.log("onlyOngoing", !onlyOngoing);
+    setOnlyOngoing(!onlyOngoing);
+  };
+
   return (
-    <div className='flex justify-center'>
-      <div className='mt-14 w-full flex flex-col px-4 max-w-[1052px]'>
-        <div className='flex flex-col md:flex-row md:items-center justify-between mb-4'>
-          <div className='flex mb-2 md:mb-0 space-x-12'>
+    <div className="flex justify-center">
+      <div className="mt-14 w-full flex flex-col px-4 max-w-[1052px]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+          <div className="flex mb-2 md:mb-0 space-x-12">
             <button
-              onClick={() => setActivePanel('Assigned Elections')}
+              onClick={() => {
+                handlePanelChange("Assigned Elections");
+              }}
               className={`focus:outline-none ${
-                activePanel === 'Assigned Elections'
-                  ? 'text-white border-b-[1px] pb-1 border-primary'
-                  : 'text-[#B7B7B7]'
+                activePanel === "Assigned Elections"
+                  ? "text-white border-b-[1px] pb-1 border-primary"
+                  : "text-[#B7B7B7]"
               }`}
             >
               Assigned Elections
             </button>
             <button
-              onClick={() => setActivePanel('Voted Elections')}
+              onClick={() => {
+                handlePanelChange("Voted Elections");
+              }}
               className={`focus:outline-none ${
-                activePanel === 'Voted Elections'
-                  ? 'text-white border-b-[1px] pb-1 border-primary'
-                  : 'text-[#B7B7B7]'
+                activePanel === "Voted Elections"
+                  ? "text-white border-b-[1px] pb-1 border-primary"
+                  : "text-[#B7B7B7]"
               }`}
             >
               Voted Elections
             </button>
           </div>
           <ToolTip
-            content='Connect wallet to use'
+            content="Connect wallet to use"
             showTooltip={!isWalletConnected}
-            position='top'
-            arrowPosition='start'
+            position="top"
+            arrowPosition="start"
           >
-            <div className='flex items-center'>
+            <div className="flex items-center">
               <input
-                id='onlyOngoing'
-                type='checkbox'
+                id="onlyOngoing"
+                type="checkbox"
                 checked={onlyOngoing}
-                onChange={() => setOnlyOngoing(!onlyOngoing)}
+                onChange={() => handleOnlyOngoingChange()}
                 className={`mr-2 w-4 h-4 rounded-sm cursor-pointer border accent-green ${
                   onlyOngoing
-                    ? 'bg-green-500 border-green'
-                    : 'appearance-none border-[#B7B7B7]'
+                    ? "bg-green-500 border-green"
+                    : "appearance-none border-[#B7B7B7]"
                 }`}
                 disabled={!isWalletConnected}
               />
-              <div className='flex flex-col'>
-                <div className='flex flex-col'>
+              <div className="flex flex-col">
+                <div className="flex flex-col">
                   <label
-                    htmlFor='onlyOngoing'
+                    htmlFor="onlyOngoing"
                     className={`cursor-pointer ${
-                      onlyOngoing ? 'text-green' : 'text-[#B7B7B7]'
+                      onlyOngoing ? "text-green" : "text-[#B7B7B7]"
                     }`}
                   >
                     Only show elections you are eligible to vote
@@ -79,19 +93,19 @@ const Page = () => {
             </div>
           </ToolTip>
         </div>
-        <div className='px-6'>
-          {activePanel === 'Assigned Elections' && (
-            <div className='py-8'>
-              <AssignedElections
+        <div className="px-6">
+          {activePanel === "Assigned Elections" && (
+            <div className="py-8">
+              {/* <AssignedElections
                 onlyOngoing={onlyOngoing}
                 // metamaskWalletAddress={metamaskWalletAddress}
                 auroWalletAddress={auroWalletAddress}
-              />
+              /> */}
             </div>
           )}
-          {activePanel === 'Voted Elections' && (
-            <div className='flex w-full min-h-[40vh] justify-center items-center'>
-              <p className='max-w-3xl text-center text-gray-400'>
+          {activePanel === "Voted Elections" && (
+            <div className="flex w-full min-h-[40vh] justify-center items-center">
+              <p className="max-w-3xl text-center text-gray-400">
                 Ups, something went wrong. Just kidding... This is actually you
                 not seeing your previous elections because it is impossible to
                 do so in a truly anonymous system. Do not get us wrong, you
