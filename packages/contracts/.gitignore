@@ -33,5 +33,6 @@ src/local/mock.js
 
 *.tsbuildinfo
 
-local/
+mock.*
+
 ecdsa256/

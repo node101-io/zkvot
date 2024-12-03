@@ -37,7 +37,7 @@ export function fieldToUInt32BigEndian(options: Field): UInt32[] {
 
 export class RangeAggregationPublicInputs extends Struct({
   votersRoot: Field,
-  electionId: PublicKey,
+  electionPubKey: PublicKey,
 }) {}
 
 export class RangeAggregationPublicOutputs extends Struct({
@@ -82,7 +82,9 @@ export const RangeAggregationProgram = ZkProgram({
         vote.verify();
 
         vote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
-        vote.publicInput.electionId.assertEquals(publicInput.electionId);
+        vote.publicInput.electionPubKey.assertEquals(
+          publicInput.electionPubKey
+        );
 
         const nullifier = vote.publicOutput.nullifier;
 
@@ -124,8 +126,12 @@ export const RangeAggregationProgram = ZkProgram({
 
         lowerVote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
         upperVote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
-        lowerVote.publicInput.electionId.assertEquals(publicInput.electionId);
-        upperVote.publicInput.electionId.assertEquals(publicInput.electionId);
+        lowerVote.publicInput.electionPubKey.assertEquals(
+          publicInput.electionPubKey
+        );
+        upperVote.publicInput.electionPubKey.assertEquals(
+          publicInput.electionPubKey
+        );
 
         const lowerNullifier = lowerVote.publicOutput.nullifier;
         const upperNullifier = upperVote.publicOutput.nullifier;
@@ -175,8 +181,8 @@ export const RangeAggregationProgram = ZkProgram({
         vote: VoteProof
       ) {
         previousProof.verify();
-        previousProof.publicInput.electionId.assertEquals(
-          publicInput.electionId
+        previousProof.publicInput.electionPubKey.assertEquals(
+          publicInput.electionPubKey
         );
         previousProof.publicInput.votersRoot.assertEquals(
           publicInput.votersRoot
@@ -185,7 +191,9 @@ export const RangeAggregationProgram = ZkProgram({
         vote.verify();
 
         vote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
-        vote.publicInput.electionId.assertEquals(publicInput.electionId);
+        vote.publicInput.electionPubKey.assertEquals(
+          publicInput.electionPubKey
+        );
 
         const previousLowerBound = previousProof.publicOutput.rangeLowerBound;
         const previousUpperBound = previousProof.publicOutput.rangeUpperBound;
@@ -239,8 +247,8 @@ export const RangeAggregationProgram = ZkProgram({
         vote: VoteProof
       ) {
         previousProof.verify();
-        previousProof.publicInput.electionId.assertEquals(
-          publicInput.electionId
+        previousProof.publicInput.electionPubKey.assertEquals(
+          publicInput.electionPubKey
         );
         previousProof.publicInput.votersRoot.assertEquals(
           publicInput.votersRoot
@@ -248,7 +256,9 @@ export const RangeAggregationProgram = ZkProgram({
         vote.verify();
 
         vote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
-        vote.publicInput.electionId.assertEquals(publicInput.electionId);
+        vote.publicInput.electionPubKey.assertEquals(
+          publicInput.electionPubKey
+        );
 
         const previousLowerBound = previousProof.publicOutput.rangeLowerBound;
         const previousUpperBound = previousProof.publicOutput.rangeUpperBound;
@@ -310,8 +320,12 @@ export const RangeAggregationProgram = ZkProgram({
 
         leftProof.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
         rightProof.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
-        leftProof.publicInput.electionId.assertEquals(publicInput.electionId);
-        rightProof.publicInput.electionId.assertEquals(publicInput.electionId);
+        leftProof.publicInput.electionPubKey.assertEquals(
+          publicInput.electionPubKey
+        );
+        rightProof.publicInput.electionPubKey.assertEquals(
+          publicInput.electionPubKey
+        );
 
         const leftLowerBound = leftProof.publicOutput.rangeLowerBound;
         const leftUpperBound = leftProof.publicOutput.rangeUpperBound;
