@@ -124,5 +124,5 @@ export default async function deploy(
 
   console.log("Contract deployed at", electionContractPubKey.toBase58());
 
-  return electionContractPk;
+  return { electionContractPk, electionContractInstance };
 }

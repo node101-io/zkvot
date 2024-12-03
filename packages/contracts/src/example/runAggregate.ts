@@ -322,6 +322,7 @@ export const runAggregate = async (electionPubKey: PublicKey) => {
       "aggregateProof.json",
       JSON.stringify(rootAggregatorProof, null, 2)
     );
+    return rootAggregatorProof;
   }
   return;
 };
