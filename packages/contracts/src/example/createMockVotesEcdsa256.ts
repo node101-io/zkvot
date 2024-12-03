@@ -1,27 +1,31 @@
-// import fs from 'fs/promises';
-// import {
-//   Field,
-//   Crypto,
-//   Mina,
-//   PrivateKey,
-//   Poseidon,
-//   createForeignCurveV2,
-//   Provable,
-//   createEcdsaV2,
-// } from 'o1js';
-// import dotenv from 'dotenv';
-// import { Wallet } from 'ethers';
+import fs from "fs/promises";
+import {
+  Field,
+  Crypto,
+  Mina,
+  MerkleTree,
+  PrivateKey,
+  Poseidon,
+  createForeignCurve,
+  Provable,
+  createEcdsa,
+} from "o1js";
 
-// import Aggregation from '../Aggregation.js';
-// import MerkleTree from '../MerkleTree.js';
-// import Vote from '../Vote.js';
+import { MerkleWitnessClass } from "../utils.js";
 
-// dotenv.config();
+import {
+  Vote,
+  VotePublicInputs,
+  VoteWithSecp256k1PrivateInputs,
+} from "../VoteProgram.js";
+import { RangeAggregationProgram } from "../RangeAggregationProgram.js";
+import { Wallet } from "ethers";
+import dotenv from "dotenv";
+dotenv.config();
+class Secp256k1 extends createForeignCurve(Crypto.CurveParams.Secp256k1) {}
 
-// class Secp256k1 extends createForeignCurveV2(Crypto.CurveParams.Secp256k1) {}
-
-// class EthSignature {
-//   public ecdsaSignature = createEcdsaV2(Secp256k1);
+class EthSignature {
+  public ecdsaSignature = createEcdsa(Secp256k1);
 
 //   fromHex(hex: string) {
 //     return this.ecdsaSignature.fromHex(hex);
@@ -78,19 +82,19 @@
 // let votersRoot = votersTree.getRoot();
 // console.log(`Voters root: ${votersRoot.toString()}`);
 
-// await fs.writeFile(
-//   'votersRootEcdsa256.json',
-//   JSON.stringify(votersRoot, null, 2)
-// );
+await fs.writeFile(
+  "votersRootEcdsa256.json",
+  JSON.stringify(votersRoot, null, 2)
+);
 
 // console.log(await Vote.Program.analyzeMethods());
 
-// console.time('compiling vote program');
-// let { verificationKey } = await Vote.Program.compile();
-// console.timeEnd('compiling vote program');
-// console.log('verification key', verificationKey.data.slice(0, 10) + '..');
+console.time("compiling vote program");
+let { verificationKey } = await Vote.compile();
+console.timeEnd("compiling vote program");
+console.log("verification key", verificationKey.data.slice(0, 10) + "..");
 
-// console.log('casting votes');
+console.log("casting votes");
 
 // const electionPrivateKey = PrivateKey.fromBase58(
 //   // @ts-ignore
@@ -148,24 +152,26 @@
 //   voteProofs.push(voteProof);
 // }
 
-// voteProofs.sort((a, b) => {
-//   if (
-//     a.publicOutput.nullifier.toBigInt() < b.publicOutput.nullifier.toBigInt()
-//   ) {
-//     return -1;
-//   }
-//   if (
-//     a.publicOutput.nullifier.toBigInt() > b.publicOutput.nullifier.toBigInt()
-//   ) {
-//     return 1;
-//   }
-//   return 0;
-// });
+voteProofs.sort((a, b) => {
+  if (
+    a.proof.publicOutput.nullifier.toBigInt() <
+    b.proof.publicOutput.nullifier.toBigInt()
+  ) {
+    return -1;
+  }
+  if (
+    a.proof.publicOutput.nullifier.toBigInt() >
+    b.proof.publicOutput.nullifier.toBigInt()
+  ) {
+    return 1;
+  }
+  return 0;
+});
 
-// await fs.writeFile(
-//   'voteProofsEcdsa256.json',
-//   JSON.stringify(voteProofs, null, 2)
-// );
+await fs.writeFile(
+  "voteProofsEcdsa256.json",
+  JSON.stringify(voteProofs, null, 2)
+);
 
 // voteProofs = [];
 // for (let i = 20; i < 40; i++) {
@@ -211,22 +217,22 @@
 //   voteProofs.push(voteProof);
 // }
 
-// await fs.writeFile(
-//   'voteProofsRandomEcdsa256.json',
-//   JSON.stringify(voteProofs, null, 2)
-// );
+await fs.writeFile(
+  "voteProofsRandomEcdsa256.json",
+  JSON.stringify(voteProofs, null, 2)
+);
 
 // let { verificationKey: voteAggregatorVerificationKey } =
 //   await Aggregation.Program.compile();
 
-// await fs.writeFile(
-//   'voteAggregatorVerificationKeyEcdsa256.json',
-//   JSON.stringify(
-//     {
-//       data: voteAggregatorVerificationKey.data,
-//       hash: voteAggregatorVerificationKey.hash.toString(),
-//     },
-//     null,
-//     2
-//   )
-// );
+await fs.writeFile(
+  "voteAggregatorVerificationKeyEcdsa256.json",
+  JSON.stringify(
+    {
+      data: voteAggregatorVerificationKey.data,
+      hash: voteAggregatorVerificationKey.hash.toString(),
+    },
+    null,
+    2
+  )
+);

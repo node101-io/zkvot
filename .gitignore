@@ -2,3 +2,5 @@
 .turbo
 node_modules
 *.tsbuildinfo
+.vscode
+.prettierrc
