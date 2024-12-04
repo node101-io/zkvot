@@ -1,8 +1,8 @@
 import { types } from 'zkvot-core';
 
 const API_URL = process.env.NODE_ENV === "production" ?
-  'https://backend.zkvot.io/api' :
-  'http://localhost:8000/api';
+  'https://backend.zkvot.io' :
+  'http://localhost:8000';
 
 export const fetchElectionsFromBackend = async (
   skip: number = 0,
@@ -93,7 +93,7 @@ export const sendVoteViaBackend = async (
 
 export const fetchAvailBlockHeightFromBackend = async () => {
   try {
-    const response = await fetch(`${API_URL}/block-info/avail`);
+    const response = await fetch(`${API_URL}/api/block-info/avail`);
 
     if (!response.ok) {
       const errorText = await response.text();

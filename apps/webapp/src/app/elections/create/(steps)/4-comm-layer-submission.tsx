@@ -38,8 +38,7 @@ export default ({ onPrevious, onNext, initialData }: {
   const { subWalletAddress, isSubmitting, createAppId, connectSubWallet } = useContext(SubwalletContext);
   const { showToast } = useContext(ToastContext);
 
-  const [isAppIdCreated, setIsAppIdCreated] = useState<boolean>(false);
-  const [isSubmitEnabled, setIsSubmitEnabled] = useState<boolean>(false);
+  // const [isSubmitEnabled, setIsSubmitEnabled] = useState<boolean>(false);
   const [blockHeight, setBlockHeight] = useState<number>(0);
   const [appId, setAppId] = useState<number>(0);
   const [blockHash, setBlockHash] = useState<string>('');
@@ -66,6 +65,8 @@ export default ({ onPrevious, onNext, initialData }: {
 
         if (appData && appData.id) {
           setAppId(appData.id);
+          showToast('App ID created successfully', 'success');
+          setIsSubmitEnabled(true);
         } else {
           showToast('Invalid App ID data', 'error');
         }
@@ -165,9 +166,15 @@ export default ({ onPrevious, onNext, initialData }: {
         <Button onClick={onPrevious}>Previous</Button>
         <Button
           onClick={handleNext}
-          disabled={!isSubmitEnabled}
+          disabled={
+            blockHeight <= 0 ||
+            (initialData.communication_layers[0].name === 'avail' && appId <= 0) ||
+            (initialData.communication_layers[0].name === 'celestia' && !blockHash?.trim().length)
+          }
           className={`${
-            !isSubmitEnabled ? 'opacity-50 cursor-not-allowed' : ''
+            blockHeight <= 0 ||
+            (initialData.communication_layers[0].name === 'avail' && appId <= 0) ||
+            (initialData.communication_layers[0].name === 'celestia' && !blockHash?.trim().length) ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
           Next

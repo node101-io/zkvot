@@ -4,13 +4,13 @@ import { useState } from 'react';
 
 import { types } from 'zkvot-core';
 
-import ElectionInfoStep from '@/app/elections/create/(steps)/election-info.jsx';
-import VotersListStep from '@/app/elections/create/(steps)/voters-list.jsx';
-import CommLayerSelectionStep from '@/app/elections/create/(steps)/comm-layer-selection.jsx';
-import CommLayerSubmissionStep from '@/app/elections/create/(steps)/comm-layer-submission.jsx';
-import StorageLayerSelectionStep from '@/app/elections/create/(steps)/storage-layer-selection.jsx';
-import StorageLayerSubmissionStep from '@/app/elections/create/(steps)/storage-layer-submission.jsx';
-import DeployElectionStep from '@/app/elections/create/(steps)/deploy-election.jsx';
+import ElectionInfoStep from '@/app/elections/create/(steps)/1-election-info.jsx';
+import VotersListStep from '@/app/elections/create/(steps)/2-voters-list.jsx';
+import CommLayerSelectionStep from '@/app/elections/create/(steps)/3-comm-layer-selection.jsx';
+import CommLayerSubmissionStep from '@/app/elections/create/(steps)/4-comm-layer-submission.jsx';
+import StorageLayerSelectionStep from '@/app/elections/create/(steps)/5-storage-layer-selection.jsx';
+import StorageLayerSubmissionStep from '@/app/elections/create/(steps)/6-storage-layer-submission.jsx';
+import DeployElectionStep from '@/app/elections/create/(steps)/7-deploy-election.jsx';
 
 const HomePage = () => {
   const [step, setStep] = useState<number>(1);

@@ -10,6 +10,8 @@ let lastRequestTime: number;
 const wsProvider = new WsProvider(AVAIL_MAINNET_RPC);
 const api = await ApiPromise.create({ provider: wsProvider });
 
+await api.isReady;
+
 export default async (
   req: Request,
   res: Response
