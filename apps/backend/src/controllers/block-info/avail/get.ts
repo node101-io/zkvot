@@ -7,6 +7,9 @@ const BLOCK_INFO_CACHE_TIME = 5 * 60 * 1000;
 let lastBlockHeight: string;
 let lastRequestTime: number;
 
+const wsProvider = new WsProvider(AVAIL_MAINNET_RPC);
+const api = await ApiPromise.create({ provider: wsProvider });
+
 export default async (
   req: Request,
   res: Response
@@ -20,8 +23,6 @@ export default async (
   }
 
   try {
-    const wsProvider = new WsProvider(AVAIL_MAINNET_RPC);
-    const api = await ApiPromise.create({ provider: wsProvider });
     const signedBlock = await api.rpc.chain.getBlock();
     const block_height = signedBlock.block.header.number.toString();
 

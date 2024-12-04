@@ -15,7 +15,7 @@ import LoadingOverlay from '@/app/(partials)/loading-overlay.jsx';
 import ToolTip from '@/app/(partials)/tool-tip.jsx';
 import WalletSelectionModal from '@/app/(partials)/wallet-selection-modal.jsx';
 
-import { AuroWalletContext, GenerateEncodedVoteProofParams } from '@/contexts/auro-wallet-context.jsx';
+import { AuroWalletContext } from '@/contexts/auro-wallet-context.jsx';
 import { SelectedWalletContext } from '@/contexts/selected-wallet-context.jsx';
 import { ToastContext } from '@/contexts/toast-context.jsx';
 import { ZKProgramCompileContext } from '@/contexts/zk-program-compile-context.jsx';

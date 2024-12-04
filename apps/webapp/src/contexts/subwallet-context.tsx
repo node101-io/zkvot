@@ -306,7 +306,7 @@ export const SubwalletProvider = ({
   return (
     <SubwalletContext.Provider value={{
       accounts,
-      subWalletAddress: subWalletAccount?.address || 'string',
+      subWalletAddress: subWalletAccount?.address || '',
       api,
       isSubmitting,
       generatedAppId,

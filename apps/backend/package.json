@@ -5,6 +5,7 @@
   "type": "module",
   "main": "build/app.js",
   "scripts": {
+    "dev": "tsc-watch --onSuccess \"node .\"",
     "build": "tsc",
     "start": "node build/app.js"
   },
@@ -17,6 +18,7 @@
     "avail-js-sdk": "^0.2.18",
     "body-parser": "^1.20.3",
     "cluster": "^0.7.7",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "mongoose": "^8.7.2",
@@ -27,7 +29,9 @@
   },
   "devDependencies": {
     "@repo/config": "*",
+    "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
+    "tsc-watch": "^6.2.1",
     "typescript": "^5.6.3"
   }
 }

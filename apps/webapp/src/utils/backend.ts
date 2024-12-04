@@ -1,6 +1,8 @@
 import { types } from 'zkvot-core';
 
-const API_URL = 'https://backend.zkvot.io/api';
+const API_URL = process.env.NODE_ENV === "production" ?
+  'https://backend.zkvot.io/api' :
+  'http://localhost:8000/api';
 
 export const fetchElectionsFromBackend = async (
   skip: number = 0,

@@ -15,7 +15,7 @@ html {
   display: none;
 }
 
-@media (max-width: 1150px) {
+@media (max-width: 1000px) {
   /* Prevent scrolling on mobile */
   body {
     overflow: hidden;
