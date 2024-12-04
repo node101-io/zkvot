@@ -92,7 +92,7 @@ const Page = () => {
           {activePanel === 'Voted Elections' && (
             <div className='flex w-full min-h-[40vh] justify-center items-center'>
               <p className='max-w-3xl text-center text-gray-400'>
-                Ups, something went wrong. Just kidding... This is actually you
+                Oops, something went wrong. Just kidding... This is actually you
                 not seeing your previous elections because it is impossible to
                 do so in a truly anonymous system. Do not get us wrong, you
                 cannot vote twice, but the only way to anonymously see if you

@@ -349,7 +349,7 @@ const VoterInput = ({
     >
       <input
         type='text'
-        placeholder='types.Voter ID'
+        placeholder='Voter Public Key'
         value={publicKey}
         onChange={(e) => setPublicKey(e.target.value)}
         onKeyDown={handleKeyPress}
@@ -470,7 +470,7 @@ export default ({ onPrevious, onNext, initialData }: {
   return (
     <div className='flex flex-col h-[calc(100vh-215px)] p-4'>
       <div className='mb-4'>
-        <h3 className='text-white text-xl'>Step 2: Add types.Voter Addresses</h3>
+        <h3 className='text-white text-xl'>Step 2: Add Voter Addresses</h3>
       </div>
       <div className='mb-8'>
         <VoterInput

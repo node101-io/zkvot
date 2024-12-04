@@ -128,9 +128,11 @@ const WalletButton = () => {
               <Button onClick={handleConnect}>Connect Wallet</Button>
               {isWalletModalOpen && (
                 <WalletSelectionModal
-                  availableWallets={['Auro',
+                  availableWallets={[
+                    'Auro',
                     // 'Metamask',
-                  'Subwallet']}
+                    'Subwallet'
+                  ]}
                   onClose={() => setIsWalletModalOpen(false)}
                   onSelectWallet={handleWalletSelection}
                 />

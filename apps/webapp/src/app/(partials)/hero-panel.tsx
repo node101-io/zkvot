@@ -50,7 +50,7 @@ const Panel = forwardRef((
     return (
       <div
         ref={ref}
-        className={`relative flex h-fit flex-col items-start p-[50px_25px] gap-10 rounded-[30px] overflow-hidden transition-transform duration-700 ease-in-out ${
+        className={`relative flex h-fit flex-col items-start p-[50px_25px] gap-10 rounded-[30px] overflow-hidden transition-transform duration-700 ease-in-out cursor-pointer ${
           isActive ? 'w-[665px] scale-105 z-10' : 'w-[521px]'
         } ${
           isOtherPanelActive
@@ -64,7 +64,7 @@ const Panel = forwardRef((
           className={`absolute inset-0 transition-opacity duration-500 ease-in-out bg-cover bg-center z-[1] ${
             hovered && !isActive ? 'opacity-100' : 'opacity-0'
           }`}
-          style={{ backgroundImage: `url(${backgroundFrame})` }}
+          style={{ backgroundImage: `url(${backgroundFrame.src})` }}
         />
         <h2 className='z-[2] text-[40px] leading-[48px] font-normal text-white font-hyperlegible'>
           {title}

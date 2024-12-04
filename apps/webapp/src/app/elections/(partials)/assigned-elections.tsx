@@ -36,6 +36,7 @@ const AssignedElections: React.FC<AssignedElectionsProps> = ({
   >(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
+  // TODO: fix, gives render error when building
   // const [error, setError] = useState<string>('');
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [skip, setSkip] = useState<number>(0);

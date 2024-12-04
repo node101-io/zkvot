@@ -52,7 +52,7 @@ const Page = () => {
               className='text-primary text-[64px]'
               variants={fadeInUp}
             >
-              # zkVot - <span className='italic'>How it works?</span>
+              <span className='italic'>How it works?</span>
             </motion.h1>
           </motion.div>
 

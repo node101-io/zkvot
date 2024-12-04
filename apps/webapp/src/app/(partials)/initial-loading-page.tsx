@@ -33,6 +33,7 @@ const InitialLoadingPage = ({ isExiting }: { isExiting: boolean }) => {
             transition={{ delay: index * 0.1 }}
           >
             <Image
+              className='rounded-full'
               src={logo}
               alt={`Logo ${index + 1}`}
               width={43}

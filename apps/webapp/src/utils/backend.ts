@@ -63,7 +63,7 @@ export const sendVoteViaBackend = async (
   da_layer: 'avail' | 'celestia'
 ) => {
   try {
-    const response = await fetch('/api/vote/send', {
+    const response = await fetch(`${API_URL}/api/vote/send`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ export const sendVoteViaBackend = async (
 
 export const fetchAvailBlockHeightFromBackend = async () => {
   try {
-    const response = await fetch('/block-info/avail');
+    const response = await fetch(`${API_URL}/block-info/avail`);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -113,7 +113,7 @@ export const fetchAvailBlockHeightFromBackend = async () => {
 
 export const fetchCelestiaBlockInfoFromBackend = async () => {
   try {
-    const response = await fetch('https://backend.zkvot.io/api/block-info/celestia');
+    const response = await fetch(`${API_URL}/api/block-info/celestia`);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -144,7 +144,7 @@ export const calculateMinaBlockHeightFromTimestampViaBackend = async (
   endBlockHeight: number;
 }> => {
   try {
-    const response = await fetch('https://backend.zkvot.io/api/block-info/mina', {
+    const response = await fetch(`${API_URL}/api/block-info/mina`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
