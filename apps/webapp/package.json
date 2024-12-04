@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@repo/config": "*",
+    "@types/canvas-confetti": "^1.6.4",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18",
     "@types/uuid": "^10.0.0",

@@ -1,1 +1,1 @@
-export const votersArray = [];
+export const votersList = [];

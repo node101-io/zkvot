@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import Image from 'next/image.js';
 import { FaImage } from 'react-icons/fa';
-// import confetti from 'canvas-confetti';
+import confetti from 'canvas-confetti';
 
 import { MerkleTree, types, utils } from 'zkvot-core';
 
@@ -91,11 +91,11 @@ export default ({ onPrevious, data }: {
 
       console.log(`https://minascan.io/devnet/tx/${hash}`);
 
-      // confetti({
-      //   particleCount: 100,
-      //   spread: 180,
-      //   origin: { y: 0.6 },
-      // });
+      confetti({
+        particleCount: 100,
+        spread: 180,
+        origin: { y: 0.6 },
+      });
     } catch (error) {
       showToast(`Error deploying election, please try again later. Message: ${error}`, 'error');
       setLoading(false);
