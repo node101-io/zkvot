@@ -2,7 +2,8 @@
   "extends": "@repo/config/typescript/tsconfig.contracts.json",
   "compilerOptions": {
     "outDir": "./build",
-    "rootDir": ".",
+    "rootDir": "./src",
+    "baseUrl": "."
   },
-  "include": ["./src"]
+  "include": ["./**/*.ts"]
 }

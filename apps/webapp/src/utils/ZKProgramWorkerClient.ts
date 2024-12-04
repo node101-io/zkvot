@@ -2,6 +2,8 @@ import * as Comlink from 'comlink';
 
 import { Election } from 'zkvot-core';
 
+import { Nullifier } from '@aurowallet/mina-provider';
+
 export default class {
   worker: Worker;
   remoteApi: Comlink.Remote<typeof import('@/utils/ZKProgramWorker.js').api>;
@@ -30,7 +32,7 @@ export default class {
 
   async createVote(data: {
     electionPubKey: string;
-    nullifier: string;
+    nullifier: Nullifier;
     vote: number;
     votersArray: string[];
     publicKey: string;

@@ -12,7 +12,7 @@ import { types } from 'zkvot-core';
 import ElectionCard from '@/app/elections/(partials)/election-card.jsx';
 
 import { fetchElectionsFromBackend } from '@/utils/backend.js';
-import Loader from './Loader.jsx';
+import Loader from './loader.jsx';
 
 interface AssignedElectionsProps {
   onlyOngoing?: boolean;

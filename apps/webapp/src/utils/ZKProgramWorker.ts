@@ -3,6 +3,8 @@ import * as Comlink from 'comlink';
 
 import { Aggregation, Election, MerkleTree, Vote } from 'zkvot-core';
 
+import { Nullifier as NullifierType } from '@aurowallet/mina-provider';
+
 import encodeDataToBase64String from '@/utils/encodeDataToBase64String.js';
 
 const state = {
@@ -71,7 +73,7 @@ export const api = {
   },
   async createVote(data: {
     electionPubKey: string;
-    nullifier: string;
+    nullifier: NullifierType;
     vote: number;
     votersArray: string[];
     publicKey: string;
@@ -106,7 +108,7 @@ export const api = {
 
     const votePrivateInputs = new Vote.PrivateInputs({
       voterKey: PublicKey.fromJSON(publicKey),
-      nullifier: Nullifier.fromJSON(JSON.parse(nullifier)),
+      nullifier: Nullifier.fromJSON(nullifier),
       votersMerkleWitness: new MerkleTree.Witness(witness),
     });
     console.log('votePrivateInputs', votePrivateInputs);

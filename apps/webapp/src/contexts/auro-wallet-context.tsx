@@ -1,28 +1,29 @@
 'use client';
 
 import { PropsWithChildren, useContext, createContext, useState } from 'react';
-import { Signature } from 'o1js';
+import { CreateNullifierArgs, Nullifier } from '@aurowallet/mina-provider';
 
 import { ZKProgramCompileContext } from '@/contexts/zk-program-compile-context.jsx';
 
+export interface GenerateEncodedVoteProofParams {
+  electionPubKey: string;
+  nullifier: Nullifier;
+  vote: number;
+  votersArray: string[];
+  publicKey: string;
+}
 interface AuroWalletContextInterface {
   auroWalletAddress: string;
   connectAuroWallet: () => Promise<boolean>;
-  signElectionId: (electionId: string) => Promise<string | Error>;
-  generateEncodedVoteProof: (vote: {
-    electionId: string;
-    signedElectionId: string;
-    vote: number;
-    votersArray: string[];
-    publicKey: string;
-  }) => Promise<string | Error>;
+  createNullifier: (electionId: string) => Promise<Nullifier | Error | null>;
+  generateEncodedVoteProof: (vote: GenerateEncodedVoteProofParams) => Promise<string | Error>;
   disconnectAuroWallet: () => void;
 };
 
 export const AuroWalletContext = createContext<AuroWalletContextInterface>({
   auroWalletAddress: '',
   connectAuroWallet: async () => false,
-  signElectionId: async () => '',
+  createNullifier: async () => null,
   generateEncodedVoteProof: async () => '',
   disconnectAuroWallet: () => {},
 });
@@ -52,45 +53,49 @@ export const AuroWalletProvider = ({
     }
   };
 
-  const signElectionId = async (
-    electionId: string
-  ): Promise<string | Error> => {
+  const createNullifier = async (electionId: string): Promise<Nullifier | Error> => {
     try {
-      if (!(window as any).auro)
-        throw new Error('Auro wallet extension not found. Please install it.');
+      const createNullifierArgs: CreateNullifierArgs = {
+        message: [electionId]
+      };
 
-      const signature = await (window as any).auro.signMessage({ message: electionId });
-      console.log('Raw signature from Auro wallet:', signature);
+      const nullifier: Nullifier = await (window as any).mina.createNullifier(createNullifierArgs);
 
-      if (!signature)
-        throw new Error('Failed to sign the election ID.');
-
-      if (
-        !signature.signature ||
-        typeof signature.signature.field != 'string' ||
-        typeof signature.signature.scalar != 'string'
-      )
-        throw new Error('Unexpected signature format.');
-
-      return Signature.fromObject({
-        r: signature.signature.field,
-        s: signature.signature.scalar,
-      }).toBase58();
+      return nullifier;
     } catch (error) {
-      throw new Error('Failed to sign the election ID.');
-    }
+      throw new Error('Failed to create nullifier.');
+    };
   };
 
-  const generateEncodedVoteProof = async (vote: {
-    electionId: string;
-    signedElectionId: string;
-    vote: number;
-    votersArray: string[];
-    publicKey: string;
-  }): Promise<string | Error> => {
+  // signElectionId()
+  //   if (!(window as any).auro)
+  //     throw new Error('Auro wallet extension not found. Please install it.');
+
+  //   const signature = await (window as any).auro.signMessage({ message: electionId });
+  //   console.log('Raw signature from Auro wallet:', signature);
+
+  //   if (!signature)
+  //     throw new Error('Failed to sign the election ID.');
+
+  //   if (
+  //     !signature.signature ||
+  //     typeof signature.signature.field != 'string' ||
+  //     typeof signature.signature.scalar != 'string'
+  //   )
+  //     throw new Error('Unexpected signature format.');
+
+  //   return Signature.fromObject({
+  //     r: signature.signature.field,
+  //     s: signature.signature.scalar,
+  //   }).toBase58();
+  // } catch (error) {
+  //   throw new Error('Failed to sign the election ID.');
+  // }
+
+  const generateEncodedVoteProof = async (vote: GenerateEncodedVoteProofParams): Promise<string | Error> => {
     // const workingElectionJson = {
     //   electionId: 'B62qinHTtL5wUL5ccnKudxDWhZYAyWDj2HcvVY1YVLhNXwqN9cceFkz',
-    //   signedElectionId: {
+    //   nullifier: {
     //     r: '16346194317455302813137534197593798058813563456069267503760707907206335264689',
     //     s: '1729086860553450026742784005774108720876791402296158317085038218355413912991',
     //   },
@@ -130,7 +135,7 @@ export const AuroWalletProvider = ({
       value={{
         auroWalletAddress,
         connectAuroWallet,
-        signElectionId,
+        createNullifier,
         generateEncodedVoteProof,
         disconnectAuroWallet,
       }}

@@ -29,6 +29,7 @@
     "zkvot-core": "*"
   },
   "devDependencies": {
+    "@aurowallet/mina-provider": "^1.0.6",
     "@repo/config": "*",
     "@types/canvas-confetti": "^1.6.4",
     "@types/react": "^18.3.12",

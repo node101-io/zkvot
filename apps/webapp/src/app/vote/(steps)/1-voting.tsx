@@ -4,6 +4,7 @@ import { useContext, useState, useEffect } from 'react';
 import Image from 'next/image.js';
 import { FaImage } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
+import { Nullifier } from '@aurowallet/mina-provider';
 
 import { types } from 'zkvot-core';
 
@@ -14,11 +15,11 @@ import LoadingOverlay from '@/app/(partials)/loading-overlay.jsx';
 import ToolTip from '@/app/(partials)/tool-tip.jsx';
 import WalletSelectionModal from '@/app/(partials)/wallet-selection-modal.jsx';
 
-import { AuroWalletContext } from '@/contexts/auro-wallet-context.jsx';
-// import { MetamaskWalletContext } from '@/contexts/MetamaskWalletContext';
+import { AuroWalletContext, GenerateEncodedVoteProofParams } from '@/contexts/auro-wallet-context.jsx';
 import { SelectedWalletContext } from '@/contexts/selected-wallet-context.jsx';
 import { ToastContext } from '@/contexts/toast-context.jsx';
 import { ZKProgramCompileContext } from '@/contexts/zk-program-compile-context.jsx';
+// import { MetamaskWalletContext } from '@/contexts/MetamaskWalletContext';
 
 import LearnMoreIcon from '@/public/elections/partials/learn-more-icon.jsx';
 import Clock from '@/public/elections/partials/clock-icon.jsx';
@@ -54,7 +55,7 @@ export default ({
     connectAuroWallet,
     generateEncodedVoteProof,
     disconnectAuroWallet,
-    signElectionId,
+    createNullifier,
   } = useContext(AuroWalletContext);
 
   // const {
@@ -63,9 +64,7 @@ export default ({
   //   disconnectMetamaskWallet,
   // } = useContext(MetamaskWalletContext);
 
-  const { selectedWallet, setSelectedWallet } = useContext(
-    SelectedWalletContext
-  );
+  const { selectedWallet, setSelectedWallet } = useContext(SelectedWalletContext);
 
   // const userWalletAddresses = [metamaskWalletAddress, auroWalletAddress]
   //   .filter(Boolean)
@@ -182,14 +181,14 @@ export default ({
 
   const generateElectionJson = (
     electionData: types.ElectionBackendData,
-    signedElectionId: string,
+    nullifier: Nullifier,
     selectedOption: number,
     votersArray: string[],
     publicKey: string
   ) => {
     return {
-      electionId: electionData.mina_contract_id,
-      signedElectionId,
+      electionPubKey: electionData.mina_contract_id,
+      nullifier,
       vote: selectedOption,
       votersArray: votersArray
         .map((address) => address?.trim().toLowerCase())
@@ -219,16 +218,10 @@ export default ({
         return;
       }
 
-      const signedElectionId = await signElectionId(electionData.mina_contract_id);
-      console.log('signedElectionId', signedElectionId);
+      const nullifier = await createNullifier(electionData.mina_contract_id);
+      console.log('nullifier', nullifier);
 
-      if (signedElectionId instanceof Error) {
-        showToast('Failed to generate the signed election ID.', 'error');
-        setLoading(false); // Ensure loading is turned off
-        return;
-      };
-
-      if (!signedElectionId?.length) {
+      if (!nullifier || nullifier instanceof Error) {
         showToast('Failed to generate the signed election ID.', 'error');
         setLoading(false); // Ensure loading is turned off
         return;
@@ -247,7 +240,7 @@ export default ({
 
       const electionJson = generateElectionJson(
         electionData,
-        signedElectionId,
+        nullifier,
         selectedOption,
         votersArray,
         publicKey
