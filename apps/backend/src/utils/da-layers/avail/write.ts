@@ -1,9 +1,5 @@
-import { Keyring, WaitFor } from 'avail-js-sdk';
-
 import encodeDataToBase64String from '../../encodeDataToBase64String.js';
-
-import ClientConfig from './ClientConfig.js';
-import getSDK from './getSDK.js';
+import { rpcEndpoint } from './config.js';
 
 export default (
   app_id: any,
@@ -16,34 +12,36 @@ export default (
     }
   ) => any
 ) => {
-  getSDK((error, sdk) => {
-    if (error || !sdk) return callback('rpc_connection_error');
+  encodeDataToBase64String(zkProof, async (error, encodedZkProof) => {
+    if (error) return callback(error);
 
-    const userAccount = new Keyring({ type: 'sr25519' }).addFromUri(ClientConfig.seedPhrase);
+    try {
+      const body = JSON.stringify({
+        data: encodedZkProof,
+        app_id: app_id,
+      });
 
-    encodeDataToBase64String(zkProof, (error, encodedZkProof) => {
-      if (error) return callback(error);
+      const response = await fetch(`${rpcEndpoint}/v2/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: body,
+      });
 
-      sdk.tx.dataAvailability
-        .submitData(encodedZkProof,
-          WaitFor.BlockInclusion,
-          userAccount,
-          { app_id: app_id }
-        )
-        .then(( result: {
-          isErr: any;
-          blockNumber: any;
-          txHash: { toString: () => any; };
-        }) => {
-          if (result.isErr)
-            return callback('da_layer_error');
+      if (response.ok) {
+        const data = await response.json();
+        const { block_number, hash } = data;
 
-          return callback(null, {
-            blockHeight: Number(result.blockNumber),
-            txHash: result.txHash.toString()
-          });
-        })
-        .catch((_: any) => callback('da_layer_error'));
-    });
+        return callback(null, {
+          blockHeight: block_number,
+          txHash: hash,
+        });
+      } else {
+        return callback('da_layer_error');
+      }
+    } catch (err) {
+      return callback('rpc_connection_error');
+    }
   });
 };

@@ -3,7 +3,7 @@
 import { createContext, useState, useEffect, PropsWithChildren } from 'react';
 import { Buffer } from 'buffer';
 import { initialize as initAvailAPI, ApiPromise } from 'avail-js-sdk';
-import { KeypairType, } from '@polkadot/util-crypto/types';
+import { KeypairType } from '@polkadot/util-crypto/types';
 import { DispatchError } from '@polkadot/types/interfaces';
 
 type Account = {

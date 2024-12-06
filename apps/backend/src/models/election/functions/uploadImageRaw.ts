@@ -4,7 +4,7 @@ import sharp from 'sharp';
 import generateRandomHex from '../../../utils/generateRandomHex.js';
 
 if (!process.env.AWS_BUCKET_NAME || !process.env.AWS_BUCKET_REGION || !process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY)
-  console.error('AWS environment variables not set: AWS_BUCKET_NAME, AWS_BUCKET_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY');
+  console.error('AWS_BUCKET_NAME, AWS_BUCKET_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY environment variables not set');
 
 const AWS_BUCKET_NAME = process.env.AWS_BUCKET_NAME || 'zkvot';
 const AWS_BUCKET_REGION = process.env.AWS_BUCKET_REGION || 'eu-central-1'

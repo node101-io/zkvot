@@ -13,9 +13,6 @@
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.701.0",
-    "@polkadot/api": "^14.3.1",
-    "@polkadot/util": "^13.2.3",
-    "avail-js-sdk": "^0.2.18",
     "body-parser": "^1.20.3",
     "cluster": "^0.7.7",
     "cors": "^2.8.5",

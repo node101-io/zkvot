@@ -1,21 +1,13 @@
-import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Request, Response } from 'express';
 
-const AVAIL_MAINNET_RPC = 'wss://turing-rpc.avail.so/ws';
+import { rpcEndpoint } from '../../../utils/da-layers/avail/config.js';
+
 const BLOCK_INFO_CACHE_TIME = 5 * 60 * 1000;
 
 let lastBlockHeight: string;
 let lastRequestTime: number;
 
-const wsProvider = new WsProvider(AVAIL_MAINNET_RPC);
-const api = await ApiPromise.create({ provider: wsProvider });
-
-await api.isReady;
-
-export default async (
-  req: Request,
-  res: Response
-) => {
+export default async (req: Request, res: Response) => {
   if (lastBlockHeight && Date.now() - lastRequestTime < BLOCK_INFO_CACHE_TIME) {
     res.json({
       success: true,
@@ -25,8 +17,8 @@ export default async (
   }
 
   try {
-    const signedBlock = await api.rpc.chain.getBlock();
-    const block_height = signedBlock.block.header.number.toString();
+    const response = await fetch(`${rpcEndpoint}/v2/status`);
+    const block_height = (await response.json()).blocks.latest;
 
     lastBlockHeight = block_height;
     lastRequestTime = Date.now();
