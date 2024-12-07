@@ -88,7 +88,7 @@ const HomePage = () => {
             onPrevious={() => setStep(5)}
             onNext={(data: {
               election: types.ElectionStaticData;
-              storage_layer_platform: types.StorageLayerPlatformCodes;
+              storage_layer_platform: types.StorageLayerPlatformCodes[keyof types.StorageLayerPlatformCodes];
               storage_layer_id: string;
             }) => {
               setStorageLayerId(data.storage_layer_id);

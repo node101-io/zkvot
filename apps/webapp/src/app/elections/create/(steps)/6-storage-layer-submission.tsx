@@ -1,4 +1,4 @@
-import { useContext, useState, ChangeEvent } from 'react';
+import { useContext, useState } from 'react';
 import Image from 'next/image.js';
 import Link from 'next/link.js';
 
@@ -28,12 +28,12 @@ export default ({ onPrevious, onNext, initialData }: {
   onPrevious: () => void;
   onNext: (data: {
     election: types.ElectionStaticData,
-    storage_layer_platform: types.StorageLayerPlatformCodes,
+    storage_layer_platform: types.StorageLayerPlatformCodes[keyof types.StorageLayerPlatformCodes],
     storage_layer_id: string
   }) => void;
   initialData: {
     election: types.ElectionStaticData,
-    storage_layer_platform: types.StorageLayerPlatformCodes
+    storage_layer_platform: types.StorageLayerPlatformCodes[keyof types.StorageLayerPlatformCodes]
   };
 }) => {
   const { showToast } = useContext(ToastContext);
@@ -72,30 +72,6 @@ export default ({ onPrevious, onNext, initialData }: {
       <h2 className='text-white text-2xl'>
         Storage Layer Upload Guide
       </h2>
-      <div className='w-full'>
-        <label className='block text-white mb-2'>Transaction ID</label>
-        <input
-          type='text'
-          value={transactionId}
-          onChange={event => setTransactionId(event.target.value)}
-          className='w-full h-12 p-2 bg-[#222] text-white rounded-[23px] border'
-          placeholder='Enter your transaction ID here'
-        />
-      </div>
-      <div className='w-full flex justify-between pt-4'>
-        <Button onClick={onPrevious}>Previous</Button>
-        <Button
-          onClick={handleSubmit}
-          disabled={!transactionId.trim().length}
-          className={
-            !transactionId.trim().length
-              ? 'opacity-50 cursor-not-allowed'
-              : ''
-          }
-        >
-          Next
-        </Button>
-      </div>
       <div className='w-full text-white'>
         {stepsData.map((step, index) => (
           <div key={index}>
@@ -110,12 +86,39 @@ export default ({ onPrevious, onNext, initialData }: {
           </div>
         ))}
       </div>
+      <div className='w-full'>
+        <label className='block text-white mb-2'>Transaction ID</label>
+        <input
+          type='text'
+          value={transactionId}
+          onChange={event => setTransactionId(event.target.value)}
+          className='w-full h-12 p-2 bg-[#222] text-white rounded-[23px] border'
+          placeholder='Enter your transaction ID here'
+        />
+      </div>
+      <div className='w-full flex justify-between pt-4'>
+        <Button
+          onClick={onPrevious}
+          variant='back'
+        >
+          Previous
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          disabled={!transactionId.trim().length}
+          className={
+            !transactionId.trim().length ? 'opacity-50 cursor-not-allowed' : ''
+          }
+        >
+          Next
+        </Button>
+      </div>
     </div>
   );
 };
 
 function getUploadInstructions(
-  storageLayer: (typeof utils.StorageLayerPlatformEncoding)[keyof typeof utils.StorageLayerPlatformEncoding],
+  storageLayer: types.StorageLayerPlatformCodes[keyof types.StorageLayerPlatformCodes],
   onDownload: () => void
 ) {
   switch (storageLayer) {
@@ -178,8 +181,6 @@ function getUploadInstructions(
           image: ArweaveStep7Image,
         },
       ];
-    case 'P':
-      return [];
     case 'F':
       return [
         {

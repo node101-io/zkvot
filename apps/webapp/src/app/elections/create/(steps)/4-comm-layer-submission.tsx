@@ -38,18 +38,19 @@ export default ({ onPrevious, onNext, initialData }: {
   const { subWalletAddress, isSubmitting, createAppId, connectSubWallet } = useContext(SubwalletContext);
   const { showToast } = useContext(ToastContext);
 
-  // const [isSubmitEnabled, setIsSubmitEnabled] = useState<boolean>(false);
   const [blockHeight, setBlockHeight] = useState<number>(0);
   const [appId, setAppId] = useState<number>(0);
   const [blockHash, setBlockHash] = useState<string>('');
 
   useEffect(() => {
+    showToast('Please connect your wallet to continue.', 'error');
+
     const communicationLayer = initialData.communication_layers[0];
 
     if (communicationLayer) {
       setBlockHeight(communicationLayer.start_block_height);
 
-      if (communicationLayer.name === 'celestia')
+      if (communicationLayer.name === 'Celestia')
         setBlockHash((communicationLayer as types.CelestiaDaLayerInfo).start_block_hash);
     }
   }, [initialData]);
@@ -66,7 +67,6 @@ export default ({ onPrevious, onNext, initialData }: {
         if (appData && appData.id) {
           setAppId(appData.id);
           showToast('App ID created successfully', 'success');
-          setIsSubmitEnabled(true);
         } else {
           showToast('Invalid App ID data', 'error');
         }
@@ -79,10 +79,10 @@ export default ({ onPrevious, onNext, initialData }: {
   const handleNext = () => {
     const communicationLayer = initialData.communication_layers[0];
 
-    if (communicationLayer.name == 'avail' && appId <= 0) return;
-    if (communicationLayer.name == 'celestia' && !blockHash?.trim().length) return;
+    if (communicationLayer.name == 'Avail' && appId <= 0) return;
+    if (communicationLayer.name == 'Celestia' && !blockHash?.trim().length) return;
 
-    if (communicationLayer.name === 'avail')
+    if (communicationLayer.name === 'Avail')
       onNext({
         ...initialData,
         communication_layers: [
@@ -93,7 +93,7 @@ export default ({ onPrevious, onNext, initialData }: {
           }
         ]
       });
-    if (communicationLayer.name === 'celestia')
+    if (communicationLayer.name === 'Celestia')
       onNext({
         ...initialData,
         communication_layers: [
@@ -116,7 +116,7 @@ export default ({ onPrevious, onNext, initialData }: {
           onInput={event => setBlockHeight(Number((event.target as HTMLInputElement).value))}
           className='w-full max-w-[620px] h-12 p-2 focus:outline-none bg-[#1E1E1E] text-[#B7B7B7] rounded-[50px] my-4'
         />
-        {initialData.communication_layers[0].name === 'avail' ?
+        {initialData.communication_layers[0].name === 'Avail' ?
           (
             <>
               <label className='block text-white'>App ID:</label>
@@ -163,18 +163,23 @@ export default ({ onPrevious, onNext, initialData }: {
         }
       </div>
       <div className='w-full flex justify-between pt-4'>
-        <Button onClick={onPrevious}>Previous</Button>
+        <Button
+          onClick={onPrevious}
+          variant='back'
+        >
+          Previous
+        </Button>
         <Button
           onClick={handleNext}
           disabled={
             blockHeight <= 0 ||
-            (initialData.communication_layers[0].name === 'avail' && appId <= 0) ||
-            (initialData.communication_layers[0].name === 'celestia' && !blockHash?.trim().length)
+            (initialData.communication_layers[0].name === 'Avail' && appId <= 0) ||
+            (initialData.communication_layers[0].name === 'Celestia' && !blockHash?.trim().length)
           }
           className={`${
             blockHeight <= 0 ||
-            (initialData.communication_layers[0].name === 'avail' && appId <= 0) ||
-            (initialData.communication_layers[0].name === 'celestia' && !blockHash?.trim().length) ? 'opacity-50 cursor-not-allowed' : ''
+            (initialData.communication_layers[0].name === 'Avail' && appId <= 0) ||
+            (initialData.communication_layers[0].name === 'Celestia' && !blockHash?.trim().length) ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
           Next

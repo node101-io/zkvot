@@ -15,20 +15,20 @@ export default ({ onPrevious, onNext, initialData }: {
   onNext: (data: types.ElectionStaticData) => void;
   initialData: types.ElectionStaticData;
 }) => {
-  const [selectedCommunicationLayer, setSelectedCommunicationLayer] = useState<'avail' | 'celestia' | null>(null);
+  const [selectedCommunicationLayer, setSelectedCommunicationLayer] = useState<types.DaLayerInfo['name'] | null>(null);
 
   const { showToast } = useContext(ToastContext);
 
   useEffect(() => setSelectedCommunicationLayer(null), []);
 
-  const handleCommunicationSelection = (layer: 'avail' | 'celestia') => setSelectedCommunicationLayer(layer);
+  const handleCommunicationSelection = (layer: types.DaLayerInfo['name']) => setSelectedCommunicationLayer(layer);
 
   const handleNext = async () => {
     if (selectedCommunicationLayer == null) return;
 
     showToast('Fetching communication layer data...', 'success');
 
-    if (selectedCommunicationLayer == 'avail') {
+    if (selectedCommunicationLayer == 'Avail') {
       let communicationLayer: types.AvailDaLayerInfo = {
         name: selectedCommunicationLayer,
         start_block_height: 0,
@@ -47,7 +47,7 @@ export default ({ onPrevious, onNext, initialData }: {
           communication_layers: [communicationLayer]
         });
       }
-    } else if (selectedCommunicationLayer == 'celestia') {
+    } else if (selectedCommunicationLayer == 'Celestia') {
       const communicationLayer: types.CelestiaDaLayerInfo = {
         name: selectedCommunicationLayer,
         start_block_height: 0,
@@ -78,15 +78,15 @@ export default ({ onPrevious, onNext, initialData }: {
       <div className='w-full space-y-6 p'>
         <h2 className='text-white text-2xl'>Select Communication Layer</h2>
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 w-full'>
-          {Object.keys(CommunicationLayerDetails).map((layer, index) => (
+          {(Object.keys(CommunicationLayerDetails) as types.DaLayerInfo['name'][]).map((layer: types.DaLayerInfo['name'], index) => (
             <div
               key={index}
               className={`p-4 bg-[#222222] rounded-2xl flex items-center transition duration-200 cursor-pointer ${
                 layer === selectedCommunicationLayer
                   ? 'border-[1px] border-primary shadow-lg'
-                  : 'hover:bg-[#333333]'
+                  : 'border-[1px] border-transparent hover:bg-[#333333]'
               }`}
-              onClick={() => handleCommunicationSelection(layer as 'avail' | 'celestia')}
+              onClick={() => handleCommunicationSelection(layer as types.DaLayerInfo['name'])}
             >
               <div className='flex-shrink-0 mr-4'>
                 {CommunicationLayerDetails[layer as keyof typeof CommunicationLayerDetails].logo || (
@@ -110,7 +110,12 @@ export default ({ onPrevious, onNext, initialData }: {
         </div>
       </div>
       <div className='w-full flex justify-between pt-4'>
-        <Button onClick={onPrevious}>Previous</Button>
+        <Button
+          onClick={onPrevious}
+          variant='back'
+        >
+          Previous
+        </Button>
         <Button
           onClick={handleNext}
           disabled={selectedCommunicationLayer === null}

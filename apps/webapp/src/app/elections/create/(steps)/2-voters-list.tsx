@@ -1,4 +1,5 @@
 import { useState, KeyboardEvent } from 'react';
+import { PublicKey } from 'o1js';
 import ChevronDownIcon from '@heroicons/react/solid/ChevronDownIcon.js';
 
 import { types } from 'zkvot-core';
@@ -253,14 +254,23 @@ const VoterInput = ({
 
   const isFirstVoter = voters.length === 0;
 
+  const isPublicKeyValid = (key: string) => {
+    try {
+      PublicKey.fromBase58(key);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
   const addVoter = () => {
     let errors: { [key: string]: boolean } = {};
     let hasError = false;
 
-    if (!publicKey.trim()) {
+    if (!publicKey.trim() || !isPublicKeyValid(publicKey.trim())) {
       errors.publicKey = true;
       hasError = true;
-    }
+    };
 
     const fieldsToValidate = isFirstVoter
       ? selectedOptionalFields

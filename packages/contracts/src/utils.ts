@@ -18,20 +18,13 @@ namespace utilsNamespace {
     return Buffer.from(hexString, 'hex').toString('utf-8');
   };
 
-  export const StorageLayerPlatformEncoding: {
-    [key: string]: types.StorageLayerPlatformCodes
-  } = {
-    Arweave: 'A',
-    Filecoin: 'F',
-    Pinata: 'P',
-  };
-
-  export const StorageLayerPlatformDecoding: {
-    [key: string]: string
-  } = {
+  export const StorageLayerPlatformDecoding: Record<types.StorageLayerPlatformCodes, types.StorageLayerPlatformNames> = {
     A: 'Arweave',
     F: 'Filecoin',
-    P: 'Pinata'
+  };
+  export const StorageLayerPlatformEncoding: Record<types.StorageLayerPlatformNames, types.StorageLayerPlatformCodes> = {
+    Arweave: 'A',
+    Filecoin: 'F',
   };
 
   export const encodeStorageLayerInfo = (
@@ -71,13 +64,7 @@ namespace utilsNamespace {
   ) => {
     const { platform, id } = data;
 
-    if (platform === StorageLayerPlatformEncoding.Pinata) {
-      fetchDataFromIPFS(id, (err, data) => {
-        if (err) return callback(err);
-
-        return callback(null, data);
-      });
-    } else if (platform === StorageLayerPlatformEncoding.Arweave) {
+    if (platform === StorageLayerPlatformEncoding.Arweave) {
       fetchDataFromArweave(id, (err, data) => {
         if (err) return callback(err);
 

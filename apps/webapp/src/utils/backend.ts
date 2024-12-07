@@ -62,7 +62,7 @@ export const fetchElectionByContractIdFromBackend = async (
 export const sendVoteViaBackend = async (
   vote: string,
   election_contract_id: string,
-  da_layer: 'avail' | 'celestia'
+  da_layer: types.DaLayerInfo['name']
 ) => {
   try {
     const response = await fetch(`${API_URL}/api/vote/send`, {

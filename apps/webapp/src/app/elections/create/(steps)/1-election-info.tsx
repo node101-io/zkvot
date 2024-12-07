@@ -236,6 +236,7 @@ export default ({ onNext, initialData }: {
                     value={convertDateToISOString(startDate)}
                     onChange={(e) => setStartDate(new Date(e.target.value))}
                     className='p-2 bg-[#222] text-white rounded-full border border-[#1E1E1E] w-full'
+                    style={{ colorScheme: 'dark' }}
                   />
                 </div>
 
@@ -246,6 +247,7 @@ export default ({ onNext, initialData }: {
                     value={convertDateToISOString(endDate)}
                     onChange={(e) => setEndDate(new Date(e.target.value))}
                     className='p-2 bg-[#222] text-white rounded-full border border-[#1E1E1E] w-full'
+                    style={{ colorScheme: 'dark' }}
                   />
                 </div>
               </div>
@@ -289,7 +291,7 @@ export default ({ onNext, initialData }: {
       <div className='w-full flex justify-end items-center'>
         <Button
           onClick={handleNext}
-          // className={`${!isNextEnabled ? 'opacity-50 cursor-not-allowed' : ''}`} // TODO: Fix this
+          className={!isNextEnabled ? 'opacity-50 cursor-not-allowed' : ''}
           disabled={!isNextEnabled}
         >
           Next

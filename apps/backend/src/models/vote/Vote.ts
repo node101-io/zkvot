@@ -17,7 +17,7 @@ interface VoteStatics {
     data: {
       vote: string;
       election_contract_id: string;
-      da_layer: 'avail' | 'celestia';
+      da_layer: types.DaLayerInfo['name'];
     },
     callback: (error: string | null, result?: {
       block_height: number,
@@ -56,7 +56,7 @@ VoteSchema.statics.createAndSubmitVote = function (
   data: {
     vote: string;
     election_contract_id: string;
-    da_layer: 'avail' | 'celestia';
+    da_layer: types.DaLayerInfo['name'];
   },
   callback: (error: string | null, vote?: any) => any
 ) {
@@ -99,9 +99,9 @@ VoteSchema.statics.createAndSubmitVote = function (
               da_layer: data.da_layer
             };
 
-            if (data.da_layer == 'avail')
+            if (data.da_layer == 'Avail')
               submitVoteData.app_id = (election.communication_layers as types.AvailDaLayerInfo[]).find(layer => layer.name == data.da_layer)?.app_id;
-            else if (data.da_layer == 'celestia')
+            else if (data.da_layer == 'Celestia')
               submitVoteData.namespace = (election.communication_layers as types.CelestiaDaLayerInfo[]).find(layer => layer.name == data.da_layer)?.namespace;
             else
               return callback('not_possible_error');

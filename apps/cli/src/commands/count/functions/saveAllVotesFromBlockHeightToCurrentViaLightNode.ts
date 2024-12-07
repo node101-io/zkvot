@@ -183,7 +183,7 @@ const readAvailBlocksFromStartBlockHeightToCurrent = (
   verificationKey: VerificationKey,
   callback: (err: Error | string | null) => void
 ) => {
-  const availInfo: types.AvailDaLayerInfo | undefined = (election.communication_layers as types.AvailDaLayerInfo[]).find(daLayer => daLayer.name === 'avail');
+  const availInfo: types.AvailDaLayerInfo | undefined = (election.communication_layers as types.AvailDaLayerInfo[]).find(daLayer => daLayer.name === 'Avail');
 
   if (!availInfo)
     return callback(null);
@@ -252,7 +252,7 @@ const readCelestiaBlocksFromStartBlockHeightToCurrent = (
   verificationKey: VerificationKey,
   callback: (err: Error | string | null) => void
 ) => {
-  const celestiaInfo: types.CelestiaDaLayerInfo | undefined = (election.communication_layers as types.CelestiaDaLayerInfo[]).find(daLayer => daLayer.name === 'celestia');
+  const celestiaInfo: types.CelestiaDaLayerInfo | undefined = (election.communication_layers as types.CelestiaDaLayerInfo[]).find(daLayer => daLayer.name === 'Celestia');
 
   if (!celestiaInfo)
     return callback(null);

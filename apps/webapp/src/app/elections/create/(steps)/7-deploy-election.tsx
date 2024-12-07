@@ -15,7 +15,7 @@ import { ToastContext } from '@/contexts/toast-context.jsx';
 import { ZKProgramCompileContext } from '@/contexts/zk-program-compile-context.jsx';
 
 import { calculateMinaBlockHeightFromTimestampViaBackend } from '@/utils/backend.js';
-import { CommunicationLayerDetails, StorageLayerDetails } from '@/utils/constants.jsx';
+import { CommunicationLayerDetails, StorageLayerDetails, StorageLayerDetailsType } from '@/utils/constants.jsx';
 import formatDate from '@/utils/formatDate.js';
 
 const DEFAULT_VOTERS_COUNT_TO_DISPLAY = 5;
@@ -40,12 +40,17 @@ export default ({ onPrevious, data }: {
     if (submitted) return;
     if (loading) return;
 
-    if (!auroWalletAddress) await connectAuroWallet();
-
-    if (!auroWalletAddress) {
+    try {
+      if (!auroWalletAddress) await connectAuroWallet()
+    } catch (err) {
+      console.log(3253, err)
       showToast('Please connect your wallet to continue.', 'error');
-      return;
     };
+
+    console.log()
+
+    if (!auroWalletAddress)
+      showToast('Please connect your wallet to continue.', 'error');
 
     if (!zkProgramWorkerClientInstance) {
       showToast('Something went wrong, please try again later.', 'error');
@@ -117,30 +122,30 @@ export default ({ onPrevious, data }: {
         className='flex items-center bg-[#222222] p-4 rounded-2xl mb-4'
       >
         <div className='w-16 h-16 flex-shrink-0 rounded-md mr-4 flex items-center justify-center bg-gray-500'>
-          {CommunicationLayerDetails[layer.name as keyof typeof CommunicationLayerDetails].logo || (
+          {CommunicationLayerDetails[layer.name].logo || (
             <div className='w-full h-full bg-gray-500 rounded-md' />
           )}
         </div>
         <div className='flex flex-col'>
           <h3 className='text-white text-lg mb-1 capitalize'>{layer.name}</h3>
-          {(layer as types.CelestiaDaLayerInfo).namespace && (
-            <span className='text-sm text-gray-400'>
-              Namespace: {(layer as types.CelestiaDaLayerInfo).namespace}
-            </span>
-          )}
-          {(layer as types.AvailDaLayerInfo).app_id && (
-            <span className='text-sm text-gray-400'>
-              Namespace: {(layer as types.AvailDaLayerInfo).app_id}
-            </span>
-          )}
           {layer.start_block_height && (
             <span className='text-sm text-gray-400'>
               Block Height: {layer.start_block_height}
             </span>
           )}
+          {(layer as types.CelestiaDaLayerInfo).namespace && (
+            <span className='text-sm text-gray-400'>
+              Namespace: {(layer as types.CelestiaDaLayerInfo).namespace}
+            </span>
+          )}
           {(layer as types.CelestiaDaLayerInfo).start_block_hash && (
             <span className='text-sm text-gray-400'>
               Block Hash: {(layer as types.CelestiaDaLayerInfo).start_block_hash}
+            </span>
+          )}
+          {(layer as types.AvailDaLayerInfo).app_id && (
+            <span className='text-sm text-gray-400'>
+              Namespace: {(layer as types.AvailDaLayerInfo).app_id}
             </span>
           )}
         </div>
@@ -149,7 +154,7 @@ export default ({ onPrevious, data }: {
   };
 
   const renderStorageLayer = () => {
-    const layer = StorageLayerDetails[data.storage_layer_platform as keyof typeof StorageLayerDetails];
+    const layer = StorageLayerDetails[utils.StorageLayerPlatformDecoding[data.storage_layer_platform]];
 
     return (
       <div className='flex items-center bg-[#222222] p-4 rounded-2xl mb-4'>
@@ -219,16 +224,6 @@ export default ({ onPrevious, data }: {
   return (
     <div className='flex flex-col items-center px-4 sm:px-6 md:px-8 h-full'>
       {loading && <LoadingOverlay text='Submitting election' />}
-      <div className='w-full flex justify-between pt-4'>
-        <Button onClick={onPrevious} variant='back'>Previous</Button>
-        <Button
-          onClick={handleSubmit}
-          // disabled={submitted}
-          className={`${submitted ? 'bg-gray-500 cursor-not-allowed' : ''}`}
-        >
-          {submitted ? 'Submitted' : 'Submit'}
-        </Button>
-      </div>
       <div className='pb-4 pt-8 w-full text-start'>Result</div>
       <div className='flex flex-col items-start w-full h-fit text-white mb-6 bg-[#222222] p-5 rounded-[30px] '>
         <div className='flex flex-col md:flex-row w-full h-fit'>
@@ -311,6 +306,16 @@ export default ({ onPrevious, data }: {
         ) : (
           <p className='text-gray-500'>No voters have participated yet.</p>
         )}
+      </div>
+      <div className='w-full flex justify-between pt-4'>
+        <Button onClick={onPrevious} variant='back'>Previous</Button>
+        <Button
+          onClick={handleSubmit}
+          // disabled={submitted}
+          className={`${submitted ? 'bg-gray-500 cursor-not-allowed' : ''}`}
+        >
+          {submitted ? 'Submitted' : 'Submit'}
+        </Button>
       </div>
     </div>
   );

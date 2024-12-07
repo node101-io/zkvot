@@ -49,7 +49,7 @@ export const AuroWalletProvider = ({
       setAuroWalletAddress(address);
       return true;
     } catch (error) {
-      throw new Error('Failed to connect to Auro wallet.');
+      return Promise.reject(error);
     }
   };
 

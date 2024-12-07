@@ -143,7 +143,7 @@ export default ({
   useEffect(() => {
     if (
       selectionMode === 'direct' &&
-      selectedDA === 'avail' &&
+      selectedDA === 'Avail' &&
       subWalletAddress
     ) {
       setWalletAddress(subWalletAddress);
@@ -152,7 +152,7 @@ export default ({
       setWalletAddress('');
     }
 
-    if (selectedDA === 'avail' && selectionMode === 'direct') {
+    if (selectedDA === 'Avail' && selectionMode === 'direct') {
       setSelectedWallet('Subwallet');
     } else {
       setSelectedWallet('');
@@ -161,7 +161,7 @@ export default ({
 
   useEffect(() => {
     setWalletAddress('');
-    if (selectedDA === 'avail') {
+    if (selectedDA === 'Avail') {
       setSelectedWallet('Subwallet');
     }
   }, [selectedDA, subWalletAddress, disconnectSubWallet]);
@@ -200,7 +200,7 @@ export default ({
       if (selectionMode === 'direct') {
         let transactionSuccess = false;
 
-        if (selectedDA === 'avail') {
+        if (selectedDA === 'Avail') {
           transactionSuccess = await sendTransactionSubwallet(zkProofData);
         }
 
@@ -249,7 +249,7 @@ export default ({
   const filteredLayers =
     selectionMode === 'direct'
       ? electionData.communication_layers.filter(
-        (layer) => layer.name === 'avail'
+        (layer) => layer.name === 'Avail'
       )
       : electionData.communication_layers;
 

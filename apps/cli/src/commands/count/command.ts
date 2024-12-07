@@ -30,7 +30,7 @@ const election = {
   voters_list: [],
   communication_layers: [
     {
-      name: 'celestia' as const,
+      name: 'Celestia' as const,
       start_block_height: 2960050,
       start_block_hash: '821CE8B3BFFFD76FEA4666C32495896E26C92271B264D8E490989CBC3227A94C',
       namespace: 'AAAAAAAAAAAAAAAAAAAAAAAAAK0xKC+NMFwlyBM=',

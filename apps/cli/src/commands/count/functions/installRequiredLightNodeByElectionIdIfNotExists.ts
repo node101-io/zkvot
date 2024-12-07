@@ -31,7 +31,7 @@ const installAvailLightNodeIfRequired = (
   daLayerInfo: (types.AvailDaLayerInfo | types.CelestiaDaLayerInfo)[],
   callback: (err: string | null) => void
 ) => {
-  const availInfo: types.AvailDaLayerInfo | undefined = (daLayerInfo as types.AvailDaLayerInfo[]).find(daLayer => daLayer.name === 'avail');
+  const availInfo: types.AvailDaLayerInfo | undefined = (daLayerInfo as types.AvailDaLayerInfo[]).find(daLayer => daLayer.name === 'Avail');
 
   if (!availInfo)
     return callback(null);
@@ -55,7 +55,7 @@ const installCelestialLightNodeIfRequired = (
   daLayerInfo: (types.AvailDaLayerInfo | types.CelestiaDaLayerInfo)[],
   callback: (err: Error | string | null) => void
 ) => {
-  const celestiaInfo: types.CelestiaDaLayerInfo | undefined = (daLayerInfo as types.CelestiaDaLayerInfo[]).find(daLayer => daLayer.name === 'celestia');
+  const celestiaInfo: types.CelestiaDaLayerInfo | undefined = (daLayerInfo as types.CelestiaDaLayerInfo[]).find(daLayer => daLayer.name === 'Celestia');
 
   if (!celestiaInfo)
     return callback(null);

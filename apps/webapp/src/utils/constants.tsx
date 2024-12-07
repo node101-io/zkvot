@@ -5,10 +5,28 @@ import AvailLogo from '@/public/general/blockchain-logos/avail.png';
 import CelestiaLogo from '@/public/general/blockchain-logos/celestia.png';
 import FileCoinLogo from '@/public/general/blockchain-logos/filecoin.png';
 
-export const CommunicationLayerDetails = {
-  avail: {
+import { types } from 'zkvot-core';
+
+export type CommunicationLayerDetailsType = {
+  [key in types.CommunicationLayerNames]: {
+    description: string;
+    currency: string;
+    logo: JSX.Element;
+  };
+};
+export type StorageLayerDetailsType= {
+  [key in types.StorageLayerPlatformNames]: {
+    description: string;
+    currency: string;
+    logo: JSX.Element;
+    code: types.StorageLayerPlatformCodes;
+  };
+};
+
+export const CommunicationLayerDetails: CommunicationLayerDetailsType = {
+  Avail: {
     description: 'Avail is a decentralized data availability layer.',
-    currency: '$AVAIL',
+    currency: 'AVAIL',
     logo: (
       <Image
         src={AvailLogo}
@@ -19,9 +37,9 @@ export const CommunicationLayerDetails = {
       />
     )
   },
-  celestia: {
+  Celestia: {
     description: 'Celestia is a modular consensus and data network.',
-    currency: '$TIA',
+    currency: 'TIA',
     logo: (
       <Image
         src={CelestiaLogo}
@@ -33,9 +51,8 @@ export const CommunicationLayerDetails = {
     )
   },
 };
-
-export const StorageLayerDetails = {
-  arveawe: {
+export const StorageLayerDetails: StorageLayerDetailsType= {
+  Arweave: {
     description: 'Arweave is a decentralized storage network.',
     currency: 'AR',
     logo: (
@@ -45,9 +62,10 @@ export const StorageLayerDetails = {
         width={160}
         height={160}
       />
-    )
+    ),
+    code: 'A'
   },
-  filecoin: {
+  Filecoin: {
     description: 'Filecoin is a decentralized storage network.',
     currency: 'FIL',
     logo: (
@@ -57,6 +75,7 @@ export const StorageLayerDetails = {
         width={160}
         height={160}
       />
-    )
+    ),
+    code: 'F'
   }
-}
+};

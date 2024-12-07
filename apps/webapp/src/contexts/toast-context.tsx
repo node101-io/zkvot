@@ -7,6 +7,8 @@ import { createPortal } from 'react-dom';
 import SuccessIcon from '@/public/general/toast/success.jsx';
 import ErrorIcon from '@/public/general/toast/error.jsx';
 
+const TOAST_DURATION = 3000;
+
 interface ToastInterface {
   _id: string;
   message: string;
@@ -19,7 +21,7 @@ const Toast = ({
   _id,
   message,
   type = 'success',
-  duration = 1500,
+  duration = TOAST_DURATION,
   onClose
 }: ToastInterface) => {
   const [visible, setVisible] = useState(true);
@@ -88,7 +90,7 @@ export const ToastProvider = ({
     duration?: number
   ): void => {
     if (!duration)
-      duration = 1500;
+      duration = TOAST_DURATION;
 
     const _id = uuidv4();
     setToasts(prevToasts => [...prevToasts, { _id, message, type, duration }]);

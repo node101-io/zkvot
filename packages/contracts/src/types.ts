@@ -1,10 +1,10 @@
 namespace typesNamespace {
   export interface DaLayerInfo {
-    name: 'avail' | 'celestia',
+    name: 'Avail' | 'Celestia',
     start_block_height: number
   };
 
-  export interface AvailDaLayerInfo extends DaLayerInfo {
+  export type AvailDaLayerInfo = DaLayerInfo & {
     app_id: number
   };
 
@@ -12,7 +12,7 @@ namespace typesNamespace {
     data: string
   };
 
-  export interface CelestiaDaLayerInfo extends DaLayerInfo {
+  export type CelestiaDaLayerInfo = DaLayerInfo & {
     namespace: string,
     start_block_hash: string
   };
@@ -32,7 +32,9 @@ namespace typesNamespace {
     public_key: string;
   };
 
-  export type StorageLayerPlatformCodes = 'A' | 'F' | 'P';
+  export type StorageLayerPlatformCodes = 'A' | 'F';
+  export type StorageLayerPlatformNames = 'Arweave' | 'Filecoin';
+  export type CommunicationLayerNames = 'Avail' | 'Celestia';
 
   export type ElectionStaticData = {
     start_date: Date;
