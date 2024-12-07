@@ -111,8 +111,7 @@ namespace ElectionNamespace {
   }
 
   export class Contract extends SmartContract {
-    @state(StorageLayerInfoEncoding) storageLayerInfoEncoding =
-      State<StorageLayerInfoEncoding>();
+    @state(StorageLayerInfoEncoding) storageLayerInfoEncoding = State<StorageLayerInfoEncoding>();
 
     @state(Field) lastAggregatorPubKeyHash = State<Field>();
 
@@ -137,6 +136,7 @@ namespace ElectionNamespace {
 
     @method
     async initialize(storageLayerInfoEncoding: StorageLayerInfoEncoding) {
+      console.log("storageLayerInfoEncoding", storageLayerInfoEncoding);
       this.account.provedState.requireEquals(Bool(false));
 
       this.storageLayerInfoEncoding.set(storageLayerInfoEncoding);

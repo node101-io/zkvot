@@ -18,6 +18,13 @@ namespace utilsNamespace {
     return Buffer.from(hexString, 'hex').toString('utf-8');
   };
 
+  const convertStringToField = (
+    str: string
+  ): Field => {
+    const hexString = Buffer.from(str, 'utf-8').toString('hex');
+    return new Field(BigInt('0x' + hexString));
+  };
+
   export const StorageLayerPlatformDecoding: Record<types.StorageLayerPlatformCodes, types.StorageLayerPlatformNames> = {
     A: 'Arweave',
     F: 'Filecoin',
@@ -31,9 +38,11 @@ namespace utilsNamespace {
     platform: types.StorageLayerPlatformCodes,
     id: string
   ): Election.StorageLayerInfoEncoding => {
+    const infoToEncode = platform + id;
+  
     return new Election.StorageLayerInfoEncoding({
-      first: Field(BigInt(id)),
-      last: Field(BigInt(platform.charCodeAt(0)))
+      first: convertStringToField(infoToEncode.slice(0, infoToEncode.length / 2)),
+      last: convertStringToField(infoToEncode.slice(infoToEncode.length / 2))
     });
   };
 
@@ -43,14 +52,14 @@ namespace utilsNamespace {
     platform: string,
     id: string
   } => {
-    const platform = convertFieldToString(storageLayerInfoEncoding.first).slice(0,1);
+    const platform = convertFieldToString(storageLayerInfoEncoding.first).slice(0, 1);
     const id = convertFieldToString(storageLayerInfoEncoding.first).slice(1) + convertFieldToString(storageLayerInfoEncoding.last);
 
     return {
       platform,
       id
     };
-  }
+  };
 
   export const fetchDataFromStorageLayer = (
     data: {

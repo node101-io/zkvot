@@ -55,7 +55,10 @@ export default class {
       electionStartBlock,
       electionFinalizeBlock,
       votersRoot,
-      electionData,
+      {
+        first: electionData.first.toBigInt(),
+        last: electionData.last.toBigInt(),
+      },
       settlementReward || 0
     );
 

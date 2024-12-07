@@ -52,11 +52,11 @@ export default ({ onPrevious, data }: {
       return;
     }
     if (isSettingUp) {
-      showToast('Loading ZK, please wait a few more minutes and try again.', 'error');
+      showToast('zkVot is loading in the background, please wait a few more minutes and try again.', 'error');
       return;
     }
     if (!hasBeenSetup) {
-      showToast('Loading ZK, please wait a few more minutes and try again.', 'error');
+      showToast('zkVot is loading in the background, please wait a few more minutes and try again.', 'error');
       return;
     }
     setLoading(true);
@@ -71,6 +71,7 @@ export default ({ onPrevious, data }: {
         return;
       };
 
+      await zkProgramWorkerClientInstance.setActiveInstanceToDevnet();
       const txJson = await zkProgramWorkerClientInstance.deployElection(
         auroWalletAddress,
         minaBlockData.startBlockHeight,
@@ -78,6 +79,12 @@ export default ({ onPrevious, data }: {
         votersMerkleTree.getRoot().toBigInt(),
         utils.encodeStorageLayerInfo(data.storage_layer_platform, data.storage_layer_id)
       );
+
+      if (!txJson) {
+        showToast('Error deploying election, please try again later.', 'error');
+        setLoading(false);
+        return;
+      };
 
       const { hash } = await (window as any).mina.sendTransaction({
         transaction: txJson,

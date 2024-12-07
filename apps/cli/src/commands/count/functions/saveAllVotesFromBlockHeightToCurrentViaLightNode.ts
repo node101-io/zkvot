@@ -12,7 +12,7 @@ import isBase64String from '../../../utils/isBase64String.js';
 import logger from '../../../utils/logger.js';
 
 const compileVoteProgramAndGetVerificationKey = (callback: (err: Error | string | null, verificationKey?: VerificationKey) => void) => {
-  Vote.Program.compile({ forceRecompile: true })
+  Vote.Program.compile()
     .then(program => callback(null, program.verificationKey))
     .catch(err => {
       logger.log('error', `Failed to compile vote program: ${err}`);
@@ -36,14 +36,10 @@ const verifyVoteProofAndGetNullifier = (
           return callback(null, voteProof.publicOutput.nullifier.toString());
         })
         .catch(err => {
-          logger.log('error', `Failed to verify vote proof: ${err}`);
-
           return callback('invalid_vote_proof');
         });
     })
     .catch(err => {
-      logger.log('error', `Failed to parse vote proof: ${err}`);
-
       return callback('invalid_vote_proof');
     });
 };
@@ -106,7 +102,7 @@ const writeVoteToDBSublevelByElectionId = (
     });
 };
 
-const processVerifiedVotesAndSaveToDB = (
+const saveVerifiedVotesToDB = (
   votes: { nullifier: string, vote_proof: JsonProof }[],
   electionId: string,
   callback: (err: Error | string | null) => void
@@ -141,7 +137,7 @@ const processVerifiedVotesAndSaveToDB = (
   );
 };
 
-const getAndVerifyVotesFromAvailByBlockHeight = (
+const getAndVerifyVotesFromAvailByBlockHeightRecursively = (
   data: {
     electionId: string,
     blockHeight: number,
@@ -152,8 +148,10 @@ const getAndVerifyVotesFromAvailByBlockHeight = (
   logger.log('info', `Reading block: ${data.blockHeight}`);
 
   Avail.getData({ block_height: data.blockHeight }, (err, blockData) => {
-    if (err || !blockData)
-      return callback(err);
+    if (err || !blockData) {
+      logger.log('info', `Block ${data.blockHeight} is not found, stopping fetching votes from Avail.`);
+      return callback(null);
+    }
 
     logger.log('info', 'Getting and verifying votes from Avail by block height...');
 
@@ -163,11 +161,11 @@ const getAndVerifyVotesFromAvailByBlockHeight = (
 
       logger.log('info', `Got and verified ${votes.length} votes from Avail by block height.`);
 
-      processVerifiedVotesAndSaveToDB(votes, data.electionId, err => {
+      saveVerifiedVotesToDB(votes, data.electionId, err => {
         if (err)
           return callback(err);
 
-        return getAndVerifyVotesFromAvailByBlockHeight({
+        return getAndVerifyVotesFromAvailByBlockHeightRecursively({
           electionId: data.electionId,
           blockHeight: Number(data.blockHeight) + 1,
           verificationKey: data.verificationKey
@@ -190,7 +188,7 @@ const readAvailBlocksFromStartBlockHeightToCurrent = (
 
   logger.log('info', 'Reading Avail blocks from start block height to current...');
 
-  getAndVerifyVotesFromAvailByBlockHeight({
+  getAndVerifyVotesFromAvailByBlockHeightRecursively({
     electionId: mina_contract_id,
     blockHeight: availInfo.start_block_height,
     verificationKey: verificationKey
@@ -202,7 +200,7 @@ const readAvailBlocksFromStartBlockHeightToCurrent = (
   });
 };
 
-const getAndVerifyVotesFromCelestiaByBlockHeightAndNamespace = (
+const getAndVerifyVotesFromCelestiaByBlockHeightAndNamespaceRecursively = (
   data: {
     electionId: string,
     blockHeight: number,
@@ -220,8 +218,10 @@ const getAndVerifyVotesFromCelestiaByBlockHeightAndNamespace = (
     block_height: data.blockHeight,
     namespace: data.namespace
   }, (err, blockData) => {
-    if (err || !blockData)
-      return callback(err);
+    if (err || !blockData) {
+      logger.log('info', `Block ${data.blockHeight} is not found, stopping fetching votes from Celestia.`);
+      return callback(null);
+    }
 
     logger.log('info', 'Getting and verifying votes from Celestia by block height and namespace...');
 
@@ -231,11 +231,11 @@ const getAndVerifyVotesFromCelestiaByBlockHeightAndNamespace = (
 
       logger.log('info', `Got and verified ${votes.length} votes from Celestia by block height and namespace.`);
 
-      processVerifiedVotesAndSaveToDB(votes, data.electionId, err => {
+      saveVerifiedVotesToDB(votes, data.electionId, err => {
         if (err)
           return callback(err);
 
-        return getAndVerifyVotesFromCelestiaByBlockHeightAndNamespace({
+        return getAndVerifyVotesFromCelestiaByBlockHeightAndNamespaceRecursively({
           electionId: data.electionId,
           blockHeight: Number(data.blockHeight) + 1,
           namespace: data.namespace,
@@ -259,7 +259,7 @@ const readCelestiaBlocksFromStartBlockHeightToCurrent = (
 
   logger.log('info', 'Reading Celestia blocks from start block height to current...');
 
-  getAndVerifyVotesFromCelestiaByBlockHeightAndNamespace({
+  getAndVerifyVotesFromCelestiaByBlockHeightAndNamespaceRecursively({
     electionId: mina_contract_id,
     blockHeight: celestiaInfo.start_block_height,
     namespace: celestiaInfo.namespace,

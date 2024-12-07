@@ -1,4 +1,4 @@
-import { Field, Mina, PublicKey, PrivateKey, Nullifier } from 'o1js';
+import { AccountUpdate, Field, Mina, PublicKey, PrivateKey, Nullifier } from 'o1js';
 import * as Comlink from 'comlink';
 
 import { Aggregation, Election, MerkleTree, Vote } from 'zkvot-core';
@@ -14,7 +14,7 @@ const state = {
 };
 
 export const api = {
-  setActiveInstanceToDevnet: async () => {
+  async setActiveInstanceToDevnet() {
     const Network = Mina.Network({
       mina: 'https://api.minascan.io/node/devnet/v1/graphql',
       archive: 'https://api.minascan.io/archive/devnet/v1/graphql',
@@ -35,41 +35,18 @@ export const api = {
     electionFinalizeBlock: number,
     votersRoot: bigint
   ) {
-    if (!state.ElectionContract) {
-      const { Election } = await import('zkvot-core');
-      console.log(
-        'electionStartBlock',
-        electionStartBlock,
-        'electionFinalizeBlock',
-        electionFinalizeBlock,
-        'votersRoot',
-        votersRoot
-      );
+    const { Election } = await import('zkvot-core');
 
-      Election.setContractConstants({
-        electionStartBlock,
-        electionFinalizeBlock,
-        votersRoot,
-      });
-      state.ElectionContract = Election.Contract;
-    }
+    Election.setContractConstants({
+      electionStartBlock,
+      electionFinalizeBlock,
+      votersRoot,
+    });
+
     console.log('Compiling ElectionContract');
+    await Election.Contract.compile();
 
-    await state.ElectionContract.compile();
-    console.log('ElectionContract compiled');
-  },
-  getElectionContractInstance(contractAddress: string) {
-    if (!state.ElectionContract) {
-      throw new Error(
-        'ElectionContract not loaded. Call loadAndCompileContracts() first.'
-      );
-    }
-    if (!state.ElectionContractInstance) {
-      state.ElectionContractInstance = new state.ElectionContract(
-        PublicKey.fromBase58(contractAddress)
-      );
-    }
-    return state.ElectionContractInstance;
+    return Election.Contract;
   },
   async createVote(data: {
     electionPubKey: string;
@@ -150,41 +127,51 @@ export const api = {
       throw error;
     }
   },
-
   async deployElection(
     electionDeployer: string,
     electionStartBlock: number,
     electionFinalizeBlock: number,
     votersRoot: bigint,
-    electionData: Election.StorageLayerInfoEncoding,
+    electionData: {
+      first: bigint;
+      last: bigint;
+    },
     settlementReward: number
   ) {
     try {
       const electionContractPrivKey = PrivateKey.random();
       const electionContractPubKey = electionContractPrivKey.toPublicKey();
 
-      await this.loadAndCompileContracts(
+      const ElectionContract = await this.loadAndCompileContracts(
         electionStartBlock,
         electionFinalizeBlock,
         votersRoot
       );
-      const electionContract = api.getElectionContractInstance(
-        electionContractPubKey.toBase58()
-      );
+      const ElectionContractInstance = new ElectionContract(electionContractPubKey);
 
       const deployTx = await Mina.transaction(
         {
           sender: PublicKey.fromBase58(electionDeployer),
-          fee: 1e8,
+          fee: 1e8
         },
         async () => {
-          await electionContract.deploy();
-          await electionContract.initialize(electionData);
+          AccountUpdate.fundNewAccount(PublicKey.fromBase58(electionDeployer));
+          await ElectionContractInstance.deploy();
+          await ElectionContractInstance.initialize({
+            first: Field(electionData.first),
+            last: Field(electionData.last)
+          });
         }
       );
-      await deployTx.prove();
+      deployTx.sign([ electionContractPrivKey ]);
+      const result = await deployTx.prove();
+
+      if (!result)
+        return;
+
       return deployTx.toJSON();
     } catch (error) {
+      console.log(error);
       console.error('Error deploying election contract:', error);
     }
   },

@@ -35,34 +35,70 @@ const Button: FC<ButtonProps> = ({
         disabled || loading ? 'cursor-not-allowed' : 'cursor-pointer'
       }`}
     >
-      <span
-        className={`relative z-10 transition-colors duration-300 ease-in-out ${
-          loading ? 'opacity-0' : TextColor
-        }`}
-      >
-        {!loading && children}
-      </span>
-      <span
-        className={`ml-4 w-8 h-8 rounded-full flex justify-center items-center transition-all duration-300 ease-in-out group-hover:bg-transparent z-[1] ${
-          loading ? 'opacity-0' : backgroundColor
-        }`}
-      >
-        {!loading && (
-          <div className={`${variant === 'back' && 'transform rotate-180'}`}>
-            <RightArrow />
-          </div>
-        )}
-      </span>
-      <span
-        className={`absolute top-1/2 right-8 transform -translate-y-1/2 translate-x-1/2 w-8 h-8 rounded-full transition-all duration-300 ease-in-out group-hover:w-[200%] group-hover:h-[200%] z-[0] ${
-          loading ? 'opacity-0' : backgroundColor
-        }`}
-      />
-      {loading && (
-        <div className='absolute inset-0 flex justify-center items-center z-[10]'>
-          <Spinner />
-        </div>
-      )}
+      {
+        variant == 'back' ?
+        <>
+          <span
+            className={`ml-4 w-8 h-8 rounded-full flex justify-center items-center transition-all duration-300 ease-in-out group-hover:bg-transparent z-[1] ${
+              loading ? 'opacity-0' : backgroundColor
+            }`}
+          >
+            {!loading && (
+              <div className='transform rotate-180'>
+                <RightArrow />
+              </div>
+            )}
+          </span>
+          <span
+            className={`absolute top-1/2 left-8 transform -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full transition-all duration-300 ease-in-out group-hover:w-[200%] group-hover:h-[200%] z-[0] ${
+              loading ? 'opacity-0' : backgroundColor
+            }`}
+          />
+          {loading && (
+            <div className='absolute inset-0 flex justify-center items-center z-[10]'>
+              <Spinner />
+            </div>
+          )}
+          <span
+            className={`relative z-10 transition-colors duration-300 ease-in-out ${
+              loading ? 'opacity-0' : TextColor
+            }`}
+          >
+            {!loading && children}
+          </span>
+        </>
+        :
+        <>
+          <span
+            className={`relative z-10 transition-colors duration-300 ease-in-out ${
+              loading ? 'opacity-0' : TextColor
+            }`}
+          >
+            {!loading && children}
+          </span>
+          <span
+            className={`ml-4 w-8 h-8 rounded-full flex justify-center items-center transition-all duration-300 ease-in-out group-hover:bg-transparent z-[1] ${
+              loading ? 'opacity-0' : backgroundColor
+            }`}
+          >
+            {!loading && (
+              <div>
+                <RightArrow />
+              </div>
+            )}
+          </span>
+          <span
+            className={`absolute top-1/2 right-8 transform -translate-y-1/2 translate-x-1/2 w-8 h-8 rounded-full transition-all duration-300 ease-in-out group-hover:w-[200%] group-hover:h-[200%] z-[0] ${
+              loading ? 'opacity-0' : backgroundColor
+            }`}
+          />
+          {loading && (
+            <div className='absolute inset-0 flex justify-center items-center z-[10]'>
+              <Spinner />
+            </div>
+          )}
+        </>
+      }
     </button>
   );
 };

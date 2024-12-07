@@ -1,12 +1,11 @@
-import command from "./utils/command.js";
+import command from './utils/command.js';
 
-import "./commands/index.js";
-import "./commands/count/index.js";
-import "./commands/logs/index.js";
+import './commands/index.js';
+import './commands/count/index.js';
+import './commands/logs/index.js';
+import './commands/results/index.js';
 
-import resultCommand from './commands/results/index.js';
-
-resultCommand();
+// resultCommand();
 
 command.parse();
 
