@@ -2,7 +2,7 @@
 
 import { PropsWithChildren, Dispatch, createContext, useState, SetStateAction } from 'react';
 
-export interface SelectedWalletContextInterface {
+interface SelectedWalletContextInterface {
   selectedWallet: string;
   setSelectedWallet: Dispatch<
     SetStateAction<SelectedWalletContextInterface['selectedWallet']>

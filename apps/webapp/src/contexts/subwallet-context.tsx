@@ -17,7 +17,7 @@ type Account = {
   type?: KeypairType;
 };
 
-export interface SubWalletContextInterface {
+interface SubWalletContextInterface {
   accounts: Account[];
   subWalletAddress: string;
   api: ApiPromise | null;

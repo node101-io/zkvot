@@ -75,8 +75,6 @@ export const ToastContext = createContext<ToastContextInterface>({
   closeToast: () => {}
 });
 
-export const useToast = () => useContext(ToastContext);
-
 export const ToastProvider = ({ children }: PropsWithChildren<{}>) => {
   const [toasts, setToasts] = useState<ToastContextInterface['toasts']>([]);
 
