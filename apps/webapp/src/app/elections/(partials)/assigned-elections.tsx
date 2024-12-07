@@ -10,9 +10,9 @@ import {
 import { types } from 'zkvot-core';
 
 import ElectionCard from '@/app/elections/(partials)/election-card.jsx';
+import Loader from '@/app/elections/(partials)/loader.jsx';
 
 import { fetchElectionsFromBackend } from '@/utils/backend.js';
-import Loader from './loader.jsx';
 
 interface AssignedElectionsProps {
   onlyOngoing?: boolean;
