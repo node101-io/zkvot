@@ -47,7 +47,7 @@ export default ({ onPrevious, data }: {
       showToast('Please connect your wallet to continue.', 'error');
     };
 
-    console.log()
+    console.log(21421, auroWalletAddress)
 
     if (!auroWalletAddress)
       showToast('Please connect your wallet to continue.', 'error');
@@ -162,7 +162,7 @@ export default ({ onPrevious, data }: {
           {layer.logo || <div className='w-full h-full bg-gray-500 rounded-md' />}
         </div>
         <div className='flex flex-col'>
-          <h3 className='text-white text-lg mb-1 capitalize'>{data.storage_layer_platform}</h3>
+          <h3 className='text-white text-lg mb-1 capitalize'>{utils.StorageLayerPlatformDecoding[data.storage_layer_platform]}</h3>
           <span className='text-sm text-gray-400'>
             Description: {layer.description}
           </span>
