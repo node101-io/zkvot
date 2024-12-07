@@ -5,7 +5,7 @@ import { CreateNullifierArgs, Nullifier } from '@aurowallet/mina-provider';
 
 import { ZKProgramCompileContext } from '@/contexts/zk-program-compile-context.jsx';
 
-export interface GenerateEncodedVoteProofParams {
+interface GenerateEncodedVoteProofParams {
   electionPubKey: string;
   nullifier: Nullifier;
   vote: number;

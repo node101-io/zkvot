@@ -1,5 +1,7 @@
 import '../styles/globals.css';
 
+import { Montserrat } from 'next/font/google';
+
 import Navbar from '@/app/(partials)/navigation-bar.jsx';
 
 import WalletProvider from '@/components/wallet-provider.jsx';
@@ -7,11 +9,10 @@ import WalletProvider from '@/components/wallet-provider.jsx';
 import { ZKProgramCompileProvider } from '@/contexts/zk-program-compile-context.jsx';
 import { ToastProvider } from '@/contexts/toast-context.jsx';
 
-// TODO: uncomment
-// const montserrat = Montserrat({
-//   subsets: ['latin'],
-//   weight: ['400', '700'],
-// });
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+});
 
 export const metadata = {
   title: 'zkVot - World\'s first fully live anonymous voting application!',
@@ -21,15 +22,10 @@ export const metadata = {
   `
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang='en'>
-    <body>
-      {/* <body className={montserrat.className}> */}
+      <body className={montserrat.className}>
         <div className='mobile-warning flex flex-col'>
           <div className='icon-container mb-[1rem] animate-pulse'>
             <svg
@@ -61,7 +57,6 @@ export default function RootLayout({
             Please use a larger screen for the best experience on zkVot.
           </span>
         </div>
-
         <main className='flex flex-col px-4 overflow-hidden'>
           <ZKProgramCompileProvider>
             <ToastProvider>
