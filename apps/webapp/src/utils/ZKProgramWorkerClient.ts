@@ -22,6 +22,10 @@ export default class {
     return this.remoteApi.setActiveInstanceToDevnet();
   }
 
+  setActiveInstanceToMainnet() {
+    return this.remoteApi.setActiveInstanceToMainnet();
+  }
+
   async loadProgram() {
     return this.remoteApi.loadProgram();
   }

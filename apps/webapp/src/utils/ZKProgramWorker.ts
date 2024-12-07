@@ -22,6 +22,14 @@ export const api = {
     console.log('Devnet network instance configured.');
     Mina.setActiveInstance(Network);
   },
+  async setActiveInstanceToMainnet() {
+    const Network = Mina.Network({
+      mina: 'https://api.minascan.io/node/mainnet/v1/graphql',
+      archive: 'https://api.minascan.io/archive/mainnet/v1/graphql',
+    });
+    console.log('Mainnet network instance configured.');
+    Mina.setActiveInstance(Network);
+  },
   async loadProgram() {
     const { Vote } = await import('zkvot-core');
     state.Program = Vote.Program;
@@ -169,7 +177,10 @@ export const api = {
       if (!result)
         return;
 
-      return deployTx.toJSON();
+      return {
+        mina_contract_id: electionContractPubKey,
+        txJSON: deployTx.toJSON()
+      };
     } catch (error) {
       console.log(error);
       console.error('Error deploying election contract:', error);

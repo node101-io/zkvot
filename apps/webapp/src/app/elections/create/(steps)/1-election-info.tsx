@@ -1,4 +1,5 @@
 import { useState, useEffect, KeyboardEvent, ChangeEvent } from 'react';
+import { fetchAccount } from 'o1js';
 
 import { types } from 'zkvot-core';
 
@@ -159,6 +160,14 @@ export default ({ onNext, initialData }: {
   };
 
   useEffect(() => {
+    fetchAccount({
+      publicKey: "adfasdf"
+    }, "https://api.minascan.io/node/devnet/v1/graphql")
+      .then(account => {
+        console.log(account)
+      })
+      .catch(err => console.log(err));
+
     if (
       pictureDataURL &&
       question.trim() &&
