@@ -2,7 +2,6 @@
 
 import { PropsWithChildren, Dispatch, SetStateAction, useState, createContext, useEffect, useContext } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { createPortal } from 'react-dom';
 
 import SuccessIcon from '@/public/general/toast/success.jsx';
 import ErrorIcon from '@/public/general/toast/error.jsx';
@@ -42,16 +41,15 @@ const Toast = ({
 
   if (!visible) return null;
 
-  return createPortal(
+  return (
     <div
-      className={`w-fit z-[999999] fixed flex flex-row items-center justify-start bottom-4 right-4 px-6 py-4 rounded-[60px] shadow-lg bg-[#1B1B1B] transition-all duration-500 ease-out gap-x-[10px] font-medium text-[16px] ${
+      className={`z-[999999] flex flex-row max-w-xs w-fit p-4 rounded-[60px] shadow-lg bg-[#1B1B1B] transition-all duration-500 ease-out gap-x-[10px] font-medium text-[16px] ${
         type === 'success' ? 'text-green' : 'text-[#CD3556]'
       } ${position}`}
     >
       {type === 'success' ? <SuccessIcon /> : <ErrorIcon />}
       <p>{message}</p>
-    </div>,
-    document.body
+    </div>
   );
 };
 
@@ -79,18 +77,15 @@ export const ToastContext = createContext<ToastContextInterface>({
 
 export const useToast = () => useContext(ToastContext);
 
-export const ToastProvider = ({
-  children
-}: PropsWithChildren<{}>) => {
-  const [toasts, setToasts] =  useState<ToastContextInterface['toasts']>([]);
+export const ToastProvider = ({ children }: PropsWithChildren<{}>) => {
+  const [toasts, setToasts] = useState<ToastContextInterface['toasts']>([]);
 
   const showToast = (
     message: string,
     type: 'success' | 'error',
     duration?: number
   ): void => {
-    if (!duration)
-      duration = TOAST_DURATION;
+    if (!duration) duration = TOAST_DURATION;
 
     const _id = uuidv4();
     setToasts(prevToasts => [...prevToasts, { _id, message, type, duration }]);
@@ -111,11 +106,10 @@ export const ToastProvider = ({
       showToast,
       closeToast
     }}>
-      {children}
-      <div className='fixed bottom-4 right-4 flex flex-col-reverse items-end gap-4 z-50'>
-        {toasts.map((toast, index) => (
+      <div className="fixed bottom-0 right-0 p-4 space-y-4">
+        {toasts.map((toast) => (
           <Toast
-            key={index}
+            key={toast._id} // Use the unique ID to avoid index as key
             _id={toast._id}
             message={toast.message}
             type={toast.type}
@@ -124,6 +118,7 @@ export const ToastProvider = ({
           />
         ))}
       </div>
+      {children}
     </ToastContext.Provider>
   );
 };

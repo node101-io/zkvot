@@ -37,10 +37,10 @@ export const AuroWalletProvider = ({
 
   const connectAuroWallet = async (): Promise<boolean> => {
     try {
-      if (!(window as any).auro)
+      if (!(window as any).mina)
         throw new Error('Auro wallet extension not found. Please install it.');
 
-      const accounts = await (window as any).auro.requestAccounts();
+      const accounts = await (window as any).mina.requestAccounts();
 
       if (accounts.length === 0)
         throw new Error('No accounts found in Auro wallet.');
@@ -68,10 +68,10 @@ export const AuroWalletProvider = ({
   };
 
   // signElectionId()
-  //   if (!(window as any).auro)
+  //   if (!(window as any).mina)
   //     throw new Error('Auro wallet extension not found. Please install it.');
 
-  //   const signature = await (window as any).auro.signMessage({ message: electionId });
+  //   const signature = await (window as any).mina.signMessage({ message: electionId });
   //   console.log('Raw signature from Auro wallet:', signature);
 
   //   if (!signature)

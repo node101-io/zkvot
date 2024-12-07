@@ -43,8 +43,6 @@ export default ({ onPrevious, onNext, initialData }: {
   const [blockHash, setBlockHash] = useState<string>('');
 
   useEffect(() => {
-    showToast('Please connect your wallet to continue.', 'error');
-
     const communicationLayer = initialData.communication_layers[0];
 
     if (communicationLayer) {

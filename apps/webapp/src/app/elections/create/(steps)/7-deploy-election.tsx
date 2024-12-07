@@ -43,14 +43,9 @@ export default ({ onPrevious, data }: {
     try {
       if (!auroWalletAddress) await connectAuroWallet()
     } catch (err) {
-      console.log(3253, err)
       showToast('Please connect your wallet to continue.', 'error');
+      return;
     };
-
-    console.log(21421, auroWalletAddress)
-
-    if (!auroWalletAddress)
-      showToast('Please connect your wallet to continue.', 'error');
 
     if (!zkProgramWorkerClientInstance) {
       showToast('Something went wrong, please try again later.', 'error');
