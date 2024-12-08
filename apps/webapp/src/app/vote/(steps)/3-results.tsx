@@ -19,6 +19,8 @@ import DownloadIcon from '@/public/elections/partials/download-icon.jsx';
 
 import MinaLogo from '@/public/general/blockchain-logos/mina.png';
 
+const MINA_RPC_URL = process.env.NODE_ENV == 'production' ? 'https://api.minascan.io/node/mainnet/v1/graphql' : 'https://api.minascan.io/node/devnet/v1/graphql';
+
 export default ({ electionData, selectedOption }: {
   electionData: types.ElectionBackendData;
   selectedOption: number;
@@ -40,7 +42,7 @@ export default ({ electionData, selectedOption }: {
 
   useEffect(() => {
     setLoading(true);
-    Election.fetchElectionState(electionData.mina_contract_id, (error, state) => {
+    Election.fetchElectionState(electionData.mina_contract_id, MINA_RPC_URL, (error, state) => {
       setLoading(false);
       if (error || !state) {
         showToast('Error fetching election results', 'error');
@@ -65,7 +67,7 @@ export default ({ electionData, selectedOption }: {
   }, [electionData.options]);
 
   const handleFetchAndLogData = async () => {
-    Election.fetchElectionState(electionData.mina_contract_id, (error, state) => {
+    Election.fetchElectionState(electionData.mina_contract_id, MINA_RPC_URL, (error, state) => {
       if (error || !state) {
         showToast('Error fetching election results', 'error');
         return;

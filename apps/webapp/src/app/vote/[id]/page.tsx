@@ -24,7 +24,6 @@ const Page = ({ params }: {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [stepErrors, setStepErrors] = useState({});
   const [selectedOption, setSelectedOption] = useState<number>(-1);
   const [selectedDA, setSelectedDA] = useState<types.DaLayerInfo['name'] | ''>('');
   const [zkProofData, setZkProofData] = useState<string>('');
@@ -72,7 +71,6 @@ const Page = ({ params }: {
         <ProgressBar
           currentStep={currentStep}
           totalSteps={3}
-          stepErrors={stepErrors}
           loading={loading}
         />
         <div className='w-full h-full pb-12'>

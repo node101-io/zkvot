@@ -1,6 +1,6 @@
 import { types } from 'zkvot-core';
 
-const API_URL = process.env.NODE_ENV === 'production' ? 'https://backend.zkvot.io' : 'http://localhost:8000';
+const API_URL = process.env.NODE_ENV === 'production' ? 'https://backend.zkvot.io/api' : 'http://localhost:8000/api';
 
 export const submitElectionToBackend = async (
   mina_contract_id: string
@@ -26,6 +26,7 @@ export const submitElectionToBackend = async (
 
     return result.election;
   } catch (error) {
+    console.log(error);
     throw new Error('Failed to submit election to the backend');
   };
 };
@@ -87,7 +88,7 @@ export const sendVoteViaBackend = async (
   da_layer: types.DaLayerInfo['name']
 ) => {
   try {
-    const response = await fetch(`${API_URL}/api/vote/send`, {
+    const response = await fetch(`${API_URL}/vote/send`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -115,7 +116,7 @@ export const sendVoteViaBackend = async (
 
 export const fetchAvailBlockHeightFromBackend = async () => {
   try {
-    const response = await fetch(`${API_URL}/api/block-info/avail`);
+    const response = await fetch(`${API_URL}/block-info/avail`);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -137,7 +138,7 @@ export const fetchAvailBlockHeightFromBackend = async () => {
 
 export const fetchCelestiaBlockInfoFromBackend = async () => {
   try {
-    const response = await fetch(`${API_URL}/api/block-info/celestia`);
+    const response = await fetch(`${API_URL}/block-info/celestia`);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -168,7 +169,7 @@ export const calculateMinaBlockHeightFromTimestampViaBackend = async (
   endBlockHeight: number;
 }> => {
   try {
-    const response = await fetch(`${API_URL}/api/block-info/mina`, {
+    const response = await fetch(`${API_URL}/block-info/mina`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -35,8 +35,8 @@ export const api = {
     state.Program = Vote.Program;
   },
   async compileProgram() {
-    await state.Program?.compile();
-    await Aggregation.Program.compile();
+    await state.Program?.compile({ proofsEnabled: false });
+    await Aggregation.Program.compile({ proofsEnabled: false });
   },
   async loadAndCompileContracts(
     electionStartBlock: number,

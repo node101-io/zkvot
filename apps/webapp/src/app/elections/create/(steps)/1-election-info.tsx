@@ -1,5 +1,5 @@
 import { useState, useEffect, KeyboardEvent, ChangeEvent } from 'react';
-import { fetchAccount } from 'o1js';
+import { submitElectionToBackend } from '@/utils/backend.js';
 
 import { types } from 'zkvot-core';
 
@@ -160,14 +160,9 @@ export default ({ onNext, initialData }: {
   };
 
   useEffect(() => {
-    fetchAccount({
-      publicKey: "adfasdf"
-    }, "https://api.minascan.io/node/devnet/v1/graphql")
-      .then(account => {
-        console.log(account)
-      })
-      .catch(err => console.log(err));
-
+    // submitElectionToBackend('B62qkgWAPqByRjHV1zjm6F5yVVv9fF2zDrMuA9pSCdsPFwFtjWz8Yxc')
+    //   .then(console.log)
+    //   .catch(console.error);
     if (
       pictureDataURL &&
       question.trim() &&
