@@ -4,6 +4,9 @@ import { IoClose } from 'react-icons/io5';
 import AuroIcon from '@/public/general/wallet-logos/auro.png';
 import SubwalletIcon from '@/public/general/wallet-logos/subwallet.png';
 // import MetamaskIcon from '@/public/wallets/Metamask.svg';
+//
+
+type AvailableWallets = 'Auro' | 'Subwallet';
 
 const WalletSelectionModal = ({
   onClose,
@@ -12,7 +15,7 @@ const WalletSelectionModal = ({
 }: {
   onClose: () => void;
   onSelectWallet: (wallet: string) => void;
-  availableWallets: string[];
+  availableWallets: AvailableWallets[];
 }) => (
   <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'>
     <div className='bg-[#141414] rounded-[50px] p-8 shadow-lg px-24 py-24 border-[1px] border-primary text-center relative'>

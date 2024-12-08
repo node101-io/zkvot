@@ -216,7 +216,6 @@ namespace ElectionNamespace {
             | { account: Account; error: undefined }
             | { account: undefined; error: FetchError }
         ) => {
-          console.log(data)
           if (!data.account) return callback('bad_request');
 
           const state = data.account.zkapp?.appState;
@@ -227,7 +226,6 @@ namespace ElectionNamespace {
         }
       )
       .catch(err => {
-        console.error(err);
         return callback(err)
       });
   };

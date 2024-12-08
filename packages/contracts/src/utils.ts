@@ -39,7 +39,7 @@ namespace utilsNamespace {
     id: string
   ): Election.StorageLayerInfoEncoding => {
     const infoToEncode = platform + id;
-  
+
     return new Election.StorageLayerInfoEncoding({
       first: convertStringToField(infoToEncode.slice(0, infoToEncode.length / 2)),
       last: convertStringToField(infoToEncode.slice(infoToEncode.length / 2))
@@ -49,14 +49,14 @@ namespace utilsNamespace {
   export const decodeStorageLayerInfo = (
     storageLayerInfoEncoding: Election.StorageLayerInfoEncoding
   ): {
-    platform: string,
+    platform: types.StorageLayerPlatformCodes,
     id: string
   } => {
     const platform = convertFieldToString(storageLayerInfoEncoding.first).slice(0, 1);
     const id = convertFieldToString(storageLayerInfoEncoding.first).slice(1) + convertFieldToString(storageLayerInfoEncoding.last);
 
     return {
-      platform,
+      platform: platform as types.StorageLayerPlatformCodes,
       id
     };
   };
@@ -121,6 +121,6 @@ namespace utilsNamespace {
       communication_layers: electionData.communication_layers
     }
   };
-};;
+};
 
 export default utilsNamespace;

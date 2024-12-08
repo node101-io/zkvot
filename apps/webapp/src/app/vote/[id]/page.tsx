@@ -1,7 +1,7 @@
 'use client';
 
 import { useContext, useState, useEffect } from 'react';
-import { Election, types } from 'zkvot-core'
+import { Election, types, utils } from 'zkvot-core'
 
 import VotingStep from '@/app/vote/(steps)/1-voting.jsx';
 import SubmissionStep from '@/app/vote/(steps)/2-submission.jsx';
@@ -28,7 +28,7 @@ const Page = ({ params }: {
   const [selectedDA, setSelectedDA] = useState<types.DaLayerInfo['name'] | ''>('');
   const [zkProofData, setZkProofData] = useState<string>('');
 
-  let electionData: types.ElectionBackendData = {
+  const [electionData, setElectionData] = useState<types.ElectionBackendData>({
     mina_contract_id: '',
     storage_layer_id: '',
     storage_layer_platform: 'A',
@@ -41,15 +41,28 @@ const Page = ({ params }: {
     voters_list: [],
     voters_merkle_root: 0n,
     communication_layers: [],
-  };
+  });
 
-  const fetchElectionData = async () => {
-    // Election.fetchElectionState(params.id, MINA_RPC_URL, (err, election) => {
+  const fetchElectionData = () => new Promise((resolve: (data: types.ElectionBackendData) => void, reject) => {
+    Election.fetchElectionState(params.id, MINA_RPC_URL, (err, election_state) => {
+      if (err || !election_state)
+        return reject('Failed to fetch election state');
 
-    // })
-    const electionData: types.ElectionBackendData = await fetchElectionByContractIdFromBackend(params.id);
-    return electionData;
-  };
+      const storageLayerInfo = utils.decodeStorageLayerInfo(election_state.storageLayerInfoEncoding);
+
+      utils.fetchDataFromStorageLayer(storageLayerInfo, (err, election_static_data) => {
+        if (err || !election_static_data)
+          return reject('Failed to fetch election data');
+
+        return resolve(utils.convertElectionStaticDataToBackendData(
+          params.id,
+          storageLayerInfo.id,
+          storageLayerInfo.platform,
+          election_static_data
+        ));
+      });
+    });
+  });
 
   const goToNextStep = () => {
     setCurrentStep((prevStep) => prevStep + 1);
@@ -58,7 +71,7 @@ const Page = ({ params }: {
   useEffect(() => {
     fetchElectionData()
       .then(data => {
-        electionData = data;
+        setElectionData(data);
       })
       .catch((error) => {
         showToast('Failed to fetch election data, please try again later.', 'error');

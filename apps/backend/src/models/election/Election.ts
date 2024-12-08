@@ -173,8 +173,6 @@ ElectionSchema.statics.createElection = function (
       return callback('duplicated_unique_field');
 
     ElectionProgram.fetchElectionState(mina_contract_id, MINA_RPC_URL, (error, state) => {
-      console.log("1111");
-      console.log(error, state);
       if (error)
         return callback(error);
       if (!state)
@@ -182,12 +180,7 @@ ElectionSchema.statics.createElection = function (
 
       const storageInfo = utils.decodeStorageLayerInfo(state.storageLayerInfoEncoding);
 
-      console.log("storageInfo");
-      console.log(storageInfo);
-
       utils.fetchDataFromStorageLayer(storageInfo, (error, data) => {
-        console.log("2222");
-        console.log(error, data);
         if (error)
           return callback('bad_request');
         if (!data)

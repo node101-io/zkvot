@@ -112,7 +112,7 @@ export default ({ onPrevious, data }: {
         transaction: txJSON,
         feePayer: {
           fee: 0.1,
-          memo: 'Deploy and initialize zkVot Election',
+          memo: 'zkVot',
         },
       });
 

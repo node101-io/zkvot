@@ -46,7 +46,9 @@ export const AuroWalletProvider = ({
         throw new Error('No accounts found in Auro wallet.');
 
       const address = accounts[0];
+
       setAuroWalletAddress(address);
+
       return true;
     } catch (error) {
       return Promise.reject(error);

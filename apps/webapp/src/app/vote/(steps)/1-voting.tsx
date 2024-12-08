@@ -69,30 +69,20 @@ export default ({
   // const userWalletAddresses = [metamaskWalletAddress, auroWalletAddress]
   //   .filter(Boolean)
   //   .map((addr) => addr.trim().toLowerCase());
-  const userWalletAddresses = [auroWalletAddress];
 
   useEffect(() => {
-    if (
-      userWalletAddresses.length > 0 &&
-      electionData &&
-      electionData.voters_list &&
-      Array.isArray(electionData.voters_list)
-    ) {
-      console.log('Voters List:', electionData.voters_list);
-      setEligibilityStatus('checking');
+    (window as any).mina.on('accountsChanged', (accounts: string[]) => {
+      disconnectAuroWallet();
+    });
 
-      const votersPublicKeyList = electionData.voters_list.map((voter) => voter.public_key.trim().toLowerCase());
-      const eligible = userWalletAddresses.some((wallet) => votersPublicKeyList.includes(wallet));
+    if (!auroWalletAddress || !electionData || !electionData.voters_list || !Array.isArray(electionData.voters_list))
+      return setEligibilityStatus('not_connected');
 
-      if (eligible) {
-        setEligibilityStatus('eligible');
-      } else {
-        setEligibilityStatus('not_eligible');
-      }
-    } else {
-      setEligibilityStatus('not_connected');
-    }
-  }, [userWalletAddresses, electionData]);
+    const votersPublicKeyList = electionData.voters_list.map((voter) => voter.public_key.trim().toLowerCase());
+    const eligible = votersPublicKeyList.includes(auroWalletAddress.trim().toLowerCase());
+
+    setEligibilityStatus(eligible ? 'eligible' : 'not_eligible');
+  }, [auroWalletAddress, electionData]);
 
   useEffect(() => {
     return () => {
@@ -102,7 +92,7 @@ export default ({
 
   const handleWalletSelection = async (wallet: string) => {
     try {
-      if (selectedWallet === 'Mina') {
+      if (selectedWallet === 'Auro') {
         disconnectAuroWallet();
       }
       // else if (selectedWallet === 'Metamask') {
@@ -114,7 +104,7 @@ export default ({
 
       let connectionSuccess = false;
 
-      if (wallet === 'Mina') {
+      if (wallet === 'Auro') {
         connectionSuccess = await connectAuroWallet();
       }
       // else if (wallet === 'Metamask') {
@@ -149,7 +139,7 @@ export default ({
     }
 
     if (eligibilityStatus === 'not_eligible') {
-      if (selectedWallet === 'Mina') {
+      if (selectedWallet === 'Auro') {
         disconnectAuroWallet();
       }
       // else if (selectedWallet === 'Metamask') {
@@ -170,7 +160,7 @@ export default ({
   };
 
   const checkWalletConnection = () => {
-    if (selectedWallet === 'Mina') {
+    if (selectedWallet === 'Auro') {
       return !!auroWalletAddress;
     }
     // else if (selectedWallet === 'Metamask') {
@@ -235,7 +225,7 @@ export default ({
         return;
       }
 
-      // const publicKey = selectedWallet === 'Mina' ? auroWalletAddress : metamaskWalletAddress;
+      // const publicKey = selectedWallet === 'Auro' ? auroWalletAddress : metamaskWalletAddress;
       const publicKey = auroWalletAddress;
 
       const electionJson = generateElectionJson(
@@ -258,7 +248,7 @@ export default ({
 
       setZkProofData(proof);
 
-      if (selectedWallet === 'Mina') {
+      if (selectedWallet === 'Auro') {
         disconnectAuroWallet();
       }
       // else if (selectedWallet === 'Metamask') {
@@ -393,12 +383,9 @@ export default ({
           {electionData.options.map((option, index) => (
             <button
               key={index}
-              className={`p-4 text-center bg-[#222222] rounded-2xl
-        ${selectedOption === index
-                  ? 'border-primary border-[1px] shadow-lg'
-                  : 'hover:bg-[#333333]'
-                }
-        ${eligibilityStatus !== 'eligible' ? 'cursor-not-allowed' : ''}`}
+              className={`p-4 text-center bg-[#222222] rounded-2xl border-[1px]
+                ${selectedOption === index ? 'border-primary shadow-lg' : 'border-transparent hover:bg-[#333333]'}
+                ${eligibilityStatus !== 'eligible' ? 'cursor-not-allowed' : ''}`}
               onClick={() => setSelectedOption(index)}
               disabled={loading || eligibilityStatus !== 'eligible'}
             >
@@ -422,7 +409,7 @@ export default ({
 
         {isWalletModalOpen && (
           <WalletSelectionModal
-            availableWallets={['Mina', 'Metamask']}
+            availableWallets={['Auro', 'Subwallet']}
             onClose={() => setIsWalletModalOpen(false)}
             onSelectWallet={handleWalletSelection}
           />
