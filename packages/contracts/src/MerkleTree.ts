@@ -35,24 +35,7 @@ namespace MerkleTreeNamespace {
   export const createFromStringArray = (
     leaves: string[]
   ): MerkleTree | undefined => {
-    const votersTree = new MerkleTree(MERKLE_DEPTH);
-    try {
-      leaves = leaves.sort((a, b) => {
-        if (BigInt(a) < BigInt(b)) return -1;
-        if (BigInt(a) > BigInt(a)) return 1;
-        return 0;
-      });
-
-      for (let i = 0; i < leaves.length; i++) {
-        const leaf = Poseidon.hash(PublicKey.fromJSON(leaves[i]).toFields());
-        votersTree.setLeaf(BigInt(i), leaf);
-      }
-
-      return votersTree;
-    } catch (err) {
-      console.log(err);
-      return;
-    }
+    return createFromFieldsArray(leaves.map(leaf => PublicKey.fromBase58(leaf).toFields()));
   };
 }
 

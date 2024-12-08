@@ -12,6 +12,7 @@ import uploadImageRaw from './functions/uploadImageRaw.js';
 const DEFAULT_QUERY_LIMIT = 100;
 const DUPLICATED_UNIQUE_FIELD_ERROR_CODE = 11000;
 const MAX_DATABASE_TEXT_FIELD_LENGTH = 1e4;
+const MINA_RPC_URL = process.env.NODE_ENV == 'production' ? 'https://api.minascan.io/node/mainnet/v1/graphql' : 'https://api.minascan.io/node/devnet/v1/graphql';
 
 interface ElectionStatics {
   createElection: (
@@ -171,7 +172,9 @@ ElectionSchema.statics.createElection = function (
     if (election)
       return callback('duplicated_unique_field');
 
-    ElectionProgram.fetchElectionState(mina_contract_id, (error, state) => {
+    ElectionProgram.fetchElectionState(mina_contract_id, MINA_RPC_URL, (error, state) => {
+      console.log("1111");
+      console.log(error, state);
       if (error)
         return callback(error);
       if (!state)
@@ -179,7 +182,12 @@ ElectionSchema.statics.createElection = function (
 
       const storageInfo = utils.decodeStorageLayerInfo(state.storageLayerInfoEncoding);
 
+      console.log("storageInfo");
+      console.log(storageInfo);
+
       utils.fetchDataFromStorageLayer(storageInfo, (error, data) => {
+        console.log("2222");
+        console.log(error, data);
         if (error)
           return callback('bad_request');
         if (!data)

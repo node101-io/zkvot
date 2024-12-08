@@ -1,7 +1,7 @@
 'use client';
 
 import { useContext, useState, useEffect } from 'react';
-import { types } from 'zkvot-core'
+import { Election, types } from 'zkvot-core'
 
 import VotingStep from '@/app/vote/(steps)/1-voting.jsx';
 import SubmissionStep from '@/app/vote/(steps)/2-submission.jsx';
@@ -13,7 +13,7 @@ import { ToastContext } from '@/contexts/toast-context.jsx';
 
 import { fetchElectionByContractIdFromBackend }  from '@/utils/backend.js';
 
-// TODO: remov
+const MINA_RPC_URL = process.env.NODE_ENV == 'production' ? 'https://api.minascan.io/node/mainnet/v1/graphql' : 'https://api.minascan.io/node/devnet/v1/graphql';
 
 const Page = ({ params }: {
   params: {
@@ -24,7 +24,6 @@ const Page = ({ params }: {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [stepErrors, setStepErrors] = useState({});
   const [selectedOption, setSelectedOption] = useState<number>(-1);
   const [selectedDA, setSelectedDA] = useState<types.DaLayerInfo['name'] | ''>('');
   const [zkProofData, setZkProofData] = useState<string>('');
@@ -45,6 +44,9 @@ const Page = ({ params }: {
   };
 
   const fetchElectionData = async () => {
+    // Election.fetchElectionState(params.id, MINA_RPC_URL, (err, election) => {
+
+    // })
     const electionData: types.ElectionBackendData = await fetchElectionByContractIdFromBackend(params.id);
     return electionData;
   };
@@ -69,7 +71,6 @@ const Page = ({ params }: {
         <ProgressBar
           currentStep={currentStep}
           totalSteps={3}
-          stepErrors={stepErrors}
           loading={loading}
         />
         <div className='w-full h-full pb-12'>

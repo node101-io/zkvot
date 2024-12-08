@@ -14,8 +14,8 @@ command
       [
         `${import.meta.dirname}/command.js`,
         JSON.stringify({
-            election_id: election_id,
-            mina_rpc: options.minaRpc,
+          election_id: election_id,
+          mina_rpc: options.minaRpc,
         }),
       ],
       {

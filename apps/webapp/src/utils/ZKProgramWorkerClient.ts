@@ -22,6 +22,10 @@ export default class {
     return this.remoteApi.setActiveInstanceToDevnet();
   }
 
+  setActiveInstanceToMainnet() {
+    return this.remoteApi.setActiveInstanceToMainnet();
+  }
+
   async loadProgram() {
     return this.remoteApi.loadProgram();
   }
@@ -55,7 +59,10 @@ export default class {
       electionStartBlock,
       electionFinalizeBlock,
       votersRoot,
-      electionData,
+      {
+        first: electionData.first.toBigInt(),
+        last: electionData.last.toBigInt(),
+      },
       settlementReward || 0
     );
 

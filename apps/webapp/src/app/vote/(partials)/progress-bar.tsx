@@ -10,10 +10,9 @@ import StepDone from '@/public/elections/vote-progress-bar/step-done.jsx';
 import Completed from '@/public/elections/vote-progress-bar/completed.jsx';
 import ErrorIcon from '@/public/elections/vote-progress-bar/error.jsx';
 
-export default ({ currentStep, totalSteps, stepErrors, loading }: {
+export default ({ currentStep, totalSteps, loading }: {
   currentStep: number;
   totalSteps: number;
-  stepErrors: Record<number, string>;
   loading: boolean;
 }) => {
   const steps = Array.from({ length: totalSteps }, (_, index) => index + 1);
@@ -36,19 +35,13 @@ export default ({ currentStep, totalSteps, stepErrors, loading }: {
   }, [currentStep, prevStep]);
 
   const getStepIcon = (step: number) => {
-    if (stepErrors && stepErrors[step]) {
-      return <ErrorIcon />;
-    }
-
-    if (step === totalSteps && currentStep === totalSteps) {
+    if (step === totalSteps && currentStep === totalSteps)
       return <Completed />;
-    }
 
-    if (step < currentStep) {
+    if (step < currentStep)
       return <StepDone />;
-    }
 
-    if (step === currentStep) {
+    if (step === currentStep)
       switch (step) {
         case 1:
           return <Current1 />;
@@ -59,7 +52,6 @@ export default ({ currentStep, totalSteps, stepErrors, loading }: {
         default:
           return <ErrorIcon />;
       };
-    };
 
     switch (step) {
       case 1:
@@ -74,9 +66,6 @@ export default ({ currentStep, totalSteps, stepErrors, loading }: {
   };
 
   const getProgressBarWidth = (step: number) => {
-    if (stepErrors && stepErrors[step]) {
-      return '0%';
-    }
     if (loading && step === currentStep) {
       return '50%';
     }

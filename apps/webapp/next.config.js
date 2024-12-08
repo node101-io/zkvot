@@ -1,4 +1,4 @@
-import path from "path";
+import path from 'path';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -8,12 +8,12 @@ const nextConfig = {
     if (!isServer) {
       config.resolve.alias = {
         ...config.resolve.alias,
-        o1js: path.resolve(import.meta.dirname, "../../node_modules/o1js/dist/web/index.js"),
+        o1js: path.resolve(import.meta.dirname, '../../node_modules/o1js/dist/web/index.js'),
       };
 
       config.optimization.minimize = false
     } else {
-      config.externals.push("o1js"); // https://nextjs.org/docs/app/api-reference/next-config-js/serverExternalPackages
+      config.externals.push('o1js'); // https://nextjs.org/docs/app/api-reference/next-config-js/serverExternalPackages
     }
     config.experiments = { ...config.experiments, topLevelAwait: true };
     config.resolve.extensionAlias = {
@@ -27,16 +27,16 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: "/(.*)",
+        source: '/(.*)',
         headers: [
           {
-            key: "Cross-Origin-Opener-Policy",
-            value: "same-origin",
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin',
           },
           {
-            key: "Cross-Origin-Embedder-Policy",
-            value: "require-corp",
-          },
+            key: 'Cross-Origin-Embedder-Policy',
+            value: 'require-corp',
+          }
         ],
       },
     ];

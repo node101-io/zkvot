@@ -1,4 +1,5 @@
 import { useState, useEffect, KeyboardEvent, ChangeEvent } from 'react';
+import { submitElectionToBackend } from '@/utils/backend.js';
 
 import { types } from 'zkvot-core';
 
@@ -159,6 +160,9 @@ export default ({ onNext, initialData }: {
   };
 
   useEffect(() => {
+    // submitElectionToBackend('B62qkgWAPqByRjHV1zjm6F5yVVv9fF2zDrMuA9pSCdsPFwFtjWz8Yxc')
+    //   .then(console.log)
+    //   .catch(console.error);
     if (
       pictureDataURL &&
       question.trim() &&

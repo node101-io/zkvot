@@ -1,17 +1,42 @@
 import { types } from 'zkvot-core';
 
-const API_URL = process.env.NODE_ENV === "production" ?
-  'https://backend.zkvot.io' :
-  'http://localhost:8000';
+const API_URL = process.env.NODE_ENV === 'production' ? 'https://backend.zkvot.io/api' : 'http://localhost:8000/api';
+
+export const submitElectionToBackend = async (
+  mina_contract_id: string
+): Promise<types.ElectionBackendData> => {
+  try {
+    const response = await fetch(`${API_URL}/election/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        mina_contract_id
+      })
+    });
+
+    if (!response.ok)
+      throw new Error('Failed to submit election to the backend');
+
+    const result = await response.json();
+
+    if (!result.success)
+      throw new Error(result.error || 'Failed to submit election to the backend');
+
+    return result.election;
+  } catch (error) {
+    console.log(error);
+    throw new Error('Failed to submit election to the backend');
+  };
+};
 
 export const fetchElectionsFromBackend = async (
   skip: number = 0,
   is_ongoing: boolean = true
 ): Promise<types.ElectionBackendData[]> => {
   try {
-    const url = `${API_URL}/election/filter?skip=${skip}&is_ongoing=${is_ongoing}`;
-
-    const response = await fetch(url, {
+    const response = await fetch(`${API_URL}/election/filter?skip=${skip}&is_ongoing=${is_ongoing}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -36,9 +61,7 @@ export const fetchElectionByContractIdFromBackend = async (
   id: string
 ): Promise<types.ElectionBackendData> => {
   try {
-    const url = `${API_URL}/election/${id}`;
-
-    const response = await fetch(url, {
+    const response = await fetch(`${API_URL}/election/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -65,7 +88,7 @@ export const sendVoteViaBackend = async (
   da_layer: types.DaLayerInfo['name']
 ) => {
   try {
-    const response = await fetch(`${API_URL}/api/vote/send`, {
+    const response = await fetch(`${API_URL}/vote/send`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -93,7 +116,7 @@ export const sendVoteViaBackend = async (
 
 export const fetchAvailBlockHeightFromBackend = async () => {
   try {
-    const response = await fetch(`${API_URL}/api/block-info/avail`);
+    const response = await fetch(`${API_URL}/block-info/avail`);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -115,7 +138,7 @@ export const fetchAvailBlockHeightFromBackend = async () => {
 
 export const fetchCelestiaBlockInfoFromBackend = async () => {
   try {
-    const response = await fetch(`${API_URL}/api/block-info/celestia`);
+    const response = await fetch(`${API_URL}/block-info/celestia`);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -146,7 +169,7 @@ export const calculateMinaBlockHeightFromTimestampViaBackend = async (
   endBlockHeight: number;
 }> => {
   try {
-    const response = await fetch(`${API_URL}/api/block-info/mina`, {
+    const response = await fetch(`${API_URL}/block-info/mina`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

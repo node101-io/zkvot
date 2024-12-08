@@ -110,8 +110,7 @@ namespace ElectionNamespace {
   }
 
   export class Contract extends SmartContract {
-    @state(StorageLayerInfoEncoding) storageLayerInfoEncoding =
-      State<StorageLayerInfoEncoding>();
+    @state(StorageLayerInfoEncoding) storageLayerInfoEncoding = State<StorageLayerInfoEncoding>();
 
     @state(Field) lastAggregatorPubKeyHash = State<Field>();
 
@@ -136,6 +135,7 @@ namespace ElectionNamespace {
 
     @method
     async initialize(storageLayerInfoEncoding: StorageLayerInfoEncoding) {
+      console.log("storageLayerInfoEncoding", storageLayerInfoEncoding);
       this.account.provedState.requireEquals(Bool(false));
 
       this.storageLayerInfoEncoding.set(storageLayerInfoEncoding);
@@ -237,6 +237,7 @@ namespace ElectionNamespace {
 
   export const fetchElectionState = (
     contractId: string,
+    mina_rpc_url: string,
     callback: (error: string | null, state?: ContractState) => any
   ) => {
     fetchAccount({ publicKey: contractId }, MINA_NODE_GRAPHQL)

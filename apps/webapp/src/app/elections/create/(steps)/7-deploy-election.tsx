@@ -3,7 +3,7 @@ import Image from 'next/image.js';
 import { FaImage } from 'react-icons/fa';
 import confetti from 'canvas-confetti';
 
-import { MerkleTree, types, utils } from 'zkvot-core';
+import { MerkleTree, Election, types, utils } from 'zkvot-core';
 
 import Button from '@/app/(partials)/button.jsx';
 import LoadingOverlay from '@/app/(partials)/loading-overlay.jsx';
@@ -14,11 +14,13 @@ import { AuroWalletContext } from '@/contexts/auro-wallet-context.jsx';
 import { ToastContext } from '@/contexts/toast-context.jsx';
 import { ZKProgramCompileContext } from '@/contexts/zk-program-compile-context.jsx';
 
-import { calculateMinaBlockHeightFromTimestampViaBackend } from '@/utils/backend.js';
+import { calculateMinaBlockHeightFromTimestampViaBackend, submitElectionToBackend } from '@/utils/backend.js';
 import { CommunicationLayerDetails, StorageLayerDetails, StorageLayerDetailsType } from '@/utils/constants.jsx';
 import formatDate from '@/utils/formatDate.js';
 
 const DEFAULT_VOTERS_COUNT_TO_DISPLAY = 5;
+const MINA_RPC_URL = process.env.NODE_ENV == 'production' ? 'https://api.minascan.io/node/mainnet/v1/graphql' : 'https://api.minascan.io/node/devnet/v1/graphql';
+const TX_CONFIRM_WAIT_TIME = 15 * 60 * 1000;
 
 export default ({ onPrevious, data }: {
   onPrevious: () => void;
@@ -36,6 +38,20 @@ export default ({ onPrevious, data }: {
   const [loading, setLoading] = useState<boolean>(false);
   const [showAllVoters, setShowAllVoters] = useState<boolean>(false);
 
+  const waitUntilTxIsConfirmed = async (
+    minaContractId: string,
+    callback: () => void
+  ) => {
+    Election.fetchElectionState(minaContractId, MINA_RPC_URL, (err, state) => {
+      if (!err && state)
+        return callback();
+
+      setTimeout(() =>
+        waitUntilTxIsConfirmed(minaContractId, callback),
+      TX_CONFIRM_WAIT_TIME);
+    });
+  };
+
   const handleSubmit = async () => {
     if (submitted) return;
     if (loading) return;
@@ -52,11 +68,11 @@ export default ({ onPrevious, data }: {
       return;
     }
     if (isSettingUp) {
-      showToast('Loading ZK, please wait a few more minutes and try again.', 'error');
+      showToast('zkVot is loading in the background, please wait a few more minutes and try again.', 'error');
       return;
     }
     if (!hasBeenSetup) {
-      showToast('Loading ZK, please wait a few more minutes and try again.', 'error');
+      showToast('zkVot is loading in the background, please wait a few more minutes and try again.', 'error');
       return;
     }
     setLoading(true);
@@ -71,7 +87,12 @@ export default ({ onPrevious, data }: {
         return;
       };
 
-      const txJson = await zkProgramWorkerClientInstance.deployElection(
+      if (process.env.NODE_ENV == 'production')
+        await zkProgramWorkerClientInstance.setActiveInstanceToMainnet();
+      else
+        await zkProgramWorkerClientInstance.setActiveInstanceToDevnet();
+
+      const result = await zkProgramWorkerClientInstance.deployElection(
         auroWalletAddress,
         minaBlockData.startBlockHeight,
         minaBlockData.endBlockHeight,
@@ -79,8 +100,16 @@ export default ({ onPrevious, data }: {
         utils.encodeStorageLayerInfo(data.storage_layer_platform, data.storage_layer_id)
       );
 
+      if (!result) {
+        showToast('Error deploying election, please try again later.', 'error');
+        setLoading(false);
+        return;
+      };
+
+      const { mina_contract_id, txJSON } = result;
+
       const { hash } = await (window as any).mina.sendTransaction({
-        transaction: txJson,
+        transaction: txJSON,
         feePayer: {
           fee: 0.1,
           memo: 'Deploy and initialize zkVot Election',
@@ -91,10 +120,21 @@ export default ({ onPrevious, data }: {
 
       console.log(`https://minascan.io/devnet/tx/${hash}`);
 
-      confetti({
-        particleCount: 100,
-        spread: 180,
-        origin: { y: 0.6 },
+      // TODO:
+      // UI'da TX gönderildi, bekleniyor haline getirelecek (4-5 dk sürüyor)
+
+      waitUntilTxIsConfirmed(mina_contract_id.toBase58(), () => {
+        // Do not wait for backend, intentionally not awaited
+        submitElectionToBackend(mina_contract_id.toBase58()).catch(console.error);
+
+        // TODO: Show success message as pop up
+        showToast(`Election deployed successfully! Your TX is available in https://minascan.io/devnet/tx/${hash}.`, 'success');
+
+        confetti({
+          particleCount: 100,
+          spread: 180,
+          origin: { y: 0.6 },
+        });
       });
     } catch (error) {
       showToast(`Error deploying election, please try again later. Message: ${error}`, 'error');
