@@ -11,20 +11,22 @@ import {
 
 import types from './types.js';
 
-const convertFieldToString = (
-  field: Field
-): string => {
-  let hexString = BigInt(field.toString()).toString(16);
-  return Buffer.from(hexString, 'hex').toString('utf-8');
-};
-const convertStringToField = (
-  str: string
-): Field => {
-  const hexString = Buffer.from(str, 'utf-8').toString('hex');
-  return new Field(BigInt('0x' + hexString));
-};
+
 
 namespace utilsNamespace {
+  export const convertFieldToString = (
+    field: Field
+  ): string => {
+    let hexString = BigInt(field.toString()).toString(16);
+    return Buffer.from(hexString, 'hex').toString('utf-8');
+  };
+  export const convertStringToField = (
+    str: string
+  ): Field => {
+    const hexString = Buffer.from(str, 'utf-8').toString('hex');
+    return new Field(BigInt('0x' + hexString));
+  };
+
   export const StorageLayerPlatformDecoding: Record<types.StorageLayerPlatformCodes, types.StorageLayerPlatformNames> = {
     A: 'Arweave',
     F: 'Filecoin',

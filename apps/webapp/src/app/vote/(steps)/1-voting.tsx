@@ -42,7 +42,6 @@ export default ({
   goToNextStep: () => void;
 }) => {
   const { showToast } = useContext(ToastContext);
-
   const { hasBeenSetup } = useContext(ZKProgramCompileContext);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -124,11 +123,17 @@ export default ({
   };
 
   const handleVoteClick = async () => {
-    if (
-      selectedOption === null &&
-      eligibilityStatus !== 'not_eligible' &&
-      eligibilityStatus !== 'not_connected'
-    ) {
+    if (eligibilityStatus === 'not_connected') {
+      setIsWalletModalOpen(true);
+      return;
+    }
+
+    if (eligibilityStatus === 'not_eligible') {
+      showToast('You cannot vote in this election.', 'error');
+      return;
+    }
+
+    if (selectedOption === -1) {
       showToast('Please select an option to proceed.', 'error');
       return;
     }
@@ -136,22 +141,6 @@ export default ({
     if (eligibilityStatus === 'eligible') {
       await handleConfirmAndContinue();
       return;
-    }
-
-    if (eligibilityStatus === 'not_eligible') {
-      if (selectedWallet === 'Auro') {
-        disconnectAuroWallet();
-      }
-      // else if (selectedWallet === 'Metamask') {
-      //   await disconnectMetamaskWallet();
-      // }
-      setSelectedWallet('');
-      setIsWalletModalOpen(true);
-      return;
-    }
-
-    if (eligibilityStatus === 'not_connected') {
-      setIsWalletModalOpen(true);
     }
   };
 
@@ -180,9 +169,7 @@ export default ({
       electionPubKey: electionData.mina_contract_id,
       nullifier,
       vote: selectedOption,
-      votersArray: votersArray
-        .map((address) => address?.trim().toLowerCase())
-        .filter((address) => address),
+      votersArray,
       publicKey: publicKey,
     };
   };
@@ -192,6 +179,7 @@ export default ({
       showToast('Please wait for the setup to complete.', 'error');
       return;
     }
+
     try {
       setLoading(true);
       setIsModalOpen(false);
@@ -306,7 +294,7 @@ export default ({
             <div className='text-[#B7B7B7] text-sm mb-2 flex flex-row items-center'>
               <span className='mr-2 group relative'>
                 <ToolTip
-                  content='It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.'
+                  content='Election ID is a unique identifier for each election. It matches the contract public key that this election has on Mina. zkVot utilizes Mina like a DA layer to distribute any election related information. Thus, all the information you see in this page is 100% decentralized without any backend usage.'
                   position='top'
                   arrowPosition='start'
                 >
@@ -403,8 +391,8 @@ export default ({
           {eligibilityStatus === 'eligible'
             ? 'Vote'
             : eligibilityStatus === 'not_eligible'
-              ? 'Switch Wallet'
-              : 'Connect wallet to check eligibility'}
+            ? 'You are not elligible to vote'
+            : 'Connect wallet to check eligibility'}
         </Button>
 
         {isWalletModalOpen && (

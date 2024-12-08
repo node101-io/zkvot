@@ -35,7 +35,7 @@ export const api = {
     state.Program = Vote.Program;
   },
   async compileProgram() {
-    await state.Program?.compile({ proofsEnabled: false });
+    await state.Program?.compile({ proofsEnabled: true });
     await Aggregation.Program.compile({ proofsEnabled: false });
   },
   async loadAndCompileContracts(
@@ -71,41 +71,34 @@ export const api = {
     const { electionPubKey, nullifier, vote, votersArray, publicKey } = data;
 
     const votersTree = MerkleTree.createFromStringArray(votersArray);
-    console.log('votersTree', votersTree);
 
     if (!votersTree)
       throw new Error('Error creating voters tree from voters array.');
 
-    const voterIndex = votersArray.indexOf(publicKey);
+    const voterIndex = MerkleTree.indexOf(votersArray, publicKey);
     if (voterIndex === -1) {
       throw new Error('Public key not found in voters array.');
     }
 
     const witness = votersTree.getWitness(BigInt(voterIndex));
-    console.log('witness', witness);
 
     const votePublicInputs = new Vote.PublicInputs({
-      electionPubKey: PublicKey.fromJSON(electionPubKey),
+      electionPubKey: PublicKey.fromBase58(electionPubKey),
       vote: Field.from(vote),
       votersRoot: votersTree.getRoot(),
     });
-    console.log('votePublicInputs', votePublicInputs);
 
     const votePrivateInputs = new Vote.PrivateInputs({
       voterKey: PublicKey.fromJSON(publicKey),
       nullifier: Nullifier.fromJSON(nullifier),
       votersMerkleWitness: new MerkleTree.Witness(witness),
     });
-    console.log('votePrivateInputs', votePrivateInputs);
-
-    console.time('vote proof generation');
 
     try {
       const voteProof = await state.Program.vote(
         votePublicInputs,
         votePrivateInputs
       );
-      console.log('voteProof', voteProof);
 
       console.timeEnd('vote proof generation');
 
@@ -117,7 +110,6 @@ export const api = {
               console.error('Error encoding vote proof:', error);
               reject(error);
             } else {
-              console.log('Encoded Vote Proof:', base64String);
               if (base64String !== undefined) {
                 resolve(base64String);
               } else {
@@ -128,7 +120,6 @@ export const api = {
         );
       });
 
-      console.log('Returning encodedVoteProof:', encodedVoteProof);
       return encodedVoteProof;
     } catch (error) {
       console.error('Error generating zk-proof:', error);

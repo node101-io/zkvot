@@ -24,11 +24,11 @@ const ELECTION_SKIP_PER_REQUEST: number = 100;
 
 const AssignedElections: React.FC<AssignedElectionsProps> = ({
   onlyOngoing = true,
-  metamaskWalletAddress,
+  // metamaskWalletAddress,
   auroWalletAddress,
 }: {
   onlyOngoing?: boolean;
-  metamaskWalletAddress?: string;
+  // metamaskWalletAddress?: string;
   auroWalletAddress?: string;
 }) => {
   const [electionData, setElectionData] = useState<
@@ -36,24 +36,17 @@ const AssignedElections: React.FC<AssignedElectionsProps> = ({
   >(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
-  // TODO: fix, gives render error when building
-  // const [error, setError] = useState<string>('');
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [skip, setSkip] = useState<number>(0);
 
   const observer: MutableRefObject<IntersectionObserver | null> = useRef(null);
 
-  if (!metamaskWalletAddress && !auroWalletAddress) {
-    // setError('Wallet address not found.');
-    return;
-  }
-
   const walletAddresses = useMemo(
     () =>
-      [metamaskWalletAddress, auroWalletAddress]
+      [auroWalletAddress]
         .filter((any) => any != undefined)
         .map((addr) => addr.toLowerCase()),
-    [metamaskWalletAddress, auroWalletAddress]
+    [auroWalletAddress]
   );
 
   const lastElectionElementRef = useCallback(
@@ -76,7 +69,6 @@ const AssignedElections: React.FC<AssignedElectionsProps> = ({
     setElectionData(null);
     setSkip(0);
     setHasMore(true);
-    // setError('');
     setLoading(true);
 
     const getElections = async () => {
@@ -84,7 +76,6 @@ const AssignedElections: React.FC<AssignedElectionsProps> = ({
         const result = await fetchElectionsFromBackend(0, onlyOngoing);
 
         if (result instanceof Error) {
-          // setError(result.message);
           return;
         }
 
@@ -104,7 +95,6 @@ const AssignedElections: React.FC<AssignedElectionsProps> = ({
         setSkip(result.length);
       } catch (error) {
         console.error('Error fetching elections:', error);
-        // setError('Failed to load elections.');
       } finally {
         setLoading(false);
       }
@@ -119,7 +109,6 @@ const AssignedElections: React.FC<AssignedElectionsProps> = ({
       const result = await fetchElectionsFromBackend(skip, onlyOngoing);
 
       if (result instanceof Error) {
-        // setError(result.message);
         return;
       }
 
@@ -142,7 +131,6 @@ const AssignedElections: React.FC<AssignedElectionsProps> = ({
       setSkip((skip) => skip + result.length);
     } catch (error) {
       console.error('Error fetching more elections:', error);
-      // setError('Failed to load more elections.');
     } finally {
       setLoadingMore(false);
     }

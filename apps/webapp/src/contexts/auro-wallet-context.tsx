@@ -2,6 +2,7 @@
 
 import { PropsWithChildren, useContext, createContext, useState } from 'react';
 import { CreateNullifierArgs, Nullifier } from '@aurowallet/mina-provider';
+import { Poseidon, PublicKey } from 'o1js';
 
 import { ZKProgramCompileContext } from '@/contexts/zk-program-compile-context.jsx';
 
@@ -58,10 +59,12 @@ export const AuroWalletProvider = ({
   const createNullifier = async (electionId: string): Promise<Nullifier | Error> => {
     try {
       const createNullifierArgs: CreateNullifierArgs = {
-        message: [electionId]
+        message: [Poseidon.hash(PublicKey.fromBase58(electionId).toFields()).toBigInt().toString()],
       };
 
       const nullifier: Nullifier = await (window as any).mina.createNullifier(createNullifierArgs);
+
+      console.log(nullifier)
 
       return nullifier;
     } catch (error) {
@@ -124,6 +127,7 @@ export const AuroWalletProvider = ({
 
       return encodedVoteProof;
     } catch (error) {
+      console.log(error);
       throw new Error('Failed to generate zk-proof.');
     }
   };

@@ -5,8 +5,26 @@ const MERKLE_DEPTH = 20;
 namespace MerkleTreeNamespace {
   export class Witness extends MerkleWitness(MERKLE_DEPTH) {}
 
+  // TODO: Optimize sorting to work on strings without convering to provable types
   function fieldArrayToBigInt(fields: Field[]): BigInt {
     return Poseidon.hash(fields).toBigInt();
+  }
+
+  export const indexOf = (leaves: string[], leaf: string): number => {
+    const sortedLeaves = leaves.map(each => PublicKey.fromBase58(each).toFields()).sort((a, b) => {
+      if (fieldArrayToBigInt(a) < fieldArrayToBigInt(b)) return -1;
+      if (fieldArrayToBigInt(a) > fieldArrayToBigInt(b)) return 1;
+      return 0;
+    });
+
+    let index = -1;
+
+    sortedLeaves.forEach((each, i) => {
+      if (fieldArrayToBigInt(each) === fieldArrayToBigInt(PublicKey.fromBase58(leaf).toFields()))
+        index = i;
+    });
+
+    return index;
   }
 
   export const createFromFieldsArray = (

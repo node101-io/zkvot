@@ -33,7 +33,7 @@ const ModeSelection = ({ selectionMode, setSelectionMode }: {
             : 'text-[#B7B7B7]'
           }`}
       >
-        Direct Thru Chain
+        Directly Through DA
       </button>
       <button
         onClick={() => setSelectionMode('backend')}
@@ -147,7 +147,6 @@ export default ({
       subWalletAddress
     ) {
       setWalletAddress(subWalletAddress);
-      console.log('Wallet connected:', subWalletAddress);
     } else {
       setWalletAddress('');
     }

@@ -147,7 +147,7 @@ namespace VoteNamespace {
 
           let nullifier = privateInput.nullifier;
 
-          nullifier.verify(publicInput.electionPubKey.toFields());
+          nullifier.verify([ Poseidon.hash(publicInput.electionPubKey.toFields()) ]);
 
           nullifier.getPublicKey().assertEquals(voterPublicKey);
 
