@@ -11,6 +11,11 @@ import {
 import MerkleTree from './MerkleTree.js';
 
 namespace VoteNamespace {
+  /**
+   * Converts a UInt32 array to a Field in big endian order
+   * @param arr UInt32 array
+   * @returns Field
+   */
   export function UInt32ToFieldBigEndian(arr: UInt32[]): Field {
     let acc = Field.from(0);
     let shift = Field.from(1);
@@ -23,6 +28,11 @@ namespace VoteNamespace {
     return acc;
   }
 
+  /**
+   * Converts a Field to a UInt32 array in big endian order
+   * @param options Field
+   * @returns UInt32 array
+   */
   export function fieldToUInt32BigEndian(options: Field): UInt32[] {
     let bytes = Provable.witness(Provable.Array(UInt32, 7), () => {
       let w = options.toBigInt();
@@ -36,6 +46,10 @@ namespace VoteNamespace {
     return bytes;
   }
 
+  /**
+   * Vote options struct for the election
+   * Each field represents the number of votes for a 7-option vote
+   */
   export class VoteOptions extends Struct({
     voteOptions_1: Field,
     voteOptions_2: Field,
@@ -49,6 +63,11 @@ namespace VoteNamespace {
       });
     }
 
+    /**
+     * Adds a vote to current vote options
+     * @param vote Vote Proof
+     * @returns Updated VoteOptions
+     */
     addVote(vote: Proof) {
       let batchOptionsArray: Field[] = new Array(4).fill(Field.from(0));
       for (let i = 0; i <= 2; i++) {
@@ -69,6 +88,10 @@ namespace VoteNamespace {
       });
     }
 
+    /**
+     * Converts the vote options to readible array of numbers
+     * @returns Array of numbers
+     */
     toResults(): number[] {
       let results: number[] = [];
 
