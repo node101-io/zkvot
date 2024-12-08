@@ -8,7 +8,7 @@ export default (
   data: {
     vote: JsonProof;
     electionId: string;
-    merkleRoot: bigint;
+    merkleRoot: string;
   },
   callback: (error: string | null, nullifier?: undefined | bigint) => any
 ) => {
@@ -21,10 +21,10 @@ export default (
     .fromJSON(data.vote)
     .catch(_ => callback('invalid_vote'))
     .then(async (voteProof) => {
-      if (voteProof.publicInput.votersRoot.toBigInt() != data.merkleRoot)
+      if (voteProof.publicInput.votersRoot.toBigInt().toString() !== data.merkleRoot)
         return callback('invalid_vote');
 
-      if (voteProof.publicInput.electionId.toBase58() != data.electionId)
+      if (voteProof.publicInput.electionId.toBase58() !== data.electionId)
         return callback('invalid_vote');
 
       if (!(await verify(voteProof, verificationKey)))

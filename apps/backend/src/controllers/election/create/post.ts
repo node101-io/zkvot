@@ -8,7 +8,6 @@ export default (
   req: Request,
   res: Response
 ) => {
-  console.log("HEREE");
   Election.createElection(req.body, (err: string | null, election?: types.ElectionBackendData) => {
     if (err)
       return res.json({ success: false, error: err });

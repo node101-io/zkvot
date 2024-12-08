@@ -37,7 +37,7 @@ const Page = ({ params }: {
     description: '',
     image_url: '',
     voters_list: [],
-    voters_merkle_root: 0n,
+    voters_merkle_root: '0',
     communication_layers: [],
   });
 
@@ -57,6 +57,7 @@ const Page = ({ params }: {
             return reject('Election data commitment verification failed');
 
           return resolve(utils.convertElectionStaticDataToBackendData(
+            process.env.NODE_ENV !== 'production',
             params.id,
             storageLayerInfo.id,
             storageLayerInfo.platform,

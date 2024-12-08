@@ -3,29 +3,30 @@ import sharp from 'sharp';
 
 import generateRandomHex from '../../../utils/generateRandomHex.js';
 
-if (!process.env.AWS_BUCKET_NAME || !process.env.AWS_BUCKET_REGION || !process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY)
-  console.error('AWS_BUCKET_NAME, AWS_BUCKET_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY environment variables not set');
-
-const AWS_BUCKET_NAME = process.env.AWS_BUCKET_NAME || 'zkvot';
-const AWS_BUCKET_REGION = process.env.AWS_BUCKET_REGION || 'eu-central-1'
-const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID || '';
-const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || '';
-
-const s3Client = new S3Client({
-  region: AWS_BUCKET_REGION,
-  credentials: {
-    accessKeyId: AWS_ACCESS_KEY_ID,
-    secretAccessKey: AWS_SECRET_ACCESS_KEY
-  }
-});
+let s3Client: null | S3Client;
 
 export default (
   image_raw: string,
   callback: (err: string | null, imageUrl?: string) => void
 ) => {
-  const fileName = `${generateRandomHex()}.webp`;
+  const AWS_BUCKET_NAME = process.env.AWS_BUCKET_NAME || 'zkvot';
+  const AWS_BUCKET_REGION = process.env.AWS_BUCKET_REGION || 'eu-central-1'
+  const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID || '';
+  const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || '';
 
-  sharp(Buffer.from(image_raw, 'base64'))
+  if (!s3Client)
+    s3Client = new S3Client({
+      region: AWS_BUCKET_REGION,
+      credentials: {
+        accessKeyId: AWS_ACCESS_KEY_ID,
+        secretAccessKey: AWS_SECRET_ACCESS_KEY
+      }
+    });
+  
+  const fileName = `${generateRandomHex()}.webp`;
+  const image_formatted = image_raw.replace(/^data:image\/\w+;base64,/, '');
+
+  sharp(Buffer.from(image_formatted, 'base64'))
     .webp()
     .toBuffer()
     .then(imageBuffer => {
@@ -36,7 +37,8 @@ export default (
         ContentType: 'image/webp'
       };
 
-      s3Client.send(new PutObjectCommand(uploadParams), (err, _data) => {
+      s3Client?.send(new PutObjectCommand(uploadParams), (err, _data) => {
+        console.log(err);
         if (err) return callback('upload_failed');
 
         const imageUrl = `https://${AWS_BUCKET_NAME}.s3.${AWS_BUCKET_REGION}.amazonaws.com/${fileName}`;

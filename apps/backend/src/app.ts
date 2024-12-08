@@ -13,6 +13,9 @@ import { compileZkProgramIfNotCompiledBefore } from './utils/compileZkProgram.js
 
 dotenv.config({ path: path.join(import.meta.dirname, '../.env') });
 
+if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY)
+  console.error('AWS_ACCESS_KEY_ID and / or AWS_SECRET_ACCESS_KEY environment variables not set');
+
 const app = express();
 const server = http.createServer(app);
 

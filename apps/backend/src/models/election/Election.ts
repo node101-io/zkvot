@@ -118,19 +118,19 @@ const ElectionSchema = new Schema({
     }
   ],
   voters_merkle_root: {
-    type: BigInt,
+    type: String,
     required: true
   },
   communication_layers: [
     {
-      type: { // celestia || avail
+      name: { // celestia || avail
         type: String,
         required: true,
         trim: true,
         minlength: 1,
         maxlength: MAX_DATABASE_TEXT_FIELD_LENGTH,
       },
-      start_block: {//For both celestia and avail
+      start_block_height: {//For both celestia and avail
         type: Number,
         required: true,
       },
@@ -141,7 +141,7 @@ const ElectionSchema = new Schema({
         minlength: 1,
         maxlength: MAX_DATABASE_TEXT_FIELD_LENGTH,
       },
-      block_hash: {//Celestia
+      start_block_hash: {//Celestia
         type: String,
         required: false,
         trim: true,
@@ -191,7 +191,7 @@ ElectionSchema.statics.createElection = function (
         if (!data)
           return callback('bad_request');
 
-        const voters_merkle_root = MerkleTree.createFromStringArray(data.voters_list.map(voter => voter.public_key));
+        const voters_merkle_root = MerkleTree.createFromStringArray(data.voters_list.map(voter => voter.public_key))?.getRoot().toBigInt().toString();
 
         uploadImageRaw(data.image_raw, (error, url) => {
           if (error)
@@ -208,15 +208,19 @@ ElectionSchema.statics.createElection = function (
 
           const election = new Election(electionData);
 
-          election.save((error: { code: number; }, election: any) => {
-            if (error) {
+          election
+            .save()
+            .then((election: types.ElectionBackendData) => {
+              return callback(null, election);
+            })
+            .catch((error: {
+              code: number
+            }) => {
+              console.log(error);
               if (error.code == DUPLICATED_UNIQUE_FIELD_ERROR_CODE)
                 return callback('duplicated_unique_field');
               return callback('database_error');
-            }
-
-            return callback(null, election);
-          });
+            });
         });
       });
     });

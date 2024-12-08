@@ -1,7 +1,7 @@
 import { Field, Poseidon } from 'o1js';
-import { sha256 } from 'js-sha256';
 
 import Election from './Election.js';
+import MerkleTree from './MerkleTree.js';
 
 import {
   fetchDataFromArweave,
@@ -90,12 +90,14 @@ namespace utilsNamespace {
   };
 
   export const convertElectionStaticDataToBackendData = (
+    is_devnet: boolean,
     mina_contract_id: string,
     storage_layer_id: string,
     storage_layer_platform: types.StorageLayerPlatformCodes,
     electionData: types.ElectionStaticData
   ): types.ElectionBackendData => {
     return {
+      is_devnet,
       mina_contract_id,
       storage_layer_id,
       storage_layer_platform,
@@ -106,7 +108,7 @@ namespace utilsNamespace {
       description: electionData.description,
       image_url: electionData.image_raw,
       voters_list: electionData.voters_list,
-      voters_merkle_root: BigInt(0),
+      voters_merkle_root: MerkleTree.createFromStringArray(electionData.voters_list.map(each => each.public_key))?.getRoot().toBigInt().toString() || '',
       communication_layers: electionData.communication_layers
     }
   };
