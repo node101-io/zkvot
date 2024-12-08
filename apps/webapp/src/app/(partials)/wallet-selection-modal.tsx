@@ -3,8 +3,6 @@ import { IoClose } from 'react-icons/io5';
 
 import AuroIcon from '@/public/general/wallet-logos/auro.png';
 import SubwalletIcon from '@/public/general/wallet-logos/subwallet.png';
-// import MetamaskIcon from '@/public/wallets/Metamask.svg';
-//
 
 type AvailableWallets = 'Auro' | 'Subwallet';
 
@@ -46,20 +44,6 @@ const WalletSelectionModal = ({
               Auro Wallet
             </button>
           )}
-          {/* {availableWallets.includes('Metamask') && (
-            <button
-              className='w-[216px] h-[54px] flex justify-start items-center rounded-3xl bg-[#222222] hover:bg-[#333333] text-white hover:text-[#F6851A] gap-[23px] px-3 transition-colors duration-300'
-              onClick={() => onSelectWallet('Metamask')}
-            >
-              <Image
-                src={MetamaskIcon}
-                alt='Metamask Wallet'
-                width={24}
-                height={24}
-              />
-              Metamask
-            </button>
-          )} */}
           {availableWallets.includes('Subwallet') && (
             <button
               className='w-[216px] h-[54px] flex justify-start items-center rounded-3xl bg-[#222222] hover:bg-[#333333] text-white hover:text-[#4BE8AD] gap-[23px] px-3 transition-colors duration-300'

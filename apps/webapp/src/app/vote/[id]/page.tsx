@@ -69,7 +69,7 @@ const Page = ({ params }: {
   );
 
   const goToNextStep = () => {
-    setCurrentStep((prevStep) => prevStep + 1);
+    setCurrentStep(prevStep => prevStep + 1);
   };
 
   useEffect(() => {
@@ -95,9 +95,9 @@ const Page = ({ params }: {
             <VotingStep
               electionData={electionData}
               selectedOption={selectedOption}
+              loading={loading}
               setSelectedOption={setSelectedOption}
               goToNextStep={goToNextStep}
-              loading={loading}
               setLoading={setLoading}
               setZkProofData={setZkProofData}
             />

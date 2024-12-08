@@ -116,13 +116,7 @@ export default ({
   zkProofData: string;
   setLoading: (loading: boolean) => void;
 }) => {
-  const {
-    subWalletAddress,
-    connectSubWallet,
-    disconnectSubWallet,
-    sendTransactionSubwallet,
-    isSubmitting,
-  } = useContext(SubwalletContext);
+  const { subWalletAddress, connectSubWallet, disconnectSubWallet, sendTransactionSubwallet, isSubmitting } = useContext(SubwalletContext);
   const { showToast } = useContext(ToastContext);
 
   const [selectedWallet, setSelectedWallet] = useState<string>('');
@@ -278,15 +272,6 @@ export default ({
           <div className='px-4 w-full h-fit flex flex-col justify-start'>
             <div className='flex flex-row w-full justify-between '>
               <div className='text-[#B7B7B7] text-sm mb-2 flex flex-row items-center '>
-                <span className='mr-2'>
-                  <ToolTip
-                    content='It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.'
-                    position='top'
-                    arrowPosition='start'
-                  >
-                    <LearnMoreIcon color='#B7B7B7' />
-                  </ToolTip>
-                </span>
                 Election id:{' '}
                 {String(electionData.mina_contract_id).slice(0, 12) + '...'}
                 <span className='ml-1 cursor-pointer w-fit'>
@@ -297,14 +282,6 @@ export default ({
                   />{' '}
                 </span>
               </div>
-              <span className='flex flex-row justify-center items-center '>
-                <span>
-                  <Clock />
-                </span>
-                <span className='ml-1 text-sm text-[#B7B7B7]'>
-                  <DateFormatter date={electionData.start_date} />
-                </span>
-              </span>
             </div>
             <div className=' flex flex-col  w-full h-fit '>
               <h2 className='text-[24px] mb-2'>{electionData.question}</h2>

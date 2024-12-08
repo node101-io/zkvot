@@ -19,7 +19,6 @@ import { AuroWalletContext } from '@/contexts/auro-wallet-context.jsx';
 import { SelectedWalletContext } from '@/contexts/selected-wallet-context.jsx';
 import { ToastContext } from '@/contexts/toast-context.jsx';
 import { ZKProgramCompileContext } from '@/contexts/zk-program-compile-context.jsx';
-// import { MetamaskWalletContext } from '@/contexts/MetamaskWalletContext';
 
 import LearnMoreIcon from '@/public/elections/partials/learn-more-icon.jsx';
 import Clock from '@/public/elections/partials/clock-icon.jsx';
@@ -27,20 +26,22 @@ import Clock from '@/public/elections/partials/clock-icon.jsx';
 export default ({
   electionData,
   selectedOption,
+  loading,
   setSelectedOption,
   setLoading,
-  loading,
   setZkProofData,
   goToNextStep,
 }: {
   electionData: types.ElectionBackendData;
   selectedOption: number;
   setSelectedOption: (option: number) => void;
-  setLoading: (loading: boolean) => void;
   loading: boolean;
+  setLoading: (loading: boolean) => void;
   setZkProofData: (proof: string) => void;
   goToNextStep: () => void;
 }) => {
+  const { auroWalletAddress, connectAuroWallet, createNullifier, disconnectAuroWallet, generateEncodedVoteProof } = useContext(AuroWalletContext);
+  const { setSelectedWallet } = useContext(SelectedWalletContext);
   const { showToast } = useContext(ToastContext);
   const { hasBeenSetup } = useContext(ZKProgramCompileContext);
 
@@ -49,80 +50,54 @@ export default ({
 
   const [eligibilityStatus, setEligibilityStatus] = useState('not_connected');
 
-  const {
-    auroWalletAddress,
-    connectAuroWallet,
-    generateEncodedVoteProof,
-    disconnectAuroWallet,
-    createNullifier,
-  } = useContext(AuroWalletContext);
-
-  // const {
-  //   metamaskWalletAddress,
-  //   connectMetamaskWallet,
-  //   disconnectMetamaskWallet,
-  // } = useContext(MetamaskWalletContext);
-
-  const { selectedWallet, setSelectedWallet } = useContext(SelectedWalletContext);
-
-  // const userWalletAddresses = [metamaskWalletAddress, auroWalletAddress]
-  //   .filter(Boolean)
-  //   .map((addr) => addr.trim().toLowerCase());
+  useEffect(() => {
+    (window as any).mina?.on('accountsChanged', () => {
+      disconnectAuroWallet();
+      setSelectedWallet(null);
+    });
+  }, [])
 
   useEffect(() => {
-    (window as any).mina.on('accountsChanged', (accounts: string[]) => {
-      disconnectAuroWallet();
-    });
+    if (!auroWalletAddress) {
+      setEligibilityStatus('not_connected');
+      return;
+    }
 
-    if (!auroWalletAddress || !electionData || !electionData.voters_list || !Array.isArray(electionData.voters_list))
-      return setEligibilityStatus('not_connected');
+    const votersPublicKeyList = electionData.voters_list.map((voter) => voter.public_key);
+    const eligible = votersPublicKeyList.includes(auroWalletAddress.trim());
 
-    const votersPublicKeyList = electionData.voters_list.map((voter) => voter.public_key.trim().toLowerCase());
-    const eligible = votersPublicKeyList.includes(auroWalletAddress.trim().toLowerCase());
+    if (!eligible) {
+      setEligibilityStatus('not_eligible');
+      return;
+    }
 
-    setEligibilityStatus(eligible ? 'eligible' : 'not_eligible');
+    setEligibilityStatus('eligible');
   }, [auroWalletAddress, electionData]);
 
-  useEffect(() => {
-    return () => {
-      setEligibilityStatus('not_connected');
-    };
-  }, []);
-
   const handleWalletSelection = async (wallet: string) => {
+    if (wallet !== 'Auro') { // Impossible
+      showToast('Unsupported wallet is chosen', 'error');
+      return;
+    }
+
+    setSelectedWallet('Auro');
+    setIsWalletModalOpen(false);
+    let connectionSuccess = false;
+
     try {
-      if (selectedWallet === 'Auro') {
-        disconnectAuroWallet();
-      }
-      // else if (selectedWallet === 'Metamask') {
-      //   await disconnectMetamaskWallet();
-      // }
+      connectionSuccess = await connectAuroWallet();
 
-      setSelectedWallet(wallet);
-      setIsWalletModalOpen(false);
-
-      let connectionSuccess = false;
-
-      if (wallet === 'Auro') {
-        connectionSuccess = await connectAuroWallet();
-      }
-      // else if (wallet === 'Metamask') {
-      //   connectionSuccess = await connectMetamaskWallet();
-      // }
-
-      if (connectionSuccess) {
-        showToast('Wallet connected successfully!', 'success');
-      } else {
-        setSelectedWallet('');
-        showToast('Wallet connection was not successful.', 'error');
+      if (!connectionSuccess) {
+        setSelectedWallet(null);
+        showToast('Please connect your wallet to vote', 'error');
       }
     } catch (error) {
       console.error('Error during wallet selection:', error);
-      showToast('An error occurred while selecting the wallet.', 'error');
+      showToast('An error occurred while selecting the wallet, please try again later', 'error');
     }
   };
 
-  const handleVoteClick = async () => {
+  const handleButtonClick = async () => {
     if (eligibilityStatus === 'not_connected') {
       setIsWalletModalOpen(true);
       return;
@@ -138,40 +113,11 @@ export default ({
       return;
     }
 
-    if (eligibilityStatus === 'eligible') {
-      await handleConfirmAndContinue();
-      return;
-    }
+    setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-  };
-
-  const checkWalletConnection = () => {
-    if (selectedWallet === 'Auro') {
-      return !!auroWalletAddress;
-    }
-    // else if (selectedWallet === 'Metamask') {
-    //   return !!metamaskWalletAddress;
-    // }
-    return false;
-  };
-
-  const generateElectionJson = (
-    electionData: types.ElectionBackendData,
-    nullifier: Nullifier,
-    selectedOption: number,
-    votersArray: string[],
-    publicKey: string
-  ) => {
-    return {
-      electionPubKey: electionData.mina_contract_id,
-      nullifier,
-      vote: selectedOption,
-      votersArray,
-      publicKey: publicKey,
-    };
   };
 
   const handleConfirmAndContinue = async () => {
@@ -180,75 +126,56 @@ export default ({
       return;
     }
 
+    setLoading(true);
+    setIsModalOpen(false);
+
     try {
-      setLoading(true);
-      setIsModalOpen(false);
-
-      if (!checkWalletConnection()) {
-        showToast('Wallet not connected.', 'error');
-        setLoading(false); // Ensure loading is turned off
-        return;
-      }
-
       if (eligibilityStatus !== 'eligible') {
-        showToast('You are not eligible to vote in this election.', 'error');
-        setLoading(false); // Ensure loading is turned off
+        showToast('You are not eligible to vote in this election', 'error');
+        setLoading(false);
         return;
       }
 
       const nullifier = await createNullifier(electionData.mina_contract_id);
-      console.log('nullifier', nullifier);
 
       if (!nullifier || nullifier instanceof Error) {
-        showToast('Failed to generate the signed election ID.', 'error');
-        setLoading(false); // Ensure loading is turned off
+        showToast('You need to sign the election ID to vote in the election', 'error');
+        setLoading(false);
         return;
       };
 
       const votersArray = electionData.voters_list.map((voter) => voter.public_key).filter(each => each && each.trim().length)
 
       if (votersArray.length === 0) {
-        showToast('No valid voters found.', 'error');
-        setLoading(false); // Ensure loading is turned off
+        showToast('No valid voters found', 'error');
+        setLoading(false);
         return;
       }
 
-      // const publicKey = selectedWallet === 'Auro' ? auroWalletAddress : metamaskWalletAddress;
       const publicKey = auroWalletAddress;
 
-      const electionJson = generateElectionJson(
-        electionData,
+      const voteData = {
+        electionPubKey: electionData.mina_contract_id,
         nullifier,
-        selectedOption,
+        vote: selectedOption,
         votersArray,
-        publicKey
-      );
+        publicKey: publicKey,
+      };
 
-      console.log('electionJson', electionJson);
-
-      const proof = await generateEncodedVoteProof(electionJson);
+      const proof = await generateEncodedVoteProof(voteData);
 
       if (proof instanceof Error) {
-        showToast('Failed to generate the zkProof.', 'error');
-        setLoading(false); // Ensure loading is turned off
+        showToast('Failed to generate the ZK Proof, please try again later', 'error');
+        setLoading(false);
         return;
       };
 
       setZkProofData(proof);
-
-      if (selectedWallet === 'Auro') {
-        disconnectAuroWallet();
-      }
-      // else if (selectedWallet === 'Metamask') {
-      //   await disconnectMetamaskWallet();
-      // }
-
+      setLoading(false);
       goToNextStep();
     } catch (error) {
-      console.error('Error submitting zkProof:', (error as any).message || error);
-      showToast('Error submitting zkProof.', 'error');
-    } finally {
       setLoading(false);
+      showToast('Error creating the vote, please try again later', 'error');
     }
   };
 
@@ -261,14 +188,12 @@ export default ({
   return (
     <div className='flex flex-col items-center px-4 sm:px-6 md:px-8'>
       {loading && <LoadingOverlay text='Generating zk Proof...' />}
-
       <div className='py-4 w-full text-start'>
         Already voted?{' '}
         <button className='relative inline-flex items-center font-medium text-gray-300 transition duration-300 ease-out hover:text-white'>
           See Results
         </button>
       </div>
-
       <div className='flex flex-col md:flex-row items-start w-full h-full text-white mb-6 flex-grow'>
         <div className='w-full md:w-1/2 flex'>
           <div className='flex w-full h-64 rounded-3xl overflow-hidden'>
@@ -326,47 +251,10 @@ export default ({
               {electionData.description}
             </p>
           </div>
-
-          <div className='flex flex-col md:flex-row justify-between py-2 gap-y-1'>
-            {/* <span>
-              <span className='text-[#B7B7B7] text-sm mr-1 flex flex-row items-center'>
-                {electionData.voters_list} Assigned Voters
-                <span className='mx-1'>-</span>
-                <span className='text-green text-sm'>
-                  {electionData.votedNow} Voted Now
-                </span>
-                <button
-                  onClick={() => {
-                    console.log('download');
-                  }}
-                  className='ml-2'
-                >
-                  <DownloadIcon />
-                </button>
-              </span>
-            </span> */}
-            <span className='flex flex-row items-center'>
-              {/* <span className='text-primary mr-2 italic text-sm'>
-                zkVote by
-              </span>
-              {electionData.zkvoteBy
-                ? electionData.zkvoteBy.slice(0, 12) + '...'
-                : 'Unknown'}
-              <span className='ml-2 cursor-pointer w-fit relative'>
-                <CopyButton
-                  textToCopy={electionData.zkvoteBy}
-                  iconColor='#F6F6F6'
-                  position={{ top: -26, left: -38 }}
-                />
-              </span> */}
-            </span>
-          </div>
         </div>
       </div>
-
       <div className='w-full my-5'>
         <h3 className='text-xl mb-4'>Options</h3>
-
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
           {electionData.options.map((option, index) => (
             <button
@@ -382,11 +270,12 @@ export default ({
           ))}
         </div>
       </div>
-
       <div className='w-full pt-8 flex justify-end space-x-4'>
         <Button
-          onClick={handleVoteClick}
+          onClick={handleButtonClick}
           loading={loading}
+          disabled={eligibilityStatus === 'not_eligible'}
+          className={eligibilityStatus === 'not_eligible' ? 'opacity-50 cursor-not-allowed' : ''}
         >
           {eligibilityStatus === 'eligible'
             ? 'Vote'
@@ -394,15 +283,13 @@ export default ({
             ? 'You are not elligible to vote'
             : 'Connect wallet to check eligibility'}
         </Button>
-
         {isWalletModalOpen && (
           <WalletSelectionModal
-            availableWallets={['Auro', 'Subwallet']}
+            availableWallets={['Auro']}
             onClose={() => setIsWalletModalOpen(false)}
             onSelectWallet={handleWalletSelection}
           />
         )}
-
         {isModalOpen && (
           <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'>
             <div className='bg-[#141414] rounded-[50px] p-8 shadow-lg w-[680px] h-auto border-[1px] border-primary text-center relative'>
@@ -416,7 +303,6 @@ export default ({
                 <h3 className='text-xl mb-4'>
                   Wait a sec, have you voted before?
                 </h3>
-
                 <p className='mb-8'>
                   Since it is fully anonymous, it is not really easy to
                   understand if you have voted before or not. Nevertheless, if
@@ -425,7 +311,6 @@ export default ({
                   twice, but please do not, as it just frustrates our
                   sequencers.
                 </p>
-
                 <div className='flex justify-center pt-9'>
                   <Button
                     loading={loading}
@@ -439,13 +324,6 @@ export default ({
           </div>
         )}
       </div>
-
-      {eligibilityStatus === 'not_eligible' && (
-        <div className='w-full mt-2 text-center text-gray-300 text-sm'>
-          You’re not eligible for this election. You might be connected to the
-          wrong wallet. Please try switching wallets.
-        </div>
-      )}
     </div>
   );
 };
