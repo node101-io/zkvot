@@ -108,6 +108,11 @@ export default ({
       return;
     }
 
+    if (!hasBeenSetup) {
+      showToast('Please wait for the setup to complete.', 'error');
+      return;
+    }
+
     if (selectedOption === -1) {
       showToast('Please select an option to proceed.', 'error');
       return;
@@ -121,11 +126,6 @@ export default ({
   };
 
   const handleConfirmAndContinue = async () => {
-    if (!hasBeenSetup) {
-      showToast('Please wait for the setup to complete.', 'error');
-      return;
-    }
-
     setLoading(true);
     setIsModalOpen(false);
 

@@ -42,15 +42,12 @@ export const ZKProgramCompileProvider = ({
           setIsSettingUp(true);
 
           const zkProgramWorkerClientInstance = new ZKProgramWorkerClient();
+
           setZkProgramWorkerClientInstance(zkProgramWorkerClientInstance);
+
           await new Promise((resolve) => setTimeout(resolve, 5000));
 
-          await zkProgramWorkerClientInstance.loadProgram();
-
-          console.log('compileProgram starting');
-          console.time('compileProgram');
-          await zkProgramWorkerClientInstance.compileProgram();
-          console.timeEnd('compileProgram');
+          await zkProgramWorkerClientInstance.loadAndCompileVoteProgram();
 
           setHasBeenSetup(true);
           setIsSettingUp(false);

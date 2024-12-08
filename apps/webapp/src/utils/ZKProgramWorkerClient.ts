@@ -8,7 +8,6 @@ import { Field } from 'o1js';
 export default class {
   worker: Worker;
   remoteApi: Comlink.Remote<typeof import('@/utils/ZKProgramWorker.js').api>;
-
   constructor() {
     const worker = new Worker(
       new URL('@/utils/ZKProgramWorker.js', import.meta.url),
@@ -18,23 +17,12 @@ export default class {
     );
     this.remoteApi = Comlink.wrap(worker);
   };
-
-  setActiveInstanceToDevnet() {
-    return this.remoteApi.setActiveInstanceToDevnet();
+  async setActiveInstance({ devnet }: { devnet?: boolean }) {
+    return this.remoteApi.setActiveInstance({ devnet });
   };
-
-  setActiveInstanceToMainnet() {
-    return this.remoteApi.setActiveInstanceToMainnet();
+  async loadAndCompileVoteProgram() {
+    return this.remoteApi.loadAndCompileVoteProgram();
   };
-
-  async loadProgram() {
-    return this.remoteApi.loadProgram();
-  };
-
-  async compileProgram() {
-    return this.remoteApi.compileProgram();
-  };
-
   async createVote(data: {
     electionPubKey: string;
     nullifier: Nullifier;
@@ -46,7 +34,6 @@ export default class {
 
     return result;
   };
-
   async deployElection(
     electionDeployer: string,
     electionStartBlock: number,
@@ -71,13 +58,12 @@ export default class {
 
     return result;
   };
-
-  async loadAndCompileContracts(
+  async loadAndCompileElectionContract(
     electionStartBlock: number,
     electionFinalizeBlock: number,
     votersRoot: bigint
   ) {
-    return this.remoteApi.loadAndCompileContracts(
+    return this.remoteApi.loadAndCompileElectionContract(
       electionStartBlock,
       electionFinalizeBlock,
       votersRoot

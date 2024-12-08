@@ -27,7 +27,7 @@ namespace AggregationNamespace {
   }) {}
 
   export const Program = ZkProgram({
-    name: 'RangeAggregationProgram',
+    name: 'AggregationProgram',
     publicInput: PublicInputs,
     publicOutput: PublicOutputs,
 

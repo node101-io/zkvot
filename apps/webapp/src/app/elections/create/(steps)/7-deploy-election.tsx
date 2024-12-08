@@ -87,10 +87,7 @@ export default ({ onPrevious, data }: {
         return;
       };
 
-      if (process.env.NODE_ENV == 'production')
-        await zkProgramWorkerClientInstance.setActiveInstanceToMainnet();
-      else
-        await zkProgramWorkerClientInstance.setActiveInstanceToDevnet();
+      zkProgramWorkerClientInstance.setActiveInstance({ devnet: process.env.NODE_ENV !== 'production' });
 
       const result = await zkProgramWorkerClientInstance.deployElection(
         auroWalletAddress,
