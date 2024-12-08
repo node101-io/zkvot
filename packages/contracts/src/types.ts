@@ -47,6 +47,7 @@ namespace typesNamespace {
     communication_layers: (AvailDaLayerInfo | CelestiaDaLayerInfo)[]
   };
   export type ElectionBackendData = {
+    is_devnet: boolean;
     mina_contract_id: string;
     storage_layer_id: string;
     storage_layer_platform: StorageLayerPlatformCodes;

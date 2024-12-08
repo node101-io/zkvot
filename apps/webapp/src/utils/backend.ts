@@ -12,7 +12,8 @@ export const submitElectionToBackend = async (
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        mina_contract_id
+        mina_contract_id,
+        is_devnet: process.env.NODE_ENV !== 'production'
       })
     });
 
@@ -36,7 +37,7 @@ export const fetchElectionsFromBackend = async (
   is_ongoing: boolean = true
 ): Promise<types.ElectionBackendData[]> => {
   try {
-    const response = await fetch(`${API_URL}/election/filter?skip=${skip}&is_ongoing=${is_ongoing}`, {
+    const response = await fetch(`${API_URL}/election/filter?skip=${skip}&is_ongoing=${is_ongoing}&is_devnet=${process.env.NODE_ENV !== 'production'}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

@@ -12,7 +12,8 @@ import uploadImageRaw from './functions/uploadImageRaw.js';
 const DEFAULT_QUERY_LIMIT = 100;
 const DUPLICATED_UNIQUE_FIELD_ERROR_CODE = 11000;
 const MAX_DATABASE_TEXT_FIELD_LENGTH = 1e4;
-const MINA_RPC_URL = process.env.NODE_ENV == 'production' ? 'https://api.minascan.io/node/mainnet/v1/graphql' : 'https://api.minascan.io/node/devnet/v1/graphql';
+const MINA_DEVNET_RPC_URL = 'https://api.minascan.io/node/devnet/v1/graphql';
+const MINA_MAINNET_RPC_URL = 'https://api.minascan.io/node/mainnet/v1/graphql';
 
 interface ElectionStatics {
   createElection: (
@@ -45,6 +46,10 @@ interface ElectionStatics {
 };
 
 const ElectionSchema = new Schema({
+  is_devnet: {
+    type: Boolean,
+    default: false
+  },
   mina_contract_id: {
     type: String,
     unique: true,
@@ -155,7 +160,7 @@ const ElectionSchema = new Schema({
 });
 
 ElectionSchema.statics.createElection = function (
-  data: { mina_contract_id: string },
+  data: { mina_contract_id: string, is_devnet?: boolean },
   callback: (
     error: string | null,
     election?: types.ElectionBackendData
@@ -172,7 +177,7 @@ ElectionSchema.statics.createElection = function (
     if (election)
       return callback('duplicated_unique_field');
 
-    ElectionProgram.fetchElectionState(mina_contract_id, MINA_RPC_URL, (error, state) => {
+    ElectionProgram.fetchElectionState(mina_contract_id, data.is_devnet ? MINA_DEVNET_RPC_URL : MINA_MAINNET_RPC_URL, (error, state) => {
       if (error)
         return callback(error);
       if (!state)
@@ -241,6 +246,7 @@ ElectionSchema.statics.findElectionByContractId = function (
 
 ElectionSchema.statics.findElectionsByFilter = function (
   data: {
+    is_devnet?: boolean;
     skip?: number;
     text?: string;
     start_after?: Date;
@@ -254,7 +260,9 @@ ElectionSchema.statics.findElectionsByFilter = function (
 ) {
   const Election = this;
 
-  const filters: any[] = [];
+  const filters: any[] = [
+    { is_devnet: 'is_devnet' in data ? data.is_devnet : false }
+  ];
 
   if (data.text)
     filters.push({
