@@ -1,4 +1,5 @@
 import { Field, Poseidon } from 'o1js';
+import { sha256 } from 'js-sha256';
 
 import Election from './Election.js';
 
@@ -10,21 +11,20 @@ import {
 
 import types from './types.js';
 
+const convertFieldToString = (
+  field: Field
+): string => {
+  let hexString = BigInt(field.toString()).toString(16);
+  return Buffer.from(hexString, 'hex').toString('utf-8');
+};
+const convertStringToField = (
+  str: string
+): Field => {
+  const hexString = Buffer.from(str, 'utf-8').toString('hex');
+  return new Field(BigInt('0x' + hexString));
+};
+
 namespace utilsNamespace {
-  const convertFieldToString = (
-    field: Field
-  ): string => {
-    let hexString = BigInt(field.toString()).toString(16);
-    return Buffer.from(hexString, 'hex').toString('utf-8');
-  };
-
-  const convertStringToField = (
-    str: string
-  ): Field => {
-    const hexString = Buffer.from(str, 'utf-8').toString('hex');
-    return new Field(BigInt('0x' + hexString));
-  };
-
   export const StorageLayerPlatformDecoding: Record<types.StorageLayerPlatformCodes, types.StorageLayerPlatformNames> = {
     A: 'Arweave',
     F: 'Filecoin',
@@ -45,7 +45,6 @@ namespace utilsNamespace {
       last: convertStringToField(infoToEncode.slice(infoToEncode.length / 2))
     });
   };
-
   export const decodeStorageLayerInfo = (
     storageLayerInfoEncoding: Election.StorageLayerInfoEncoding
   ): {
@@ -90,16 +89,6 @@ namespace utilsNamespace {
     };
   };
 
-  export const poseidonHashString = (
-    string: any
-  ): bigint => {
-    const stringAsHEX = Buffer.from(string, 'utf-8').toString('hex');
-    const stringAsBigInt = BigInt('0x' + stringAsHEX);
-    const stringAsField = new Field(stringAsBigInt);
-
-    return Poseidon.hash([stringAsField]).toBigInt();
-  };
-
   export const convertElectionStaticDataToBackendData = (
     mina_contract_id: string,
     storage_layer_id: string,
@@ -120,6 +109,17 @@ namespace utilsNamespace {
       voters_merkle_root: BigInt(0),
       communication_layers: electionData.communication_layers
     }
+  };
+
+  export const createElectionDataCommitment = (electionData: types.ElectionStaticData) => {
+    const electionDataString = JSON.stringify(electionData);
+
+    return Poseidon.hash([convertStringToField(electionDataString)]);
+  };
+  export const verifyElectionDataCommitment = (electionData: types.ElectionStaticData, commitment: Field) => {
+    const electionDataString = JSON.stringify(electionData);
+
+    return Poseidon.hash([convertStringToField(electionDataString)]).equals(commitment).toBoolean();
   };
 };
 

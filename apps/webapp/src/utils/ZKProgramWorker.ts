@@ -140,11 +140,12 @@ export const api = {
     electionStartBlock: number,
     electionFinalizeBlock: number,
     votersRoot: bigint,
-    electionData: {
+    electionStorageInfo: {
       first: bigint;
       last: bigint;
     },
-    settlementReward: number
+    electionDataCommitment: bigint,
+    settlementReward?: number
   ) {
     try {
       const electionContractPrivKey = PrivateKey.random();
@@ -165,17 +166,19 @@ export const api = {
         async () => {
           AccountUpdate.fundNewAccount(PublicKey.fromBase58(electionDeployer));
           await ElectionContractInstance.deploy();
-          await ElectionContractInstance.initialize({
-            first: Field(electionData.first),
-            last: Field(electionData.last)
-          });
+          await ElectionContractInstance.initialize(
+            {
+              first: Field(electionStorageInfo.first),
+              last: Field(electionStorageInfo.last)
+            },
+            Field.from(electionDataCommitment)
+          );
         }
       );
       deployTx.sign([ electionContractPrivKey ]);
       const result = await deployTx.prove();
 
-      if (!result)
-        return;
+      if (!result) return;
 
       return {
         mina_contract_id: electionContractPubKey,

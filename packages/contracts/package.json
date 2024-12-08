@@ -18,6 +18,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.16.4",
     "@babel/preset-typescript": "^7.16.0",
+    "@repo/config": "*",
     "@types/jest": "^29.5.14",
     "@typescript-eslint/eslint-plugin": "^5.5.0",
     "@typescript-eslint/parser": "^5.5.0",
@@ -25,8 +26,7 @@
     "eslint-plugin-o1js": "^0.4.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.5",
-    "typescript": "^5.6.3",
-    "@repo/config": "*"
+    "typescript": "^5.6.3"
   },
   "engines": {
     "node": ">=18.14.0"
@@ -35,7 +35,6 @@
     "@inquirer/prompts": "^5.5.0",
     "commander": "^12.1.0",
     "dotenv": "^16.4.5",
-    "ethers": "^6.13.4",
     "level": "^8.0.1",
     "mina-signer": "^3.0.7",
     "o1js": "^2"

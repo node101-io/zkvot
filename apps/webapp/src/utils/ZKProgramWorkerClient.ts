@@ -3,6 +3,7 @@ import * as Comlink from 'comlink';
 import { Election } from 'zkvot-core';
 
 import { Nullifier } from '@aurowallet/mina-provider';
+import { Field } from 'o1js';
 
 export default class {
   worker: Worker;
@@ -16,23 +17,23 @@ export default class {
       }
     );
     this.remoteApi = Comlink.wrap(worker);
-  }
+  };
 
   setActiveInstanceToDevnet() {
     return this.remoteApi.setActiveInstanceToDevnet();
-  }
+  };
 
   setActiveInstanceToMainnet() {
     return this.remoteApi.setActiveInstanceToMainnet();
-  }
+  };
 
   async loadProgram() {
     return this.remoteApi.loadProgram();
-  }
+  };
 
   async compileProgram() {
     return this.remoteApi.compileProgram();
-  }
+  };
 
   async createVote(data: {
     electionPubKey: string;
@@ -44,14 +45,15 @@ export default class {
     const result = await this.remoteApi.createVote(data);
 
     return result;
-  }
+  };
 
   async deployElection(
     electionDeployer: string,
     electionStartBlock: number,
     electionFinalizeBlock: number,
     votersRoot: bigint,
-    electionData: Election.StorageLayerInfoEncoding,
+    electionStorageInfo: Election.StorageLayerInfoEncoding,
+    electionDataCommitment: Field,
     settlementReward?: number
   ) {
     const result = await this.remoteApi.deployElection(
@@ -60,14 +62,15 @@ export default class {
       electionFinalizeBlock,
       votersRoot,
       {
-        first: electionData.first.toBigInt(),
-        last: electionData.last.toBigInt(),
+        first: electionStorageInfo.first.toBigInt(),
+        last: electionStorageInfo.last.toBigInt(),
       },
+      electionDataCommitment.toBigInt(),
       settlementReward || 0
     );
 
     return result;
-  }
+  };
 
   async loadAndCompileContracts(
     electionStartBlock: number,
@@ -79,5 +82,5 @@ export default class {
       electionFinalizeBlock,
       votersRoot
     );
-  }
-}
+  };
+};

@@ -15,7 +15,7 @@ import { ToastContext } from '@/contexts/toast-context.jsx';
 import { ZKProgramCompileContext } from '@/contexts/zk-program-compile-context.jsx';
 
 import { calculateMinaBlockHeightFromTimestampViaBackend, submitElectionToBackend } from '@/utils/backend.js';
-import { CommunicationLayerDetails, StorageLayerDetails, StorageLayerDetailsType } from '@/utils/constants.jsx';
+import { CommunicationLayerDetails, StorageLayerDetails } from '@/utils/constants.jsx';
 import formatDate from '@/utils/formatDate.js';
 
 const DEFAULT_VOTERS_COUNT_TO_DISPLAY = 5;
@@ -97,7 +97,9 @@ export default ({ onPrevious, data }: {
         minaBlockData.startBlockHeight,
         minaBlockData.endBlockHeight,
         votersMerkleTree.getRoot().toBigInt(),
-        utils.encodeStorageLayerInfo(data.storage_layer_platform, data.storage_layer_id)
+        utils.encodeStorageLayerInfo(data.storage_layer_platform, data.storage_layer_id),
+        utils.createElectionDataCommitment(data.election),
+        undefined
       );
 
       if (!result) {
