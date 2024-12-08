@@ -17,6 +17,7 @@ import Vote from '../Vote.js';
  * @param endBlock end Block of the election
  * @param votersList pubkey list of the voters
  * @param fileCoinDatas filecoin data of the election give 2 fields
+ * @param storageLayerCommitment storage layer commitment
  * @param publisherPrivateKey private key of the publisher
  */
 export default async function deploy(
@@ -24,6 +25,7 @@ export default async function deploy(
   endBlock: number,
   votersList: PublicKey[],
   fileCoinDatas: Field[],
+  storageLayerCommitment: Field,
   publisherPrivateKey: PrivateKey
 ) {
   const Network = Mina.Network({
@@ -99,7 +101,10 @@ export default async function deploy(
     async () => {
       AccountUpdate.fundNewAccount(publisherPubKey);
       await electionContractInstance.deploy();
-      await electionContractInstance.initialize(electionData);
+      await electionContractInstance.initialize(
+        electionData,
+        storageLayerCommitment
+      );
     }
   );
 
