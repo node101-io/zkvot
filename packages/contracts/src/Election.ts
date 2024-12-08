@@ -18,6 +18,8 @@ import {
 
 import Aggregation from './Aggregation.js';
 
+const MINA_NODE_GRAPHQL = process.env.NODE_ENV === 'production' ? 'https://api.minascan.io/node/mainnet/v1/graphql' : 'https://api.minascan.io/node/devnet/v1/graphql';
+
 let ELECTION_START_BLOCK: number;
 let ELECTION_FINALIZE_BLOCK: number;
 let VOTERS_ROOT: bigint;
@@ -238,13 +240,14 @@ namespace ElectionNamespace {
     mina_rpc_url: string,
     callback: (error: string | null, state?: ContractState) => any
   ) => {
-    fetchAccount({ publicKey: contractId }, mina_rpc_url)
+    fetchAccount({ publicKey: contractId }, MINA_NODE_GRAPHQL)
       .then(
         (
           data:
             | { account: Account; error: undefined }
             | { account: undefined; error: FetchError }
         ) => {
+          console.log(data)
           if (!data.account) return callback('bad_request');
 
           const state = data.account.zkapp?.appState;
@@ -254,7 +257,10 @@ namespace ElectionNamespace {
           return callback(null, convertFieldArrayToContractState(state));
         }
       )
-      .catch((_) => callback('bad_request'));
+      .catch(err => {
+        console.error(err);
+        return callback(err)
+      });
   };
 }
 
