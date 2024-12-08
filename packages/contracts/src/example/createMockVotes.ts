@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import { Field, Mina, MerkleTree, PrivateKey, Poseidon, Nullifier } from 'o1js';
 import dotenv from 'dotenv';
-import { votersList } from '../local/mock.js';
+import { votersArray as votersList } from '../local/mock.js';
 import Vote from '../Vote.js';
 import MerkleTreeNamespace from '../MerkleTree.js';
 import Aggregation from '../Aggregation.js';
@@ -50,7 +50,7 @@ export const mockVotes = async (electionPrivateKey: PrivateKey) => {
 
   let voteProofs = [];
   for (let i = 0; i < 4; i++) {
-    let vote = BigInt(Math.floor(Math.random() * 28) + 1);
+    let vote = BigInt(Math.floor(Math.random() * 21) + 1);
     let privateKey = votersList[i][0];
     let voterKey = privateKey.toPublicKey();
     let merkleTreeWitness = votersTree.getWitness(BigInt(i));

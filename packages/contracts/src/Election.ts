@@ -17,6 +17,7 @@ import {
 } from 'o1js';
 
 import Aggregation from './Aggregation.js';
+import Vote from './Vote.js';
 
 const MINA_NODE_GRAPHQL = process.env.NODE_ENV === 'production' ? 'https://api.minascan.io/node/mainnet/v1/graphql' : 'https://api.minascan.io/node/devnet/v1/graphql';
 
@@ -36,35 +37,24 @@ namespace ElectionNamespace {
         first: fields[0],
         last: fields[1],
       },
-      lastAggregatorPubKeyHash: fields[2],
-      voteOptions: new VoteOptions({
-        voteOptions_1: fields[3],
-        voteOptions_2: fields[4],
-        voteOptions_3: fields[5],
-        voteOptions_4: fields[6],
+      storageLayerCommitment: fields[2],
+      lastAggregatorPubKeyHash: fields[3],
+      voteOptions: new Vote.VoteOptions({
+        voteOptions_1: fields[4],
+        voteOptions_2: fields[5],
+        voteOptions_3: fields[6],
       }),
       maximumCountedVotes: fields[7],
     };
-  };
-
-  const UInt32ToFieldBigEndian = (arr: UInt32[]): Field => {
-    let acc = Field.from(0);
-    let shift = Field.from(1);
-    for (let i = 6; i >= 0; i--) {
-      const byte = arr[i];
-      byte.value.assertLessThanOrEqual(4294967295);
-      acc = acc.add(byte.value.mul(shift));
-      shift = shift.mul(4294967296);
-    }
-    return acc;
   };
 
   export const ContractErrors = {};
 
   export type ContractState = {
     storageLayerInfoEncoding: StorageLayerInfoEncoding;
+    storageLayerCommitment: Field;
     lastAggregatorPubKeyHash: Field;
-    voteOptions: VoteOptions;
+    voteOptions: Vote.VoteOptions;
     maximumCountedVotes: Field;
   };
 
@@ -83,38 +73,15 @@ namespace ElectionNamespace {
     last: Field,
   }) {}
 
-  export class VoteOptions extends Struct({
-    voteOptions_1: Field,
-    voteOptions_2: Field,
-    voteOptions_3: Field,
-    voteOptions_4: Field,
-  }) {
-    static empty(): VoteOptions {
-      return new VoteOptions({
-        voteOptions_1: Field.from(0),
-        voteOptions_2: Field.from(0),
-        voteOptions_3: Field.from(0),
-        voteOptions_4: Field.from(0),
-      });
-    }
-
-    toResults(): number[] {
-      const results: number[] = [];
-
-      // for (let i = 1; i <= 4; i++) {
-      //   const currentOptions = this[`voteOptions_${i}` as keyof VoteOptions];
-      // }
-
-      return results;
-    }
-  }
-
   export class Contract extends SmartContract {
-    @state(StorageLayerInfoEncoding) storageLayerInfoEncoding = State<StorageLayerInfoEncoding>();
+    @state(StorageLayerInfoEncoding) storageLayerInfoEncoding =
+      State<StorageLayerInfoEncoding>();
+
+    @state(Field) storageLayerCommitment = State<Field>();
 
     @state(Field) lastAggregatorPubKeyHash = State<Field>();
 
-    @state(VoteOptions) voteOptions = State<VoteOptions>();
+    @state(Vote.VoteOptions) voteOptions = State<Vote.VoteOptions>();
 
     @state(Field) maximumCountedVotes = State<Field>();
 
@@ -134,12 +101,15 @@ namespace ElectionNamespace {
     }
 
     @method
-    async initialize(storageLayerInfoEncoding: StorageLayerInfoEncoding) {
-      console.log("storageLayerInfoEncoding", storageLayerInfoEncoding);
+    async initialize(
+      storageLayerInfoEncoding: StorageLayerInfoEncoding,
+      storageLayerCommitment: Field
+    ) {
       this.account.provedState.requireEquals(Bool(false));
 
       this.storageLayerInfoEncoding.set(storageLayerInfoEncoding);
-      this.voteOptions.set(VoteOptions.empty());
+      this.storageLayerCommitment.set(storageLayerCommitment);
+      this.voteOptions.set(Vote.VoteOptions.empty());
       this.maximumCountedVotes.set(Field.from(0));
     }
 
@@ -170,11 +140,10 @@ namespace ElectionNamespace {
         aggregateProof.publicOutput.totalAggregatedCount
       );
 
-      const newVoteOptions = new VoteOptions({
+      const newVoteOptions = new Vote.VoteOptions({
         voteOptions_1: aggregateProof.publicOutput.voteOptions_1,
         voteOptions_2: aggregateProof.publicOutput.voteOptions_2,
         voteOptions_3: aggregateProof.publicOutput.voteOptions_3,
-        voteOptions_4: aggregateProof.publicOutput.voteOptions_4,
       });
 
       this.voteOptions.set(newVoteOptions);
@@ -192,7 +161,7 @@ namespace ElectionNamespace {
       );
     }
 
-    @method.returns(VoteOptions)
+    @method.returns(Vote.VoteOptions)
     async getFinalizedResults() {
       this.account.provedState.requireEquals(Bool(true));
       const currentBlock = this.network.blockchainLength.getAndRequireEquals();

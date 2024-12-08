@@ -1,11 +1,9 @@
 import { fetchAccount, fetchLastBlock, Field, Mina, PrivateKey } from 'o1js';
-
 import { votersList } from './mock.js';
 import { mockVotes } from '../example/createMockVotes.js';
 import { runAggregate } from '../example/runAggregate.js';
 
 import deploy from '../example/deployToMina.js';
-import Aggregation from '../Aggregation.js';
 
 export async function getBlockHeight() {
   const latestBlock = await fetchLastBlock(
@@ -29,6 +27,7 @@ const { electionContractPk: electionPrivKey, electionContractInstance } =
     currentBlock + 10,
     votersList,
     [Field.from(0), Field.from(0)],
+    Field.from(0),
     feePayerKey
   );
 console.log(`Election Private Key: ${electionPrivKey.toBase58()}`);
@@ -44,7 +43,7 @@ if (!proof) {
 const settlePrrof = await Mina.transaction(
   {
     sender: feePayerPubKey,
-    fee: 1e8,
+    fee: 1e10,
   },
   async () => {
     await electionContractInstance.settleVotes(
@@ -86,26 +85,8 @@ if (!voteOptions) {
   process.exit(1);
 }
 
-let arr = Aggregation.fieldToUInt32BigEndian(voteOptions.voteOptions_1);
+const result = voteOptions.toResults();
 
-for (let i = 0; i < 7; i++) {
-  console.log(`voteOptions_${i + 1}:`, arr[i].toString());
-}
-
-arr = Aggregation.fieldToUInt32BigEndian(voteOptions.voteOptions_2);
-
-for (let i = 0; i < 7; i++) {
-  console.log(`voteOptions_${i + 8}:`, arr[i].toString());
-}
-
-arr = Aggregation.fieldToUInt32BigEndian(voteOptions.voteOptions_3);
-
-for (let i = 0; i < 7; i++) {
-  console.log(`voteOptions_${i + 15}:`, arr[i].toString());
-}
-
-arr = Aggregation.fieldToUInt32BigEndian(voteOptions.voteOptions_4);
-
-for (let i = 0; i < 7; i++) {
-  console.log(`voteOptions_${i + 22}:`, arr[i].toString());
+for (let i = 0; i < result.length; i++) {
+  console.log(`Vote option ${i + 1}: ${result[i]}`);
 }

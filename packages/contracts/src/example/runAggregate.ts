@@ -60,11 +60,6 @@ export const runAggregate = async (electionPubKey: PublicKey) => {
     }
   }
 
-  console.log(
-    'Expected results:',
-    expectedResults.map((x, i) => [i, x])
-  );
-
   const segmentTree = AggregationTree.Tree.build(leaves);
   console.log('Votes tree built');
 
@@ -117,18 +112,15 @@ export const runAggregate = async (electionPubKey: PublicKey) => {
       ) as Aggregation.Proof;
       console.log(cachedProof.publicOutput.totalAggregatedCount.toString());
       console.log(
-        Aggregation.fieldToUInt32BigEndian(
-          cachedProof.publicOutput.voteOptions_1
-        ).map((f, i) => [i + 1, f.toBigint()]),
-        Aggregation.fieldToUInt32BigEndian(
-          cachedProof.publicOutput.voteOptions_2
-        ).map((f, i) => [i + 8, f.toBigint()]),
-        Aggregation.fieldToUInt32BigEndian(
-          cachedProof.publicOutput.voteOptions_3
-        ).map((f, i) => [i + 15, f.toBigint()]),
-        Aggregation.fieldToUInt32BigEndian(
-          cachedProof.publicOutput.voteOptions_4
-        ).map((f, i) => [i + 22, f.toBigint()])
+        Vote.fieldToUInt32BigEndian(cachedProof.publicOutput.voteOptions_1).map(
+          (f, i) => [i + 1, f.toBigint()]
+        ),
+        Vote.fieldToUInt32BigEndian(cachedProof.publicOutput.voteOptions_2).map(
+          (f, i) => [i + 8, f.toBigint()]
+        ),
+        Vote.fieldToUInt32BigEndian(cachedProof.publicOutput.voteOptions_3).map(
+          (f, i) => [i + 15, f.toBigint()]
+        )
       );
 
       continue;
@@ -297,37 +289,6 @@ export const runAggregate = async (electionPubKey: PublicKey) => {
       'Range upper bound:',
       rootAggregatorProof.publicOutput.rangeUpperBound.toString()
     );
-    let arr = Aggregation.fieldToUInt32BigEndian(
-      rootAggregatorProof.publicOutput.voteOptions_1
-    );
-
-    for (let i = 0; i < 7; i++) {
-      console.log(`voteOptions_${i + 1}:`, arr[i].toString());
-    }
-
-    arr = Aggregation.fieldToUInt32BigEndian(
-      rootAggregatorProof.publicOutput.voteOptions_2
-    );
-
-    for (let i = 0; i < 7; i++) {
-      console.log(`voteOptions_${i + 8}:`, arr[i].toString());
-    }
-
-    arr = Aggregation.fieldToUInt32BigEndian(
-      rootAggregatorProof.publicOutput.voteOptions_3
-    );
-
-    for (let i = 0; i < 7; i++) {
-      console.log(`voteOptions_${i + 15}:`, arr[i].toString());
-    }
-
-    arr = Aggregation.fieldToUInt32BigEndian(
-      rootAggregatorProof.publicOutput.voteOptions_4
-    );
-
-    for (let i = 0; i < 7; i++) {
-      console.log(`voteOptions_${i + 22}:`, arr[i].toString());
-    }
 
     await fs.writeFile(
       'aggregateProof.json',
