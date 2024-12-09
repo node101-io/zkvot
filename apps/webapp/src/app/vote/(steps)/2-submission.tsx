@@ -163,13 +163,13 @@ export default ({
   const { subwalletAccount, connectSubwallet, submitDataToAvailViaSubwallet, isSubmitting } = useContext(SubwalletContext);
   const { showToast } = useContext(ToastContext);
 
-  electionData.communication_layers = [
-    {
-      name: 'Avail',
-      start_block_height: 123,
-      app_id: 123
-    }
-  ];
+  // electionData.communication_layers = [
+  //   {
+  //     name: 'Avail',
+  //     start_block_height: 123,
+  //     app_id: 123
+  //   }
+  // ];
 
   const [selectionMode, setSelectionMode] = useState<'direct' | 'backend'>('backend');
   const [selectedDA, setSelectedDA] = useState<types.DaLayerInfo['name']>(electionData.communication_layers[0].name);

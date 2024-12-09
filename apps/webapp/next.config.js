@@ -42,7 +42,13 @@ const nextConfig = {
     ];
   },
   images: {
-    domains: ['zkvot.s3.eu-central-1.amazonaws.com']
+    domains: ['zkvot.s3.eu-central-1.amazonaws.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'zkvot.s3.eu-central-1.amazonaws.com'
+      }
+    ]
   },
 };
 
