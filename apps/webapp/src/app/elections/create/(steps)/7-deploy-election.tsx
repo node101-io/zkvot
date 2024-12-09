@@ -20,7 +20,7 @@ import formatDate from '@/utils/formatDate.js';
 
 const DEFAULT_VOTERS_COUNT_TO_DISPLAY = 5;
 const MINA_RPC_URL = process.env.NODE_ENV == 'production' ? 'https://api.minascan.io/node/mainnet/v1/graphql' : 'https://api.minascan.io/node/devnet/v1/graphql';
-const TX_CONFIRM_WAIT_TIME = 15 * 60 * 1000;
+const TX_CONFIRM_WAIT_TIME = 15 * 1000;
 
 export default ({ onPrevious, data }: {
   onPrevious: () => void;
@@ -55,24 +55,32 @@ export default ({ onPrevious, data }: {
   const handleSubmit = async () => {
     if (submitted) return;
     if (loading) return;
+    
+    let auroWalletLoaded = !!auroWalletAddress.trim().length;
 
-    try {
-      if (!auroWalletAddress) await connectAuroWallet()
-    } catch (err) {
-      showToast('Please connect your wallet to continue.', 'error');
+    if (!auroWalletLoaded)
+      try {
+        auroWalletLoaded = await connectAuroWallet()
+      } catch (err) {
+        showToast('Please connect your wallet to continue', 'error');
+        return;
+      };
+
+    if (!auroWalletLoaded) {
+      showToast('Please connect your wallet to continue', 'error');
       return;
     };
 
     if (!zkProgramWorkerClientInstance) {
-      showToast('Something went wrong, please try again later.', 'error');
+      showToast('Something went wrong, please try again later', 'error');
       return;
     }
     if (isSettingUp) {
-      showToast('zkVot is loading in the background, please wait a few more minutes and try again.', 'error');
+      showToast('zkVot is loading in the background, please wait a few more minutes and try again', 'error');
       return;
     }
     if (!hasBeenSetup) {
-      showToast('zkVot is loading in the background, please wait a few more minutes and try again.', 'error');
+      showToast('zkVot is loading in the background, please wait a few more minutes and try again', 'error');
       return;
     }
     setLoading(true);
@@ -82,7 +90,7 @@ export default ({ onPrevious, data }: {
       const votersMerkleTree = MerkleTree.createFromStringArray(data.election.voters_list.map(voter => voter.public_key));
 
       if (!votersMerkleTree) {
-        showToast('Error creating Voters Merkle Tree from voters array.', 'error');
+        showToast('Error creating Voters Merkle Tree from voters array', 'error');
         setLoading(false);
         return;
       };
@@ -111,20 +119,17 @@ export default ({ onPrevious, data }: {
         transaction: txJSON,
         feePayer: {
           fee: 0.1,
-          memo: 'zkVot',
+          memo: 'zkvot.io',
         },
       });
 
-      setLoading(false);
-
       console.log(`https://minascan.io/devnet/tx/${hash}`);
 
-      // TODO:
-      // UI'da TX gönderildi, bekleniyor haline getirelecek (4-5 dk sürüyor)
+      waitUntilTxIsConfirmed(mina_contract_id, () => {
+        setLoading(false);
 
-      waitUntilTxIsConfirmed(mina_contract_id.toBase58(), () => {
         // Do not wait for backend, intentionally not awaited
-        submitElectionToBackend(mina_contract_id.toBase58()).catch(console.error);
+        submitElectionToBackend(mina_contract_id).catch(console.error);
 
         // TODO: Show success message as pop up
         showToast(`Election deployed successfully! Your TX is available in https://minascan.io/devnet/tx/${hash}.`, 'success');

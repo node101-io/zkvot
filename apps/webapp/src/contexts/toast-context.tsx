@@ -43,7 +43,7 @@ const Toast = ({
 
   return (
     <div
-      className={`z-[999999] flex flex-row gap-7 items-center max-w-xs w-fit p-4 rounded-[60px] shadow-lg bg-[#1B1B1B] transition-all duration-500 ease-out gap-x-[10px] font-medium text-[16px] ${
+      className={`z-\[999999\] flex flex-row gap-7 items-center max-w-xs w-fit p-4 rounded-[60px] shadow-lg bg-[#1B1B1B] transition-all duration-500 ease-out gap-x-[10px] font-medium text-[16px] ${
         type === 'success' ? 'text-green' : 'text-[#CD3556]'
       } ${position}`}
     >

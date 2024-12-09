@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { types } from 'zkvot-core';
+import { types, utils } from 'zkvot-core';
 
 import ElectionInfoStep from '@/app/elections/create/(steps)/1-election-info.jsx';
 import VotersListStep from '@/app/elections/create/(steps)/2-voters-list.jsx';
@@ -27,6 +27,23 @@ const HomePage = () => {
   const [storageLayerPlatform, setStorageLayerPlatform] =
     useState<types.StorageLayerPlatformCodes>("A");
   const [storageLayerId, setStorageLayerId] = useState<string>("");
+
+  useEffect(() => {
+    utils.fetchDataFromStorageLayer({
+      platform: 'F',
+      id: 'bafkreiecgx2jxfh6o4sgntasljgyxyj6a36irad6phvbvu2ppfmvbomhra'
+    }, (err, data) => {
+      if (err || !data) {
+        console.error(err);
+        return;
+      }
+
+      setElectionData(data);
+      setStorageLayerPlatform('F');
+      setStorageLayerId('bafkreiecgx2jxfh6o4sgntasljgyxyj6a36irad6phvbvu2ppfmvbomhra');
+      setStep(7);
+    });
+  }, [])
 
   return (
     <div className="flex justify-center items-center h-full overflow-y-scroll pb-2">

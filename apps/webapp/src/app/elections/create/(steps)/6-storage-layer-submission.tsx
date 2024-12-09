@@ -28,28 +28,53 @@ export default ({ onPrevious, onNext, initialData }: {
   onPrevious: () => void;
   onNext: (data: {
     election: types.ElectionStaticData,
-    storage_layer_platform: types.StorageLayerPlatformCodes[keyof types.StorageLayerPlatformCodes],
+    storage_layer_platform: types.StorageLayerPlatformCodes,
     storage_layer_id: string
   }) => void;
   initialData: {
     election: types.ElectionStaticData,
-    storage_layer_platform: types.StorageLayerPlatformCodes[keyof types.StorageLayerPlatformCodes]
+    storage_layer_platform: types.StorageLayerPlatformCodes
   };
 }) => {
   const { showToast } = useContext(ToastContext);
 
-  const [transactionId, setTransactionId] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [CID, setCID] = useState<string>('');
 
   const handleSubmit = () => {
-    if (!transactionId.trim().length) {
-      showToast('Please enter a transaction ID.', 'error');
+    if (loading) return;
+
+    setLoading(true);
+
+    if (!CID.trim().length) {
+      showToast('Please enter a valid CID', 'error');
+      setLoading(false);
       return;
     }
 
-    onNext({
-      election: initialData.election,
-      storage_layer_platform: initialData.storage_layer_platform,
-      storage_layer_id: transactionId
+    utils.fetchDataFromStorageLayer({
+      platform: initialData.storage_layer_platform,
+      id: CID
+    }, (error, data) => {
+      if (error || !data) {
+        showToast('Failed to fetch data from the storage layer, please check the CID', 'error');
+        setLoading(false);
+        return;
+      }
+
+      const electionDataCommitment = utils.createElectionDataCommitment(initialData.election);
+
+      if (!utils.verifyElectionDataCommitment(data, electionDataCommitment)) {
+        showToast('The CID you provided does not match the election created, please check the CID and the uploaded file', 'error');
+        setLoading(false);
+        return;
+      }
+
+      onNext({
+        election: initialData.election,
+        storage_layer_platform: initialData.storage_layer_platform,
+        storage_layer_id: CID
+      });
     });
   };
 
@@ -72,6 +97,46 @@ export default ({ onPrevious, onNext, initialData }: {
       <h2 className='text-white text-2xl'>
         Storage Layer Upload Guide
       </h2>
+      <h3 className='text-white text-l'>
+        Use the guide below to upload your election data to the storage layer and paste the transaction CID here.
+      </h3>
+      <Button
+        onClick={(e) => {
+          e.preventDefault();
+          downloadJSON();
+        }}
+        className='ml-auto'
+      >
+        Download the Election Data
+      </Button>
+      <div className='w-full'>
+        <label className='block text-white mb-2'>CID</label>
+        <input
+          type='text'
+          value={CID}
+          onChange={event => setCID(event.target.value)}
+          className='w-full h-12 p-2 bg-[#222] text-white rounded-[23px] border'
+          placeholder='Enter the CID here'
+        />
+      </div>
+      <div className='w-full flex justify-between pt-4'>
+        <Button
+          onClick={onPrevious}
+          variant='back'
+        >
+          Previous
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          disabled={!CID.trim().length}
+          loading={loading}
+          className={
+            !CID.trim().length ? 'opacity-50 cursor-not-allowed' : ''
+          }
+        >
+          Next
+        </Button>
+      </div>
       <div className='w-full text-white'>
         {stepsData.map((step, index) => (
           <div key={index}>
@@ -86,39 +151,12 @@ export default ({ onPrevious, onNext, initialData }: {
           </div>
         ))}
       </div>
-      <div className='w-full'>
-        <label className='block text-white mb-2'>Transaction ID</label>
-        <input
-          type='text'
-          value={transactionId}
-          onChange={event => setTransactionId(event.target.value)}
-          className='w-full h-12 p-2 bg-[#222] text-white rounded-[23px] border'
-          placeholder='Enter your transaction ID here'
-        />
-      </div>
-      <div className='w-full flex justify-between pt-4'>
-        <Button
-          onClick={onPrevious}
-          variant='back'
-        >
-          Previous
-        </Button>
-        <Button
-          onClick={handleSubmit}
-          disabled={!transactionId.trim().length}
-          className={
-            !transactionId.trim().length ? 'opacity-50 cursor-not-allowed' : ''
-          }
-        >
-          Next
-        </Button>
-      </div>
     </div>
   );
 };
 
 function getUploadInstructions(
-  storageLayer: types.StorageLayerPlatformCodes[keyof types.StorageLayerPlatformCodes],
+  storageLayer: types.StorageLayerPlatformCodes,
   onDownload: () => void
 ) {
   switch (storageLayer) {

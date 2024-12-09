@@ -19,8 +19,6 @@ import {
 import Aggregation from './Aggregation.js';
 import Vote from './Vote.js';
 
-const MINA_NODE_GRAPHQL = process.env.NODE_ENV === 'production' ? 'https://api.minascan.io/node/mainnet/v1/graphql' : 'https://api.minascan.io/node/devnet/v1/graphql';
-
 let ELECTION_START_BLOCK: number;
 let ELECTION_FINALIZE_BLOCK: number;
 let VOTERS_ROOT: bigint;
@@ -209,7 +207,7 @@ namespace ElectionNamespace {
     mina_rpc_url: string,
     callback: (error: string | null, state?: ContractState) => any
   ) => {
-    fetchAccount({ publicKey: contractId }, MINA_NODE_GRAPHQL)
+    fetchAccount({ publicKey: contractId }, mina_rpc_url)
       .then(
         (
           data:

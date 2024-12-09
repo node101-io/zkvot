@@ -61,7 +61,6 @@ const ElectionSchema = new Schema({
   storage_layer_id: {
     type: String,
     required: true,
-    unique: true,
     trim: true,
     minlength: 1,
     maxlength: MAX_DATABASE_TEXT_FIELD_LENGTH
@@ -69,7 +68,6 @@ const ElectionSchema = new Schema({
   storage_layer_platform: {
     type: String,
     required: true,
-    unique: true,
     trim: true,
     length: 1
   },

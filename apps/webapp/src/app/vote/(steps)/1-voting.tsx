@@ -50,12 +50,12 @@ export default ({
 
   const [eligibilityStatus, setEligibilityStatus] = useState('not_connected');
 
-  useEffect(() => {
-    (window as any).mina?.on('accountsChanged', () => {
-      disconnectAuroWallet();
-      setSelectedWallet(null);
-    });
-  }, [])
+  // useEffect(() => {
+  //   (window as any).mina?.on('accountsChanged', () => {
+  //     disconnectAuroWallet();
+  //     setSelectedWallet(null);
+  //   });
+  // }, [])
 
   useEffect(() => {
     if (!auroWalletAddress) {

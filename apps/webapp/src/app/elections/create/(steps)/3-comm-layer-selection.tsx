@@ -126,7 +126,7 @@ export default ({ onPrevious, onNext, initialData }: {
           }
           // loading={loading}
         >
-          Submit
+          Next
         </Button>
       </div>
     </div>

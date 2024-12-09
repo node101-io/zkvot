@@ -8,7 +8,8 @@ import { Nullifier as NullifierType } from '@aurowallet/mina-provider';
 import encodeDataToBase64String from '@/utils/encodeDataToBase64String.js';
 
 const state = {
-  Program: null as typeof Vote.Program | null
+  Program: null as typeof Vote.Program | null,
+  isAggregationProgramCompiled: false
 };
 
 export const api = {
@@ -39,13 +40,16 @@ export const api = {
 
     console.log('Compiling AggregationProgram');
     console.time('Compiling AggregationProgram');
-    await Aggregation.Program.compile({ proofsEnabled: true });
+    if (!state.isAggregationProgramCompiled) {
+      await Aggregation.Program.compile({ proofsEnabled: true });
+      state.isAggregationProgramCompiled = true;
+    }
     console.timeEnd('Compiling AggregationProgram');
 
     Election.setContractConstants({
       electionStartBlock,
       electionFinalizeBlock,
-      votersRoot,
+      votersRoot
     });
 
     console.log('Compiling ElectionContract');
@@ -161,7 +165,7 @@ export const api = {
       if (!result) return;
 
       return {
-        mina_contract_id: electionContractPubKey,
+        mina_contract_id: electionContractPubKey.toBase58(),
         txJSON: deployTx.toJSON()
       };
     } catch (error) {

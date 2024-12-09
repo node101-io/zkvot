@@ -1,5 +1,4 @@
 import { useState, useEffect, KeyboardEvent, ChangeEvent } from 'react';
-import { submitElectionToBackend } from '@/utils/backend.js';
 
 import { types } from 'zkvot-core';
 
