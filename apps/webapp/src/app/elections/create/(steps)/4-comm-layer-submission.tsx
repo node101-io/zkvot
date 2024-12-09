@@ -35,7 +35,7 @@ export default ({ onPrevious, onNext, initialData }: {
   onNext: (data: any) => void;
   initialData: types.ElectionStaticData;
 }) => {
-  const { subWalletAddress, isSubmitting, createAppId, connectSubWallet } = useContext(SubwalletContext);
+  const { subwalletAccount, isSubmitting, createAppId, connectSubwallet } = useContext(SubwalletContext);
   const { showToast } = useContext(ToastContext);
 
   const [blockHeight, setBlockHeight] = useState<number>(0);
@@ -45,25 +45,27 @@ export default ({ onPrevious, onNext, initialData }: {
   useEffect(() => {
     const communicationLayer = initialData.communication_layers[0];
 
-    if (communicationLayer) {
+    if (communicationLayer)
       setBlockHeight(communicationLayer.start_block_height);
 
-      if (communicationLayer.name === 'Celestia')
-        setBlockHash((communicationLayer as types.CelestiaDaLayerInfo).start_block_hash);
-    }
+    if (communicationLayer && communicationLayer.name === 'Celestia')
+      setBlockHash((communicationLayer as types.CelestiaDaLayerInfo).start_block_hash);
+
   }, [initialData]);
 
-  useEffect(() => setAppId(0), [subWalletAddress]);
+  useEffect(() => {
+    setAppId(0)
+  }, [subwalletAccount]);
 
   const handleCreateAppId = async () => {
-    if (!subWalletAddress) {
-      await connectSubWallet();
+    if (!subwalletAccount) {
+      await connectSubwallet();
     } else {
       try {
-        const appData = await createAppId();
+        const appId = await createAppId('zkvot-' + Math.random().toString(36).substring(7));
 
-        if (appData && appData.id) {
-          setAppId(appData.id);
+        if (appId) {
+          setAppId(appId);
           showToast('App ID created successfully', 'success');
         } else {
           showToast('Invalid App ID data', 'error');
@@ -141,7 +143,7 @@ export default ({ onPrevious, onNext, initialData }: {
                   ) : (
                     <>
                       <PlusIcon />
-                      {!subWalletAddress ? 'Connect Wallet' : 'Create App ID'}
+                      {!subwalletAccount ? 'Connect Wallet' : 'Create App ID'}
                     </>
                   )}
                 </button>

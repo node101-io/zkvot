@@ -24,10 +24,3 @@ const readFromDB = (
       return callback(null, votes);
     });
 };
-
-readFromDB('B62qospDjUj43x2yMKiNehojWWRUsE1wpdUDVpfxH8V3n5Y1QgJKFfw', (err, data) => {
-  if (err)
-    console.log(err);
-  else
-    console.log(data);
-});

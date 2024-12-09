@@ -148,6 +148,7 @@ const getAndVerifyVotesFromAvailByBlockHeightRecursively = (
   logger.log('info', `Reading block: ${data.blockHeight}`);
 
   Avail.getData({ block_height: data.blockHeight }, (err, blockData) => {
+    // TODO: if error is 'block_not_found', save the last block height and return null
     if (err || !blockData) {
       logger.log('info', `Block ${data.blockHeight} is not found, stopping fetching votes from Avail.`);
       return callback(null);
