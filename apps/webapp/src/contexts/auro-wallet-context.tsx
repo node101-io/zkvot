@@ -64,8 +64,6 @@ export const AuroWalletProvider = ({
 
       const nullifier: Nullifier = await (window as any).mina.createNullifier(createNullifierArgs);
 
-      console.log(nullifier)
-
       return nullifier;
     } catch (error) {
       throw new Error('Failed to create nullifier.');

@@ -8,39 +8,36 @@ import { types } from 'zkvot-core';
 
 import Button from '@/app/(partials)/button.jsx';
 import CopyButton from '@/app/(partials)/copy-button.jsx';
-import DateFormatter from '@/app/(partials)/date-formatter.jsx';
-import ToolTip from '@/app/(partials)/tool-tip.jsx';
 
 import { SubwalletContext } from '@/contexts/subwallet-context.jsx';
 import { ToastContext } from '@/contexts/toast-context.jsx';
 
-import LearnMoreIcon from '@/public/elections/partials/learn-more-icon.jsx';
-import Clock from '@/public/elections/partials/clock-icon.jsx';
-
 import { sendVoteViaBackend } from '@/utils/backend.js';
 import { CommunicationLayerDetails } from '@/utils/constants.jsx';
 
-const ModeSelection = ({ selectionMode, setSelectionMode }: {
+import Clock from '@/public/elections/partials/clock-icon.jsx';
+
+const ModeSelection = ({ selectionMode, handleModeSelectionClick }: {
   selectionMode: string;
-  setSelectionMode: Dispatch<SetStateAction<'direct' | 'backend'>>;
+  handleModeSelectionClick: (mode: 'direct' | 'backend') => void;
 }) => {
   return (
     <div className='flex mb-6 w-full space-x-4'>
       <button
-        onClick={() => setSelectionMode('direct')}
-        className={`focus:outline-none ${selectionMode === 'direct'
-            ? 'text-white border-b-[1px] pb-1 border-primary'
-            : 'text-[#B7B7B7]'
-          }`}
+        onClick={() => handleModeSelectionClick('direct')}
+        className={`focus:outline-none border-b-[1px] pb-1 ${selectionMode === 'direct'
+          ? 'text-white pb-1 border-primary'
+          : 'text-[#B7B7B7] border-transparent hover:border-[#B7B7B7]'
+        }`}
       >
         Directly Through DA
       </button>
       <button
-        onClick={() => setSelectionMode('backend')}
-        className={`focus:outline-none ${selectionMode === 'backend'
-            ? 'text-white border-b-[1px] pb-1 border-primary'
-            : 'text-[#B7B7B7]'
-          }`}
+        onClick={() => handleModeSelectionClick('backend')}
+        className={`focus:outline-none border-b-[1px] pb-1 ${selectionMode === 'backend'
+          ? 'text-white border-primary'
+          : 'text-[#B7B7B7] border-transparent hover:border-[#B7B7B7]'
+        }`}
       >
         Through Our Backends
       </button>
@@ -60,17 +57,14 @@ const DASelection = ({
   isSubmitting: boolean;
 }) => {
   return (
-    <div
-      className={`grid grid-cols-1 sm:grid-cols-2 gap-4 w-full ${isSubmitting ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
-        }`}
-    >
+    <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 w-full ${isSubmitting ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}>
       {communicationLayers.map((layer) => (
         <div
           key={layer.name}
-          className={`p-4 bg-[#222222] rounded-2xl cursor-pointer flex items-center transition duration-200 ${selectedDA === layer.name
-              ? 'border-[1px] border-primary shadow-lg'
-              : 'hover:bg-[#333333]'
-            }`}
+          className={`p-4 bg-[#222222] rounded-2xl cursor-pointer flex items-center border-[1px] transition duration-200 ${selectedDA === layer.name || communicationLayers.length === 1
+            ? 'border-primary shadow-lg'
+            : 'border-transparent hover:bg-[#333333]'
+          }`}
           onClick={() => !isSubmitting && setSelectedDA(layer.name)}
         >
           <div className='flex-shrink-0 mr-4'>
@@ -83,15 +77,9 @@ const DASelection = ({
               {layer.name.charAt(0).toUpperCase() + layer.name.slice(1)}
             </h3>
             <p className='text-[16px] mb-2'>
-              {CommunicationLayerDetails[layer.name]?.description ||
+              {CommunicationLayerDetails[layer.name].description ||
                 'No description available.'}
             </p>
-            {/* <div className='flex items-center justify-between'>
-              <span className='text-[16px]'>
-                Fee: {daDetails[layer.name]?.fee}{' '}
-                {daDetails[layer.name]?.currency}
-              </span>
-            </div> */}
           </div>
         </div>
       ))}
@@ -135,54 +123,49 @@ export default ({
   };
 
   useEffect(() => {
-    if (
-      selectionMode === 'direct' &&
-      selectedDA === 'Avail' &&
-      subwalletAccount
-    ) {
+    if (selectionMode === 'direct' && selectedDA === 'Avail' && subwalletAccount)
       setWalletAddress(subwalletAccount.address);
-    } else {
+    else
       setWalletAddress('');
-    }
 
-    if (selectedDA === 'Avail' && selectionMode === 'direct') {
+    if (selectedDA === 'Avail' && selectionMode === 'direct')
       setSelectedWallet('Subwallet');
-    } else {
+    else
       setSelectedWallet('');
-    }
   }, [subwalletAccount, selectedDA, selectionMode]);
 
   useEffect(() => {
     setWalletAddress('');
-    if (selectedDA === 'Avail') {
+
+    if (selectedDA === 'Avail')
       setSelectedWallet('Subwallet');
-    }
   }, [selectedDA, subwalletAccount, disconnectSubwallet]);
+
+  useEffect(() => {
+    if (CommunicationLayerDetails[electionData.communication_layers[0].name].submission_methods.includes('backend'))
+      setSelectionMode('backend');
+    else
+      setSelectionMode('direct');
+  }, [electionData]);
 
   const handleNext = async () => {
     if (!selectedDA) {
-      showToast('Please select a DA Layer to proceed.', 'error');
+      showToast('Please select a DA Layer to proceed', 'error');
       return;
     }
 
     if (selectionMode === 'direct') {
       if (!subwalletAccount) {
-        showToast('Please connect your wallet to proceed.', 'error');
+        showToast('Please connect your wallet to proceed', 'error');
         return;
       }
       if (!zkProofData) {
-        showToast(
-          'ZK proof data is missing. Please go back and generate it.',
-          'error'
-        );
+        showToast('No vote proof found', 'error');
         return;
       }
     } else if (selectionMode === 'backend') {
       if (!zkProofData) {
-        showToast(
-          'ZK proof data is missing. Please go back and generate it.',
-          'error'
-        );
+        showToast('ZK proof data is missing. Please go back and generate it.', 'error');
         return;
       }
     }
@@ -193,44 +176,43 @@ export default ({
       if (selectionMode === 'direct') {
         let transactionSuccess = false;
 
-        if (selectedDA === 'Avail') {
+        if (selectedDA === 'Avail')
           transactionSuccess = await submitDataToAvailViaSubwallet(zkProofData);
-        }
 
-        if (transactionSuccess) {
+        if (transactionSuccess)
           goToNextStep();
-        } else {
-          throw new Error('Failed to send transaction.');
-        }
+        else
+          throw new Error('Failed to submit vote to Avail');
       } else if (selectionMode === 'backend') {
-        const payload = {
-          electionId: electionData.mina_contract_id,
-          selectedDA,
-          zkProofData,
-        };
-        console.log('Sending data to backend:', payload);
         const response = await sendVoteViaBackend(
           zkProofData,
-          payload.electionId,
+          electionData.mina_contract_id,
           selectedDA
         );
-        console.log('Backend response:', response);
 
-        if (response.success) {
+        if (response.success) { // TODO: bu zaten arkaplanda yapılıyor
           goToNextStep();
         } else {
-          throw new Error(
-            response.error || 'Failed to submit vote to backend.'
-          );
+          console.error(123,response);
+          throw new Error(response);
         }
       }
 
       setLoading(false);
     } catch (error) {
-      console.error('Error in handleNext:', error);
-      alert('An unexpected error occurred.');
+      console.error('Error submitting vote:', error);
+      showToast('Failed to submit vote. Please try again', 'error');
       setLoading(false);
     }
+  };
+
+  const handleModeSelectionClick = (mode: 'direct' | 'backend') => {
+    if (!selectedDA) return;
+
+    if (CommunicationLayerDetails[selectedDA].submission_methods.includes(mode))
+      setSelectionMode(mode)
+    else
+      showToast('Not supported by zkVot yet', 'error');
   };
 
   const Placeholder = ({ className }: { className: string }) => (
@@ -238,13 +220,6 @@ export default ({
       <FaImage className='text-gray-500 text-6xl' />
     </div>
   );
-
-  const filteredLayers =
-    selectionMode === 'direct'
-      ? electionData.communication_layers.filter(
-        (layer) => layer.name === 'Avail'
-      )
-      : electionData.communication_layers;
 
   return (
     <div className='flex flex-col items-center px-8 sm:px-12 md:px-24 flex-grow py-12'>
@@ -285,39 +260,16 @@ export default ({
             </div>
             <div className=' flex flex-col  w-full h-fit '>
               <h2 className='text-[24px] mb-2'>{electionData.question}</h2>
-              <div className='flex flex-col md:flex-row justify-between py-2 gap-y-1'>
-                {/* <span>
-                  <span className='text-[#B7B7B7] text-sm mr-1 flex flex-row items-center'>
-                    {electionData.assignedVoters} Assigned Voters
-                    <span className='mx-1'>-</span>
-                    <span className='text-green text-sm'>
-                      {electionData.votedNow} Voted Now
-                    </span>
-                    <button
-                      onClick={() => {
-                        console.log('download');
-                      }}
-                      className='ml-2'
-                    >
-                      <DownloadIcon />
-                    </button>
-                  </span>
-                </span> */}
-                {/* <span className='flex flex-row items-center'>
-                  <span className='text-primary mr-2 italic text-sm'>
-                    zkVote by
-                  </span>
-                  {electionData.zkvoteBy
-                    ? electionData.zkvoteBy.slice(0, 12) + '...'
-                    : 'Unknown'}{' '}
-                  <span className='ml-2 cursor-pointer w-fit'>
-                    <CopyButton
-                      textToCopy={electionData.zkvoteBy}
-                      iconColor='#F6F6F6'
-                      position={{ top: -26, left: -38 }}
-                    />
-                  </span>
-                </span> */}
+            </div>
+            <div className='flex flex-col w-full'>
+              <div className='text-[#B7B7B7] text-sm mb-2 flex flex-row items-center gap-2'>
+                <Clock />
+                {new Date(electionData.start_date).toLocaleDateString() + ' ' + new Date(electionData.start_date).getHours() + ':' + new Date(electionData.start_date).getMinutes() + ' - ' + new Date(electionData.end_date).toLocaleDateString() + ' ' + new Date(electionData.end_date).getHours() + ':' + new Date(electionData.end_date).getMinutes()}
+              </div>
+            </div>
+            <div className='flex flex-col w-full'>
+              <div className='text-[#B7B7B7] text-sm mb-2 flex flex-row items-center '>
+                {electionData.voters_list.length} Voters
               </div>
             </div>
           </div>
@@ -329,19 +281,8 @@ export default ({
           </div>
         </div>
       </div>
-
-      <ModeSelection
-        selectionMode={selectionMode}
-        setSelectionMode={setSelectionMode}
-      />
-
-      <DASelection
-        communicationLayers={filteredLayers}
-        selectedDA={selectedDA}
-        setSelectedDA={setSelectedDA}
-        isSubmitting={isSubmitting}
-      />
-
+      <ModeSelection handleModeSelectionClick={handleModeSelectionClick} selectionMode={selectionMode} />
+      <DASelection communicationLayers={electionData.communication_layers} selectedDA={selectedDA} setSelectedDA={setSelectedDA} isSubmitting={isSubmitting} />
       <div className='w-full pt-8 flex justify-end'>
         {selectionMode === 'direct' ? (
           subwalletAccount ? (
@@ -353,7 +294,9 @@ export default ({
               Submit Vote
             </Button>
           ) : (
-            <div className={`${!selectedDA ? 'hidden' : 'flex'}`}>
+            <div
+              className={`${!selectedDA ? 'hidden' : 'flex'}`}
+            >
               <Button onClick={handleConnectWallet}>
                 Connect {selectedWallet} Wallet
               </Button>

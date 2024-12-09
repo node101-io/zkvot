@@ -12,6 +12,7 @@ export type CommunicationLayerDetailsType = {
     description: string;
     currency: string;
     logo: JSX.Element;
+    submission_methods: Array<'direct' | 'backend'>;
   };
 };
 export type StorageLayerDetailsType= {
@@ -35,7 +36,8 @@ export const CommunicationLayerDetails: CommunicationLayerDetailsType = {
         height={12}
         className='w-12 h-12'
       />
-    )
+    ),
+    submission_methods: ['direct', 'backend']
   },
   Celestia: {
     description: 'Celestia is a modular consensus and data network.',
@@ -48,8 +50,9 @@ export const CommunicationLayerDetails: CommunicationLayerDetailsType = {
         height={12}
         className='w-12 h-12'
       />
-    )
-  },
+    ),
+    submission_methods: ['backend']
+  }
 };
 export const StorageLayerDetails: StorageLayerDetailsType= {
   Arweave: {
