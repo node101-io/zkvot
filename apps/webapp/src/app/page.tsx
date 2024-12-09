@@ -16,24 +16,20 @@ const Page = () => {
   const leftPanelRef: LegacyRef<HTMLDivElement> | undefined  = useRef(null);
   const rightPanelRef: LegacyRef<HTMLDivElement> | undefined  = useRef(null);
   const heroRef: LegacyRef<HTMLDivElement> | undefined  = useRef(null);
+  const inputRef: LegacyRef<HTMLInputElement> | undefined  = useRef(null);
 
   const { auroWalletAddress, connectAuroWallet } = useContext(AuroWalletContext);
 
-  useEffect(() => {
-    const handleClickOutside = (event: Event) => {
-      if (
-        !event.target || (
-          leftPanelRef.current &&
-          !leftPanelRef.current.contains(event.target as HTMLElement)
-        ) || (
-          rightPanelRef.current &&
-          !rightPanelRef.current.contains(event.target as HTMLElement)
-        )
-      ) {
-        setActivePanel('');
-      }
-    };
+  const handleClickOutside = (event: Event) => {
+    if (
+      event.target &&
+      leftPanelRef.current && !leftPanelRef.current.contains(event.target as Node) &&
+      rightPanelRef.current && !rightPanelRef.current.contains(event.target as Node)
+    )
+      setActivePanel('');
+  };
 
+  useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside);
   }, []);
 
@@ -47,7 +43,7 @@ const Page = () => {
   }, [activePanel]);
 
   const handleJoinClick = () => {
-    alert(`Input Value: ${electionID}`);
+    window.location.href = `/vote/${electionID}`;
   };
 
   useEffect(() => {
@@ -98,8 +94,8 @@ const Page = () => {
               >
                 <Panel
                   ref={leftPanelRef}
+                  inputRef={inputRef}
                   activePanel={activePanel}
-                  // setActivePanel={() => setActivePanel('left')}
                   handleClick={() => setActivePanel('left')}
                   type='left'
                   title='Join an Election'
@@ -111,11 +107,9 @@ const Page = () => {
                   inputPlaceholder='Your election ID'
                   onInputChange={(value: string) => setElectionID(value)}
                 />
-
                 <Panel
                   ref={rightPanelRef}
                   activePanel={activePanel}
-                  // setActivePanel={() => setActivePanel('right')}
                   handleClick={() => setActivePanel('right')}
                   type='right'
                   title='Available Elections'

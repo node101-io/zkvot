@@ -19,6 +19,7 @@ const Panel = forwardRef((
     handleClick,
     onInputChange,
     walletAddress,
+    inputRef
   }: {
     activePanel?: string;
     handleJoinClick?: (target: EventTarget) => void;
@@ -33,6 +34,7 @@ const Panel = forwardRef((
     handleClick: (target: EventTarget) => void;
     onInputChange?: (value: string) => void;
     walletAddress?: string;
+    inputRef?: Ref<HTMLInputElement>;
   },
   ref: Ref<HTMLDivElement>
 ) => {
@@ -50,8 +52,8 @@ const Panel = forwardRef((
     return (
       <div
         ref={ref}
-        className={`relative flex h-fit flex-col items-start p-[50px_25px] gap-10 rounded-[30px] overflow-hidden transition-transform duration-700 ease-in-out cursor-pointer ${
-          isActive ? 'w-[665px] scale-105 z-10' : 'w-[521px]'
+        className={`relative flex h-fit flex-col items-start p-[50px_25px] gap-10 rounded-[30px] overflow-hidden transition-all duration-700 ease-in-out ${
+          isActive ? 'w-[665px] scale-105 z-10' : 'cursor-pointer w-[521px]'
         } ${
           isOtherPanelActive
             ? 'max-w-[280px] scale-95 mt-52 bg-[#242424]'
@@ -59,9 +61,10 @@ const Panel = forwardRef((
         }`}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
+        onClick={event => handleClick(event.target)}
       >
         <div
-          className={`absolute inset-0 transition-opacity duration-500 ease-in-out bg-cover bg-center z-[1] ${
+          className={`absolute inset-0 transition-all duration-500 ease-in-out bg-cover bg-center z-[1] ${
             hovered && !isActive ? 'opacity-100' : 'opacity-0'
           }`}
           style={{ backgroundImage: `url(${backgroundFrame.src})` }}
@@ -85,6 +88,7 @@ const Panel = forwardRef((
             {inputPlaceholder && (
               <div className='flex flex-row items-center w-full'>
                 <input
+                  ref={inputRef}
                   type='text'
                   placeholder={inputPlaceholder}
                   value={inputValue}
