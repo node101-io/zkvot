@@ -1,7 +1,6 @@
 'use client';
 
 import { createContext, useState, useEffect, PropsWithChildren } from 'react';
-import { Buffer } from 'buffer';
 import { initialize as initAvailAPI, ApiPromise } from 'avail-js-sdk';
 import { KeypairType } from '@polkadot/util-crypto/types';
 import { DispatchError } from '@polkadot/types/interfaces';
@@ -10,85 +9,75 @@ type Account = {
   source: string;
   address: string;
   meta: {
-      genesisHash?: string | null;
-      name?: string;
-      source: string;
+    genesisHash?: string | null;
+    name?: string;
+    source: string;
   };
   type?: KeypairType;
 };
 
-interface SubWalletContextInterface {
+interface SubwalletContextInterface {
   accounts: Account[];
-  subWalletAddress: string;
+  subwalletAccount: Account | null;
   api: ApiPromise | null;
   isSubmitting: boolean;
   generatedAppId: number;
-  connectSubWallet: () => Promise<boolean>;
-  selectAccount: (account: Account) => Promise<void>;
-  disconnectSubWallet: () => void;
-  sendTransactionSubwallet: (zkProofData: string) => Promise<boolean>;
-  createAppId: () => Promise<{
-    id: number,
-    owner: string,
-    name: string,
-    appName: string,
-  }>;
-};
+  connectSubwallet: () => Promise<boolean>;
+  selectAccount: (account: Account) => void;
+  disconnectSubwallet: () => void;
+  createAppId: (appName: string) => Promise<number>;
+  submitDataToAvailViaSubwallet: (zkProofData: string) => Promise<boolean>;
+}
 
-export const SubwalletContext = createContext<SubWalletContextInterface>({
+export const SubwalletContext = createContext<SubwalletContextInterface>({
   accounts: [],
-  subWalletAddress: '',
+  subwalletAccount: null,
   api: null,
   isSubmitting: false,
   generatedAppId: 0,
-  connectSubWallet: async () => false,
-  selectAccount: async () => {},
-  disconnectSubWallet: () => {},
-  sendTransactionSubwallet: async () => false,
-  createAppId: async () => {return { id: 0, owner: '', name: '', appName: ''}}
+  connectSubwallet: async () => false,
+  selectAccount: () => {},
+  disconnectSubwallet: () => {},
+  createAppId: async () => 0,
+  submitDataToAvailViaSubwallet: async () => false,
 });
 
-export const SubwalletProvider = ({
-  children
-}: PropsWithChildren<{}>) => {
+export const SubwalletProvider = ({ children }: PropsWithChildren<{}>) => {
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [subWalletAccount, setSubWalletAccount] = useState<Account | null>(null);
+  const [subwalletAccount, setSubwalletAccount] = useState<Account | null>(null);
   const [api, setApi] = useState<ApiPromise | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [generatedAppId, setGeneratedAppId] = useState<number>(0);
 
   useEffect(() => {
-    const initializeApi = async (): Promise<void> => {
+    const initializeApi = async () => {
       try {
         const newApi = await initAvailAPI('wss://turing-rpc.avail.so/ws');
-
         setApi(newApi);
       } catch (error) {
-        throw new Error('Failed to initialize API.');
+        console.error('Failed to initialize API:', error);
       }
     };
 
     initializeApi();
 
     return () => {
-      if (api && api.isConnected) {
+      if (api?.isConnected) {
         api.disconnect();
         console.log('API disconnected');
       }
     };
   }, []);
 
-  const connectSubWallet = async (): Promise<boolean> => {
+  const connectSubwallet = async (): Promise<boolean> => {
     try {
-      const { web3Enable, web3Accounts } = await import(
-        '@polkadot/extension-dapp'
-      );
-      const extensions = await web3Enable('Your App Name');
+      const { web3Enable, web3Accounts } = await import('@polkadot/extension-dapp');
 
-      if (extensions.length === 0)
-        throw new Error('No extensions installed.');
+      const extensions = await web3Enable('zkVot');
+      if (extensions.length === 0) throw new Error('No extensions installed.');
 
       const injectedAccounts = await web3Accounts();
+
       const accountsWithSource = injectedAccounts.map((account) => ({
         ...account,
         source: account.meta.source,
@@ -96,49 +85,60 @@ export const SubwalletProvider = ({
 
       setAccounts(accountsWithSource);
 
-      if (accountsWithSource.length > 0) {
-        setSubWalletAccount(accountsWithSource[0]);
-      }
+      if (accountsWithSource.length > 0)
+        setSubwalletAccount(accountsWithSource[0]);
 
       return true;
     } catch (error) {
-      throw new Error('Failed to connect wallet.');
+      console.error('Failed to connect wallet:', error);
+      return false;
     }
   };
 
-  const selectAccount = async (account: Account): Promise<void> => {
-    setSubWalletAccount(account);
-
-    if (api) {
-      try {
-        const { web3FromSource } = await import('@polkadot/extension-dapp');
-        const injector = await web3FromSource(account.source);
-
-        if (injector.metadata) {
-          const { signedExtensions, types } = await import('avail-js-sdk');
-          const metadata = getInjectorMetadata(api, signedExtensions as any, types);
-          await injector.metadata.provide(metadata as any);
-        }
-      } catch (error) {
-        throw new Error('Failed to select account.');
-      }
-    }
+  const selectAccount = (account: Account) => {
+    setSubwalletAccount(account);
   };
 
-  const disconnectSubWallet = () => {
+  const disconnectSubwallet = () => {
     setAccounts([]);
-    setSubWalletAccount(null);
+    setSubwalletAccount(null);
   };
 
-  const sendTransactionSubwallet = async (zkProofData: string): Promise<boolean> => {
-    if (!api || !subWalletAccount)
+  const formatDispatchError = (dispatchError: DispatchError): string => {
+    if (!api) return 'Transaction failed: Unknown error.';
+
+    if (dispatchError.isModule) {
+      const decoded = api.registry.findMetaError(dispatchError.asModule);
+      const { section, name, docs } = decoded;
+
+      const errorMessages = {
+        InsufficientBalance: 'Please ensure you have enough funds.',
+        Priority: 'Transaction has a low priority.',
+        Stale: 'Transaction is outdated and no longer valid.',
+        InvalidNonce: 'Please try resending the transaction.',
+        CannotLookup: 'Account not found or lookup error.',
+        BadSignature: 'The signature is invalid.',
+        Future: 'The transaction is from the future.',
+      };
+
+      const userMessage = errorMessages[name as keyof typeof errorMessages] || `${section}.${name}: ${docs.join(' ')}`;
+      return `Transaction failed: ${userMessage}`;
+    } else {
+      const errorString = dispatchError.toString();
+      return `Transaction failed: ${errorString}`;
+    }
+  };
+
+  const submitDataToAvailViaSubwallet = async (zkProofData: string): Promise<boolean> => {
+    if (!api || !subwalletAccount)
       throw new Error ('Please connect a wallet first.');
 
     try {
       setIsSubmitting(true);
 
       const { web3FromSource } = await import('@polkadot/extension-dapp');
-      const injector = await web3FromSource(subWalletAccount.source);
+
+      const injector = await web3FromSource(subwalletAccount.source);
       api.setSigner(injector.signer as any);
 
       const encodedData = Buffer.from(JSON.stringify(zkProofData)).toString(
@@ -150,7 +150,7 @@ export const SubwalletProvider = ({
         let alreadyHandled = false;
 
         tx.signAndSend(
-          subWalletAccount.address,
+          subwalletAccount.address,
           { signer: injector.signer as any },
           ({ status, events, dispatchError }) => {
             if (alreadyHandled) return;
@@ -192,130 +192,86 @@ export const SubwalletProvider = ({
     }
   };
 
-  const createAppId = async (): Promise<{
-    id: number,
-    owner: string,
-    name: string,
-    appName: string,
-  }> => {
-    if (!api || !subWalletAccount)
+  const createAppId = async (appName: string): Promise<number> => {
+    if (!api || !subwalletAccount)
       throw new Error('Please connect your wallet and select an account.');
 
-    const randomNumber = Math.floor(100000 + Math.random() * 900000);
-    const appName = `zkVot - ${randomNumber}`;
-
     setIsSubmitting(true);
+    setGeneratedAppId(0);
 
-    return new Promise(async (resolve, reject) => {
-      try {
-        const { web3FromSource } = await import('@polkadot/extension-dapp');
-        const injector = await web3FromSource(subWalletAccount.source);
+    try {
+      const { web3FromSource } = await import('@polkadot/extension-dapp');
 
-        const unsub = await api.tx.dataAvailability
+      const injector = await web3FromSource(subwalletAccount.source);
+
+      return new Promise<number>((resolve, reject) => {
+        api.tx.dataAvailability
           .createApplicationKey(appName)
           .signAndSend(
-            subWalletAccount.address,
-            { signer: injector.signer as any },
+            subwalletAccount.address,
+            { app_id: 0, signer: injector.signer } as any,
             ({ status, events, dispatchError }) => {
               if (status.isInBlock || status.isFinalized) {
                 if (dispatchError) {
+                  let errorMessage = 'Transaction failed.';
+
+                  if (dispatchError.isModule) {
+                    const decoded = api.registry.findMetaError(dispatchError.asModule);
+                    errorMessage = decoded.docs.join(' ') || 'An unknown error occurred.';
+                  }
+
                   setIsSubmitting(false);
-                  unsub();
-                  reject(new Error(formatDispatchError(dispatchError as any)));
+                  reject(new Error(errorMessage));
                 } else {
-                  events.forEach(({ event }) => {
-                    if (
+                  const appCreatedEvent = events.find(
+                    ({ event }) =>
                       event.section === 'dataAvailability' &&
                       event.method === 'ApplicationKeyCreated'
-                    ) {
-                      console.log('Event data:', event.data);
+                  );
 
-                      const appId = Number(event.data[0].toString());
-                      const owner = event.data[1].toString();
-                      const keyName = event.data[2].toString();
+                  if (appCreatedEvent) {
+                    const data: any = appCreatedEvent.event.data.toHuman();
 
-                      const appData = {
-                        id: appId,
-                        owner: owner,
-                        name: keyName,
-                        appName: appName,
-                      };
+                    console.log({
+                      id: data.id,
+                      owner: data.owner,
+                      name: data.key,
+                    });
 
-                      setGeneratedAppId(appData.id);
-
-                      setIsSubmitting(false);
-                      unsub();
-                      resolve(appData);
-                    }
-                  });
+                    setGeneratedAppId(data.id);
+                    setIsSubmitting(false);
+                    resolve(data.id);
+                  } else {
+                    setIsSubmitting(false);
+                    reject(new Error('Failed to create Application Key.'));
+                  }
                 }
               }
             }
           );
-      } catch (error) {
-        setIsSubmitting(false);
-        reject(error);
-      }
-    });
-  };
-
-  const getInjectorMetadata = (
-    apiInstance: ApiPromise,
-    signedExtensions: string[],
-    types: any
-  ) => {
-    return {
-      chain: apiInstance.runtimeChain.toString(),
-      specVersion: apiInstance.runtimeVersion.specVersion.toNumber(),
-      tokenDecimals: apiInstance.registry.chainDecimals[0] || 18,
-      tokenSymbol: apiInstance.registry.chainTokens[0] || 'AVAIL',
-      genesisHash: apiInstance.genesisHash.toHex(),
-      ss58Format: apiInstance.registry.chainSS58 || 42,
-      chainType: 'substrate',
-      icon: 'substrate',
-      types: types,
-      userExtensions: signedExtensions,
-    };
-  };
-
-  const formatDispatchError = (dispatchError: DispatchError): string => {
-    if (!api) return 'Transaction failed: Unknown error.';
-
-    if (dispatchError.isModule) {
-      const decoded = api.registry.findMetaError(dispatchError.asModule);
-      const { section, name, docs } = decoded;
-
-      const errorMessages = {
-        InsufficientBalance: 'Please ensure you have enough funds.',
-        Priority: 'Transaction has a low priority.',
-        Stale: 'Transaction is outdated and no longer valid.',
-        InvalidNonce: 'Please try resending the transaction.',
-        CannotLookup: 'Account not found or lookup error.',
-        BadSignature: 'The signature is invalid.',
-        Future: 'The transaction is from the future.',
-      };
-
-      const userMessage = errorMessages[name as keyof typeof errorMessages] || `${section}.${name}: ${docs.join(' ')}`;
-      return `Transaction failed: ${userMessage}`;
-    } else {
-      const errorString = dispatchError.toString();
-      return `Transaction failed: ${errorString}`;
+      });
+    } catch (error) {
+      console.error('Error creating Application ID:', error);
+      setIsSubmitting(false);
+      throw new Error('Error creating Application ID.');
     }
   };
 
   return (
-    <SubwalletContext.Provider value={{
-      accounts,
-      subWalletAddress: subWalletAccount?.address || '',
-      api,
-      isSubmitting,
-      generatedAppId,
-      connectSubWallet,
-      selectAccount,
-      disconnectSubWallet,
-      sendTransactionSubwallet,
-      createAppId
-    }}>
+    <SubwalletContext.Provider
+      value={{
+        accounts,
+        subwalletAccount,
+        api,
+        isSubmitting,
+        generatedAppId,
+        connectSubwallet,
+        selectAccount,
+        disconnectSubwallet,
+        createAppId,
+        submitDataToAvailViaSubwallet
+      }}
+    >
       {children}
     </SubwalletContext.Provider>
   );

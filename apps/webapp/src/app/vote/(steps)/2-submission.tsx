@@ -116,7 +116,7 @@ export default ({
   zkProofData: string;
   setLoading: (loading: boolean) => void;
 }) => {
-  const { subWalletAddress, connectSubWallet, disconnectSubWallet, sendTransactionSubwallet, isSubmitting } = useContext(SubwalletContext);
+  const { subwalletAccount, connectSubwallet, disconnectSubwallet, submitDataToAvailViaSubwallet, isSubmitting } = useContext(SubwalletContext);
   const { showToast } = useContext(ToastContext);
 
   const [selectedWallet, setSelectedWallet] = useState<string>('');
@@ -126,7 +126,7 @@ export default ({
   const handleConnectWallet = async () => {
     try {
       console.log('Connecting wallet...');
-      await connectSubWallet();
+      await connectSubwallet();
       console.log('Wallet connection initiated.');
     } catch (error) {
       console.error('Error connecting wallet:', error);
@@ -138,9 +138,9 @@ export default ({
     if (
       selectionMode === 'direct' &&
       selectedDA === 'Avail' &&
-      subWalletAddress
+      subwalletAccount
     ) {
-      setWalletAddress(subWalletAddress);
+      setWalletAddress(subwalletAccount.address);
     } else {
       setWalletAddress('');
     }
@@ -150,14 +150,14 @@ export default ({
     } else {
       setSelectedWallet('');
     }
-  }, [subWalletAddress, selectedDA, selectionMode]);
+  }, [subwalletAccount, selectedDA, selectionMode]);
 
   useEffect(() => {
     setWalletAddress('');
     if (selectedDA === 'Avail') {
       setSelectedWallet('Subwallet');
     }
-  }, [selectedDA, subWalletAddress, disconnectSubWallet]);
+  }, [selectedDA, subwalletAccount, disconnectSubwallet]);
 
   const handleNext = async () => {
     if (!selectedDA) {
@@ -166,7 +166,7 @@ export default ({
     }
 
     if (selectionMode === 'direct') {
-      if (!subWalletAddress) {
+      if (!subwalletAccount) {
         showToast('Please connect your wallet to proceed.', 'error');
         return;
       }
@@ -194,7 +194,7 @@ export default ({
         let transactionSuccess = false;
 
         if (selectedDA === 'Avail') {
-          transactionSuccess = await sendTransactionSubwallet(zkProofData);
+          transactionSuccess = await submitDataToAvailViaSubwallet(zkProofData);
         }
 
         if (transactionSuccess) {
@@ -344,7 +344,7 @@ export default ({
 
       <div className='w-full pt-8 flex justify-end'>
         {selectionMode === 'direct' ? (
-          subWalletAddress ? (
+          subwalletAccount ? (
             <Button
               onClick={handleNext}
               disabled={!selectedDA || isSubmitting}
