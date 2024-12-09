@@ -4,7 +4,6 @@ import { useContext, useState, useEffect } from 'react';
 import Image from 'next/image.js';
 import { FaImage } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
-import { Nullifier } from '@aurowallet/mina-provider';
 
 import { types } from 'zkvot-core';
 

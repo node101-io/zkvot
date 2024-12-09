@@ -23,7 +23,6 @@ const Page = ({ params }: {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [selectedOption, setSelectedOption] = useState<number>(-1);
-  const [selectedDA, setSelectedDA] = useState<types.DaLayerInfo['name'] | ''>('');
   const [zkProofData, setZkProofData] = useState<string>('');
   const [electionData, setElectionData] = useState<types.ElectionBackendData>({
     is_devnet: process.env.NODE_ENV === 'production',
@@ -71,6 +70,9 @@ const Page = ({ params }: {
   const goToNextStep = () => {
     setCurrentStep(prevStep => prevStep + 1);
   };
+  const goToPrevStep = () => {
+    setCurrentStep(prevStep => prevStep - 1);
+  };
 
   useEffect(() => {
     fetchElectionData()
@@ -106,9 +108,8 @@ const Page = ({ params }: {
             <SubmissionStep
               electionData={electionData}
               selectedOption={selectedOption}
-              selectedDA={selectedDA}
-              setSelectedDA={setSelectedDA}
               goToNextStep={goToNextStep}
+              goToPrevStep={goToPrevStep}
               zkProofData={zkProofData}
               setLoading={setLoading}
             />

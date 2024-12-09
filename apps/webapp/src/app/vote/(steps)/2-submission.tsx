@@ -19,19 +19,20 @@ import { CommunicationLayerDetails } from '@/utils/constants.jsx';
 import LearnMoreIcon from '@/public/elections/partials/learn-more-icon.jsx';
 import Clock from '@/public/elections/partials/clock-icon.jsx';
 
-const ModeSelection = ({ selectionMode, handleModeSelectionClick }: {
+const ModeSelection = ({ selectionMode, setSelectionMode }: {
   selectionMode: string;
-  handleModeSelectionClick: (mode: 'direct' | 'backend') => void;
+  setSelectionMode: (mode: 'direct' | 'backend') => void;
 }) => {
   return (
     <div className='flex mb-6 w-full space-x-4'>
       <button
-        onClick={() => handleModeSelectionClick('backend')}
+        onClick={() => setSelectionMode('backend')}
         className={`focus:outline-none flex items-center gap-2 border-b-[1px] pb-1 ${selectionMode === 'backend'
           ? 'text-white border-primary'
           : 'text-[#B7B7B7] border-transparent hover:border-[#B7B7B7]'
         }`}
       >
+        Through Our Backends (Free of Charge)
         <ToolTip
           content='By allowing to submit your votes to the DA through our backend ports, we eliminate any risk of identity exposure related to your DA wallet address (plus it is free :D). However, this option is only partially decentralized, as you rely on our backend servers. In the future, zkVot will also allow custom parties to host their own backend servers to maximize decentralization.'
           position='top'
@@ -39,15 +40,15 @@ const ModeSelection = ({ selectionMode, handleModeSelectionClick }: {
         >
           <LearnMoreIcon color='#B7B7B7' />
         </ToolTip>
-        Through Our Backends (Free of Charge)
       </button>
       <button
-        onClick={() => handleModeSelectionClick('direct')}
+        onClick={() => setSelectionMode('direct')}
         className={`focus:outline-none flex items-center gap-2 border-b-[1px] pb-1 ${selectionMode === 'direct'
           ? 'text-white pb-1 border-primary'
           : 'text-[#B7B7B7] border-transparent hover:border-[#B7B7B7]'
         }`}
       >
+        Directly Through DA
         <ToolTip
           content='Sending through DA yourself eliminates any risk of censorship during the vote submission process. However, be careful using this option, as your vote is associated with the wallet address you use in the DA layer once you submit it. You can use a private network to anonymize your funds.'
           position='top'
@@ -55,7 +56,6 @@ const ModeSelection = ({ selectionMode, handleModeSelectionClick }: {
         >
           <LearnMoreIcon color='#B7B7B7' />
         </ToolTip>
-        Directly Through DA 
       </button>
     </div>
   );
@@ -66,66 +66,124 @@ const DASelection = ({
   selectedDA,
   setSelectedDA,
   isSubmitting,
+  selectionMode,
+  downloadVoteProof,
 }: {
   communicationLayers: types.DaLayerInfo[];
-  selectedDA: types.DaLayerInfo['name'] | '';
+  selectedDA: types.DaLayerInfo['name'];
   setSelectedDA: (da: types.DaLayerInfo['name']) => void;
   isSubmitting: boolean;
+  selectionMode: 'direct' | 'backend';
+  downloadVoteProof: () => void;
 }) => {
-  return (
-    <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 w-full ${isSubmitting ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}>
-      {communicationLayers.map((layer) => (
+  const renderCelestiaDirectSubmissionInfo = () => (
+    <div>
+      zkVot doesn't support direct submission to Celestia yet. You can{" "}
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          downloadVoteProof();
+        }}
+        className="text-primary"
+      >
+        download
+      </button>{" "}
+      your vote and submit it manually from{" "}
+      <a
+        href="https://celenium.io/"
+        target="_blank"
+        className="text-primary"
+        rel="noopener noreferrer"
+      >
+        celenium.io
+      </a>{" "}
+      website.
+    </div>
+  );
+
+  const renderLayerGrid = () => (
+    <div
+      className={`grid grid-cols-1 sm:grid-cols-2 gap-4 w-full ${
+        isSubmitting ? "opacity-50 cursor-not-allowed pointer-events-none" : ""
+      }`}
+    >
+      {communicationLayers.map(layer => (
         <div
           key={layer.name}
-          className={`p-4 bg-[#222222] rounded-2xl cursor-pointer flex items-center border-[1px] transition duration-200 ${selectedDA === layer.name || communicationLayers.length === 1
-            ? 'border-primary shadow-lg'
-            : 'border-transparent hover:bg-[#333333]'
+          className={`p-4 bg-[#222222] rounded-2xl cursor-pointer flex items-center border-[1px] transition duration-200 ${
+            selectedDA === layer.name || communicationLayers.length === 1
+              ? "border-primary shadow-lg"
+              : "border-transparent hover:bg-[#333333]"
           }`}
           onClick={() => !isSubmitting && setSelectedDA(layer.name)}
         >
-          <div className='flex-shrink-0 mr-4'>
+          <div className="flex-shrink-0 mr-4">
             {CommunicationLayerDetails[layer.name].logo || (
-              <div className='w-12 h-12 bg-gray-500 rounded-full' />
+              <div className="w-12 h-12 bg-gray-500 rounded-full" />
             )}
           </div>
-          <div className='flex flex-col h-full justify-between'>
-            <h3 className='text-white text-[24px] mb-2'>
+          <div className="flex flex-col h-full justify-between">
+            <h3 className="text-white text-[24px] mb-2">
               {layer.name.charAt(0).toUpperCase() + layer.name.slice(1)}
             </h3>
-            <p className='text-[16px] mb-2'>
+            <p className="text-[16px] mb-2">
               {CommunicationLayerDetails[layer.name].description ||
-                'No description available.'}
+                "No description available."}
             </p>
           </div>
         </div>
       ))}
     </div>
   );
+
+  return (
+    <>
+      {selectionMode === "direct" && selectedDA === "Celestia"
+        ? renderCelestiaDirectSubmissionInfo()
+        : renderLayerGrid()}
+    </>
+  );
 };
 
 export default ({
   electionData,
   selectedOption,
-  selectedDA,
-  setSelectedDA,
   goToNextStep,
+  goToPrevStep,
   zkProofData,
   setLoading,
 }: {
   electionData: types.ElectionBackendData;
   selectedOption: number;
-  selectedDA: types.DaLayerInfo['name'] | '';
-  setSelectedDA: (da: types.DaLayerInfo['name']) => void;
   goToNextStep: () => void;
+  goToPrevStep: () => void;
   zkProofData: string;
   setLoading: (loading: boolean) => void;
 }) => {
-  const { subwalletAccount, connectSubwallet, disconnectSubwallet, submitDataToAvailViaSubwallet, isSubmitting } = useContext(SubwalletContext);
+  const { subwalletAccount, connectSubwallet, submitDataToAvailViaSubwallet, isSubmitting } = useContext(SubwalletContext);
   const { showToast } = useContext(ToastContext);
 
-  const [selectedWallet, setSelectedWallet] = useState<string>('');
-  const [walletAddress, setWalletAddress] = useState<string>('');
-  const [selectionMode, setSelectionMode] = useState<'direct' | 'backend'>('direct');
+  electionData.communication_layers = [
+    {
+      name: 'Avail',
+      start_block_height: 123,
+      app_id: 123
+    }
+  ];
+
+  const [selectionMode, setSelectionMode] = useState<'direct' | 'backend'>('backend');
+  const [selectedDA, setSelectedDA] = useState<types.DaLayerInfo['name']>(electionData.communication_layers[0].name);
+
+  const downloadVoteProof = () => {
+    const blob = new Blob([zkProofData], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.download = 'zkvot-vote-proof-' + electionData.mina_contract_id + '.txt';
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   const handleConnectWallet = async () => {
     try {
@@ -137,32 +195,6 @@ export default ({
       showToast('Failed to connect wallet. Please try again', 'error');
     }
   };
-
-  useEffect(() => {
-    if (selectionMode === 'direct' && selectedDA === 'Avail' && subwalletAccount)
-      setWalletAddress(subwalletAccount.address);
-    else
-      setWalletAddress('');
-
-    if (selectedDA === 'Avail' && selectionMode === 'direct')
-      setSelectedWallet('Subwallet');
-    else
-      setSelectedWallet('');
-  }, [subwalletAccount, selectedDA, selectionMode]);
-
-  useEffect(() => {
-    setWalletAddress('');
-
-    if (selectedDA === 'Avail')
-      setSelectedWallet('Subwallet');
-  }, [selectedDA, subwalletAccount, disconnectSubwallet]);
-
-  useEffect(() => {
-    if (CommunicationLayerDetails[electionData.communication_layers[0].name].submission_methods.includes('backend'))
-      setSelectionMode('backend');
-    else
-      setSelectionMode('direct');
-  }, [electionData]);
 
   const handleNext = async () => {
     if (!selectedDA) {
@@ -220,15 +252,6 @@ export default ({
       showToast('Failed to submit vote. Please try again', 'error');
       setLoading(false);
     }
-  };
-
-  const handleModeSelectionClick = (mode: 'direct' | 'backend') => {
-    if (!selectedDA) return;
-
-    if (CommunicationLayerDetails[selectedDA].submission_methods.includes(mode))
-      setSelectionMode(mode)
-    else
-      showToast('Not supported by zkVot yet', 'error');
   };
 
   const Placeholder = ({ className }: { className: string }) => (
@@ -297,27 +320,32 @@ export default ({
           </div>
         </div>
       </div>
-      <ModeSelection handleModeSelectionClick={handleModeSelectionClick} selectionMode={selectionMode} />
-      <DASelection communicationLayers={electionData.communication_layers} selectedDA={selectedDA} setSelectedDA={setSelectedDA} isSubmitting={isSubmitting} />
-      <div className='w-full pt-8 flex justify-end'>
-        {selectionMode === 'direct' ? (
-          subwalletAccount ? (
-            <Button
-              onClick={handleNext}
-              disabled={!selectedDA || isSubmitting}
-              loading={isSubmitting}
-            >
-              Submit Vote
+      <ModeSelection
+        setSelectionMode={setSelectionMode}
+        selectionMode={selectionMode}
+      />
+      <DASelection
+        selectionMode={selectionMode}
+        communicationLayers={electionData.communication_layers}
+        selectedDA={selectedDA}
+        setSelectedDA={setSelectedDA}
+        isSubmitting={isSubmitting}
+        downloadVoteProof={downloadVoteProof}
+      />
+      <div className='w-full pt-8 flex justify-between'>
+        <Button
+          onClick={goToPrevStep}
+          variant='back'
+          className='mr-4'
+        >
+          Back
+        </Button>
+        {selectionMode === 'direct' && !subwalletAccount ? (
+          <div className={`${!selectedDA ? 'hidden' : 'flex'}`}>
+            <Button onClick={handleConnectWallet}>
+              Connect Wallet
             </Button>
-          ) : (
-            <div
-              className={`${!selectedDA ? 'hidden' : 'flex'}`}
-            >
-              <Button onClick={handleConnectWallet}>
-                Connect {selectedWallet} Wallet
-              </Button>
-            </div>
-          )
+          </div>
         ) : (
           <Button
             onClick={handleNext}
