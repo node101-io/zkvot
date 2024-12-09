@@ -8,6 +8,7 @@ import { types } from 'zkvot-core';
 
 import Button from '@/app/(partials)/button.jsx';
 import CopyButton from '@/app/(partials)/copy-button.jsx';
+import ToolTip from '@/app/(partials)/tool-tip.jsx';
 
 import { SubwalletContext } from '@/contexts/subwallet-context.jsx';
 import { ToastContext } from '@/contexts/toast-context.jsx';
@@ -15,6 +16,7 @@ import { ToastContext } from '@/contexts/toast-context.jsx';
 import { sendVoteViaBackend } from '@/utils/backend.js';
 import { CommunicationLayerDetails } from '@/utils/constants.jsx';
 
+import LearnMoreIcon from '@/public/elections/partials/learn-more-icon.jsx';
 import Clock from '@/public/elections/partials/clock-icon.jsx';
 
 const ModeSelection = ({ selectionMode, handleModeSelectionClick }: {
@@ -24,22 +26,36 @@ const ModeSelection = ({ selectionMode, handleModeSelectionClick }: {
   return (
     <div className='flex mb-6 w-full space-x-4'>
       <button
-        onClick={() => handleModeSelectionClick('direct')}
-        className={`focus:outline-none border-b-[1px] pb-1 ${selectionMode === 'direct'
-          ? 'text-white pb-1 border-primary'
-          : 'text-[#B7B7B7] border-transparent hover:border-[#B7B7B7]'
-        }`}
-      >
-        Directly Through DA
-      </button>
-      <button
         onClick={() => handleModeSelectionClick('backend')}
-        className={`focus:outline-none border-b-[1px] pb-1 ${selectionMode === 'backend'
+        className={`focus:outline-none flex items-center gap-2 border-b-[1px] pb-1 ${selectionMode === 'backend'
           ? 'text-white border-primary'
           : 'text-[#B7B7B7] border-transparent hover:border-[#B7B7B7]'
         }`}
       >
-        Through Our Backends
+        <ToolTip
+          content='By allowing to submit your votes to the DA through our backend ports, we eliminate any risk of identity exposure related to your DA wallet address (plus it is free :D). However, this option is only partially decentralized, as you rely on our backend servers. In the future, zkVot will also allow custom parties to host their own backend servers to maximize decentralization.'
+          position='top'
+          arrowPosition='start'
+        >
+          <LearnMoreIcon color='#B7B7B7' />
+        </ToolTip>
+        Through Our Backends (Free of Charge)
+      </button>
+      <button
+        onClick={() => handleModeSelectionClick('direct')}
+        className={`focus:outline-none flex items-center gap-2 border-b-[1px] pb-1 ${selectionMode === 'direct'
+          ? 'text-white pb-1 border-primary'
+          : 'text-[#B7B7B7] border-transparent hover:border-[#B7B7B7]'
+        }`}
+      >
+        <ToolTip
+          content='Sending through DA yourself eliminates any risk of censorship during the vote submission process. However, be careful using this option, as your vote is associated with the wallet address you use in the DA layer once you submit it. You can use a private network to anonymize your funds.'
+          position='top'
+          arrowPosition='start'
+        >
+          <LearnMoreIcon color='#B7B7B7' />
+        </ToolTip>
+        Directly Through DA 
       </button>
     </div>
   );

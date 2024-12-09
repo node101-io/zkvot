@@ -28,22 +28,23 @@ const HomePage = () => {
     useState<types.StorageLayerPlatformCodes>("A");
   const [storageLayerId, setStorageLayerId] = useState<string>("");
 
-  useEffect(() => {
-    utils.fetchDataFromStorageLayer({
-      platform: 'F',
-      id: 'bafkreiecgx2jxfh6o4sgntasljgyxyj6a36irad6phvbvu2ppfmvbomhra'
-    }, (err, data) => {
-      if (err || !data) {
-        console.error(err);
-        return;
-      }
+  // IMPORTANT!!!! For easy testing DO NOT delete IMPORTANT!!!!
+  // useEffect(() => {
+  //   utils.fetchDataFromStorageLayer({
+  //     platform: 'F',
+  //     id: 'bafkreiecgx2jxfh6o4sgntasljgyxyj6a36irad6phvbvu2ppfmvbomhra'
+  //   }, (err, data) => {
+  //     if (err || !data) {
+  //       console.error(err);
+  //       return;
+  //     }
 
-      setElectionData(data);
-      setStorageLayerPlatform('F');
-      setStorageLayerId('bafkreiecgx2jxfh6o4sgntasljgyxyj6a36irad6phvbvu2ppfmvbomhra');
-      setStep(7);
-    });
-  }, [])
+  //     setElectionData(data);
+  //     setStorageLayerPlatform('F');
+  //     setStorageLayerId('bafkreiecgx2jxfh6o4sgntasljgyxyj6a36irad6phvbvu2ppfmvbomhra');
+  //     setStep(7);
+  //   });
+  // }, [])
 
   return (
     <div className="flex justify-center items-center h-full overflow-y-scroll pb-2">

@@ -49,6 +49,10 @@ const VoteSchema = new Schema({
   },
   tx_hash: {
     type: Object,
+  },
+  is_counted: {
+    type: Boolean,
+    default: false,
   }
 });
 
