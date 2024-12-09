@@ -19,7 +19,7 @@ import SubwalletIcon from '@/public/general/wallet-logos/subwallet.png';
 const WalletButton = () => {
   const { auroWalletAddress, connectAuroWallet, disconnectAuroWallet } = useContext(AuroWalletContext);
   const { selectedWallet, setSelectedWallet } = useContext(SelectedWalletContext);
-  const { subWalletAddress, connectSubWallet, disconnectSubWallet } = useContext(SubwalletContext);
+  const { subwalletAccount, connectSubwallet, disconnectSubwallet } = useContext(SubwalletContext);
 
   const [isWalletModalOpen, setIsWalletModalOpen] = useState<boolean>(false);
 
@@ -34,7 +34,7 @@ const WalletButton = () => {
       await connectAuroWallet();
       setSelectedWallet('Auro');
     } else if (wallet === 'Subwallet') {
-      await connectSubWallet();
+      await connectSubwallet();
       setSelectedWallet('Subwallet');
     };
   };
@@ -44,7 +44,7 @@ const WalletButton = () => {
       disconnectAuroWallet();
       setSelectedWallet(null);
     } else if (selectedWallet === 'Subwallet') {
-      disconnectSubWallet();
+      disconnectSubwallet();
       setSelectedWallet(null);
     };
   };
@@ -78,7 +78,7 @@ const WalletButton = () => {
               className='rounded-full'
             />
             <div className='text-white'>
-              {formatWalletAddress(selectedWallet === 'Auro' ? auroWalletAddress : subWalletAddress)}
+              {formatWalletAddress(selectedWallet === 'Auro' ? auroWalletAddress : subwalletAccount?.address || '')}
             </div>
           </div>
 
