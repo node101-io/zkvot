@@ -46,8 +46,12 @@ namespace AggregationMerkleMapNamespace {
         },
       },
       base_one: {
-        privateInputs: [Vote.Proof],
-        async method(publicInput: PublicInputs, vote: Vote.Proof) {
+        privateInputs: [Vote.Proof, MerkleMapWitness],
+        async method(
+          publicInput: PublicInputs,
+          vote: Vote.Proof,
+          merkleWitness: MerkleMapWitness
+        ) {
           vote.verify();
 
           vote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
@@ -59,57 +63,19 @@ namespace AggregationMerkleMapNamespace {
 
           const newVoteOptions = Vote.VoteOptions.empty().addVote(vote);
 
-          const merkleMap = new MerkleMap();
-          merkleMap.set(nullifier, vote.publicOutput.vote);
-          const root = merkleMap.getRoot();
+          const [currentRoot, currentKey] = merkleWitness.computeRootAndKey(
+            Field.from(0)
+          );
+          currentKey.assertEquals(nullifier);
+          currentRoot.assertEquals(new MerkleMap().getRoot());
+
+          const [root, key] = merkleWitness.computeRootAndKey(
+            vote.publicOutput.vote
+          );
 
           return {
             publicOutput: {
               totalAggregatedCount: Field.from(1),
-              merkleMapRoot: root,
-              voteOptions_1: newVoteOptions.voteOptions_1,
-              voteOptions_2: newVoteOptions.voteOptions_2,
-              voteOptions_3: newVoteOptions.voteOptions_3,
-            },
-          };
-        },
-      },
-      base_two: {
-        privateInputs: [Vote.Proof, Vote.Proof],
-        async method(
-          publicInput: PublicInputs,
-          lowerVote: Vote.Proof,
-          upperVote: Vote.Proof
-        ) {
-          lowerVote.verify();
-          upperVote.verify();
-
-          lowerVote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
-          upperVote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
-          lowerVote.publicInput.electionPubKey.assertEquals(
-            publicInput.electionPubKey
-          );
-          upperVote.publicInput.electionPubKey.assertEquals(
-            publicInput.electionPubKey
-          );
-
-          const lowerNullifier = lowerVote.publicOutput.nullifier;
-          const upperNullifier = upperVote.publicOutput.nullifier;
-
-          lowerNullifier.assertLessThan(upperNullifier);
-
-          const merkleMap = new MerkleMap();
-          merkleMap.set(lowerNullifier, lowerVote.publicOutput.vote);
-          merkleMap.set(upperNullifier, upperVote.publicOutput.vote);
-
-          const root = merkleMap.getRoot();
-          const newVoteOptions = Vote.VoteOptions.empty()
-            .addVote(lowerVote)
-            .addVote(upperVote);
-
-          return {
-            publicOutput: {
-              totalAggregatedCount: Field.from(2),
               merkleMapRoot: root,
               voteOptions_1: newVoteOptions.voteOptions_1,
               voteOptions_2: newVoteOptions.voteOptions_2,
@@ -141,10 +107,6 @@ namespace AggregationMerkleMapNamespace {
             publicInput.electionPubKey
           );
           const nullifier = vote.publicOutput.nullifier;
-
-          // const previousLowerBound = previousProof.publicOutput.rangeLowerBound;
-          // const previousUpperBound = previousProof.publicOutput.rangeUpperBound;
-          // previousLowerBound.assertGreaterThan(nullifier);
 
           const [currentRoot, currentKey] = merkleMapWitness.computeRootAndKey(
             Field.from(0)
