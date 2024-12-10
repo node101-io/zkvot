@@ -9,63 +9,82 @@ interface ZKProgramCompileContextInterface {
   setZkProgramWorkerClientInstance: Dispatch<
     SetStateAction<ZKProgramCompileContextInterface['zkProgramWorkerClientInstance']>
   >;
-  hasBeenSetup: boolean;
-  setHasBeenSetup: Dispatch<
-    SetStateAction<ZKProgramCompileContextInterface['hasBeenSetup']>
-  >;
-  isSettingUp: boolean;
-  setIsSettingUp: Dispatch<
-    SetStateAction<ZKProgramCompileContextInterface['isSettingUp']>
-  >;
+  isVoteProgramCompiled: boolean;
+  isVoteProgramCompiling: boolean;
+  isAggregationProgramCompiled: boolean;
+  isAggregationProgramCompiling: boolean;
+  compileAggregationProgramIfNotCompiled: () => Promise<void>
 };
 
 export const ZKProgramCompileContext = createContext<ZKProgramCompileContextInterface>({
   zkProgramWorkerClientInstance: null,
   setZkProgramWorkerClientInstance: () => {},
-  hasBeenSetup: false,
-  setHasBeenSetup: () => {},
-  isSettingUp: false,
-  setIsSettingUp: () => {}
+  isVoteProgramCompiled: false,
+  isVoteProgramCompiling: false,
+  isAggregationProgramCompiled: false,
+  isAggregationProgramCompiling: false,
+  compileAggregationProgramIfNotCompiled: () => Promise.resolve()
 });
 
-export const ZKProgramCompileProvider = ({
-  children
-}: PropsWithChildren<{}>) => {
+export const ZKProgramCompileProvider = ({ children }: PropsWithChildren<{}>) => {
   const [zkProgramWorkerClientInstance, setZkProgramWorkerClientInstance] = useState<ZKProgramCompileContextInterface['zkProgramWorkerClientInstance']>(null);
-  const [hasBeenSetup, setHasBeenSetup] = useState<ZKProgramCompileContextInterface['hasBeenSetup']>(false);
-  const [isSettingUp, setIsSettingUp] = useState<ZKProgramCompileContextInterface['isSettingUp']>(false);
+  // const [isVoteProgramCompiled, setIsVoteProgramCompiled] = useState<ZKProgramCompileContextInterface['isVoteProgramCompiled']>(false);
+  // const [isSettingUp, setIsSettingUp] = useState<ZKProgramCompileContextInterface['isSettingUp']>(false);
+  const [isVoteProgramCompiled, setIsVoteProgramCompiled] = useState<ZKProgramCompileContextInterface['isVoteProgramCompiled']>(false);
+  const [isVoteProgramCompiling, setIsVoteProgramCompiling] = useState<ZKProgramCompileContextInterface['isVoteProgramCompiling']>(false);
+  const [isAggregationProgramCompiled, setIsAggregationProgramCompiled] = useState<ZKProgramCompileContextInterface['isAggregationProgramCompiled']>(false);
+  const [isAggregationProgramCompiling, setIsAggregationProgramCompiling] = useState<ZKProgramCompileContextInterface['isAggregationProgramCompiling']>(false);
 
   useEffect(() => {
-    const setup = async () => {
-      try {
-        if (!hasBeenSetup && !isSettingUp) {
-          setIsSettingUp(true);
+    if (isVoteProgramCompiled || isVoteProgramCompiling) return;
 
-          const zkProgramWorkerClientInstance = new ZKProgramWorkerClient();
+    setIsVoteProgramCompiling(true);
 
-          setZkProgramWorkerClientInstance(zkProgramWorkerClientInstance);
+    const zkProgramWorkerClientInstance = new ZKProgramWorkerClient();
 
-          await new Promise((resolve) => setTimeout(resolve, 5000));
+    setZkProgramWorkerClientInstance(zkProgramWorkerClientInstance);
 
-          await zkProgramWorkerClientInstance.loadAndCompileVoteProgram();
-
-          setHasBeenSetup(true);
-          setIsSettingUp(false);
-        }
-      } catch (error: any) {
-        console.log(`Error during setup: ${error?.message}`);
-      }
-    };
-
-    setup();
+    zkProgramWorkerClientInstance.loadAndCompileVoteProgram()
+      .then(() => {
+        setIsVoteProgramCompiled(true);
+        setIsVoteProgramCompiling(false);
+      })
+      .catch((error: Error) => {
+        console.log(error);
+        setIsVoteProgramCompiling(false);
+      });
   }, []);
+
+  const compileAggregationProgramIfNotCompiled = async () => {
+    if (isAggregationProgramCompiled) return;
+
+    if (!isVoteProgramCompiled || isVoteProgramCompiling)
+      throw new Error('Vote program is not compiled yet');
+    if (isAggregationProgramCompiling)
+      throw new Error('Aggregation program is already compiling');
+    if (!zkProgramWorkerClientInstance)
+      throw new Error('zkProgramWorkerClientInstance is not set');
+
+    setIsAggregationProgramCompiling(true);
+
+    zkProgramWorkerClientInstance.loadAndCompileAggregationProgram()
+      .then(() => {
+        setIsAggregationProgramCompiled(true);
+        setIsAggregationProgramCompiling(false);
+      })
+      .catch((error: Error) => {
+        console.log(error);
+        setIsAggregationProgramCompiling(false);
+      });
+  };
 
   return (
     <ZKProgramCompileContext.Provider
       value={{
         zkProgramWorkerClientInstance, setZkProgramWorkerClientInstance,
-        hasBeenSetup, setHasBeenSetup,
-        isSettingUp, setIsSettingUp
+        isVoteProgramCompiled, isVoteProgramCompiling,
+        isAggregationProgramCompiled, isAggregationProgramCompiling,
+        compileAggregationProgramIfNotCompiled
       }}
     >
       {children}

@@ -42,7 +42,7 @@ export default ({
   const { auroWalletAddress, connectAuroWallet, createNullifier, disconnectAuroWallet, generateEncodedVoteProof } = useContext(AuroWalletContext);
   const { setSelectedWallet } = useContext(SelectedWalletContext);
   const { showToast } = useContext(ToastContext);
-  const { hasBeenSetup } = useContext(ZKProgramCompileContext);
+  const { isVoteProgramCompiled, compileAggregationProgramIfNotCompiled } = useContext(ZKProgramCompileContext);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
@@ -107,7 +107,7 @@ export default ({
       return;
     }
 
-    if (!hasBeenSetup) {
+    if (!isVoteProgramCompiled) {
       showToast('Please wait for the setup to complete.', 'error');
       return;
     }

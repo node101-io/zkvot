@@ -1,14 +1,21 @@
 import { AccountUpdate, Field, Mina, PublicKey, PrivateKey, Nullifier } from 'o1js';
 import * as Comlink from 'comlink';
 
-import { MerkleTree, Vote } from 'zkvot-core';
+import { MerkleTree, Vote, Aggregation } from 'zkvot-core';
 
 import { Nullifier as NullifierType } from '@aurowallet/mina-provider';
 
 import encodeDataToBase64String from '@/utils/encodeDataToBase64String.js';
 
-const state = {
-  Program: null as typeof Vote.Program | null,
+const state: {
+  VoteProgram: typeof Vote.Program | null;
+  isVoteProgramCompiled: boolean;
+  AggregationProgram: typeof Aggregation.Program | null;
+  isAggregationProgramCompiled: boolean;
+} = {
+  VoteProgram: null,
+  isVoteProgramCompiled: false,
+  AggregationProgram: null,
   isAggregationProgramCompiled: false
 };
 
@@ -22,29 +29,43 @@ export const api = {
     Mina.setActiveInstance(Network);
   },
   async loadAndCompileVoteProgram() {
+    if (state.isVoteProgramCompiled) return;
+
     const { Vote } = await import('zkvot-core');
 
-    state.Program = Vote.Program;
+    state.VoteProgram = Vote.Program;
 
-    console.log('Compiling VoteProgram');
-    console.time('Compiling VoteProgram');
-    await state.Program.compile({ proofsEnabled: true });
-    console.timeEnd('Compiling VoteProgram');
+    console.log('VoteProgram compile');
+    console.time('VoteProgram compile');
+    await state.VoteProgram.compile({ proofsEnabled: true });
+    console.timeEnd('VoteProgram compile');
+
+    state.isVoteProgramCompiled = true;
+  },
+  async loadAndCompileAggregationProgram() {
+    if (!state.isVoteProgramCompiled)
+      throw new Error('VoteProgram not compiled. Call loadAndCompileVoteProgram() first.');
+
+    const { Aggregation } = await import('zkvot-core');
+
+    state.AggregationProgram = Aggregation.Program;
+
+    console.log('AggregationProgram compile');
+    console.time('AggregationProgram compile');
+    await state.AggregationProgram.compile({ proofsEnabled: true });
+    console.timeEnd('AggregationProgram compile');
+
+    state.isAggregationProgramCompiled = true;
   },
   async loadAndCompileElectionContract(
     electionStartBlock: number,
     electionFinalizeBlock: number,
     votersRoot: bigint
   ) {
-    const { Aggregation, Election } = await import('zkvot-core');
+    if (!state.isVoteProgramCompiled || !state.isAggregationProgramCompiled)
+      throw new Error('AggregationProgram is not compiled. Call loadAndCompileAggregationProgram() first.');
 
-    console.log('Compiling AggregationProgram');
-    console.time('Compiling AggregationProgram');
-    if (!state.isAggregationProgramCompiled) {
-      await Aggregation.Program.compile({ proofsEnabled: true });
-      state.isAggregationProgramCompiled = true;
-    }
-    console.timeEnd('Compiling AggregationProgram');
+    const { Election } = await import('zkvot-core');
 
     Election.setContractConstants({
       electionStartBlock,
@@ -52,10 +73,10 @@ export const api = {
       votersRoot
     });
 
-    console.log('Compiling ElectionContract');
-    console.time('Compiling ElectionContract');
+    console.log('ElectionContract compile');
+    console.time('ElectionContract compile');
     await Election.Contract.compile();
-    console.timeEnd('Compiling ElectionContract');
+    console.timeEnd('ElectionContract compile');
 
     return Election.Contract;
   },
@@ -66,7 +87,7 @@ export const api = {
     votersArray: string[];
     publicKey: string;
   }) {
-    if (!state.Program)
+    if (!state.VoteProgram)
       throw new Error('Program not loaded. Call loadProgram() first.');
 
     const votersTree = MerkleTree.createFromStringArray(data.votersArray);
@@ -95,7 +116,7 @@ export const api = {
 
     try {
       console.time('Generating vote proof');
-      const voteProof = await state.Program.vote(
+      const voteProof = await state.VoteProgram.vote(
         votePublicInputs,
         votePrivateInputs
       );

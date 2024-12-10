@@ -32,7 +32,7 @@ export default ({ onPrevious, data }: {
 }) => {
   const { auroWalletAddress, connectAuroWallet } = useContext(AuroWalletContext);
   const { showToast } = useContext(ToastContext);
-  const { zkProgramWorkerClientInstance, hasBeenSetup, isSettingUp } = useContext(ZKProgramCompileContext);
+  const { zkProgramWorkerClientInstance, isVoteProgramCompiled, isVoteProgramCompiling, compileAggregationProgramIfNotCompiled } = useContext(ZKProgramCompileContext);
 
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -55,7 +55,7 @@ export default ({ onPrevious, data }: {
   const handleSubmit = async () => {
     if (submitted) return;
     if (loading) return;
-    
+
     let auroWalletLoaded = !!auroWalletAddress.trim().length;
 
     if (!auroWalletLoaded)
@@ -75,11 +75,11 @@ export default ({ onPrevious, data }: {
       showToast('Something went wrong, please try again later', 'error');
       return;
     }
-    if (isSettingUp) {
+    if (isVoteProgramCompiling) {
       showToast('zkVot is loading in the background, please wait a few more minutes and try again', 'error');
       return;
     }
-    if (!hasBeenSetup) {
+    if (!isVoteProgramCompiled) {
       showToast('zkVot is loading in the background, please wait a few more minutes and try again', 'error');
       return;
     }
@@ -97,6 +97,7 @@ export default ({ onPrevious, data }: {
 
       zkProgramWorkerClientInstance.setActiveInstance({ devnet: process.env.NODE_ENV !== 'production' });
 
+      await compileAggregationProgramIfNotCompiled()
       const result = await zkProgramWorkerClientInstance.deployElection(
         auroWalletAddress,
         minaBlockData.startBlockHeight,

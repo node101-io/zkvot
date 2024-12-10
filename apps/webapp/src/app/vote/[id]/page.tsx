@@ -83,6 +83,7 @@ const Page = ({ params }: {
         submitElectionToBackend(election_data.mina_contract_id);
       })
       .catch((error) => {
+        console.error(error);
         showToast('Failed to fetch election data, please try again later.', 'error');
       });
   }, []);

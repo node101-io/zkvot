@@ -23,6 +23,9 @@ export default class {
   async loadAndCompileVoteProgram() {
     return this.remoteApi.loadAndCompileVoteProgram();
   };
+  async loadAndCompileAggregationProgram() {
+    return this.remoteApi.loadAndCompileAggregationProgram();
+  };
   async createVote(data: {
     electionPubKey: string;
     nullifier: Nullifier;

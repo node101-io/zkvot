@@ -34,7 +34,7 @@ export const AuroWalletProvider = ({
 }: PropsWithChildren<{}>) => {
   const [auroWalletAddress, setAuroWalletAddress] = useState<AuroWalletContextInterface['auroWalletAddress']>('');
 
-  const { zkProgramWorkerClientInstance, hasBeenSetup, isSettingUp } = useContext(ZKProgramCompileContext);
+  const { zkProgramWorkerClientInstance, isVoteProgramCompiled, isVoteProgramCompiling } = useContext(ZKProgramCompileContext);
 
   const connectAuroWallet = async (): Promise<boolean> => {
     try {
@@ -112,11 +112,11 @@ export const AuroWalletProvider = ({
     // };
 
     try {
-      if (isSettingUp)
-        throw new Error('System is initializing. Please wait...');
+      if (isVoteProgramCompiling)
+        throw new Error('zkVot is preparing, please wait.');
 
-      if (!hasBeenSetup)
-        throw new Error('System not ready yet. Please try again later.');
+      if (!isVoteProgramCompiled)
+        throw new Error('zkVot is preparing, please wait.');
 
       if (!zkProgramWorkerClientInstance)
         throw new Error('Zkapp Worker Client not found.');
