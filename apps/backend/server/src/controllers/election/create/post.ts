@@ -8,7 +8,7 @@ export default (
   req: Request,
   res: Response
 ) => {
-  Election.createElection(req.body, (err: string | null, election?: types.ElectionBackendData) => {
+  Election.createElectionIfNotExist(req.body, (err: string | null, election?: types.ElectionBackendData) => {
     if (err)
       return res.json({ success: false, error: err });
 

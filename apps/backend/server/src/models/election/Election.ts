@@ -16,7 +16,7 @@ const MINA_DEVNET_RPC_URL = 'https://api.minascan.io/node/devnet/v1/graphql';
 const MINA_MAINNET_RPC_URL = 'https://api.minascan.io/node/mainnet/v1/graphql';
 
 interface ElectionStatics {
-  createElection: (
+  createElectionIfNotExist: (
     data: { mina_contract_id: string },
     callback: (
       error: string | null,
@@ -154,10 +154,17 @@ const ElectionSchema = new Schema({
         maxlength: MAX_DATABASE_TEXT_FIELD_LENGTH,
       }
     }
+  ],
+  result: [
+    {
+      type: Number,
+      required: true,
+      min: 0
+    }
   ]
 });
 
-ElectionSchema.statics.createElection = function (
+ElectionSchema.statics.createElectionIfNotExist = function (
   data: { mina_contract_id: string, is_devnet?: boolean },
   callback: (
     error: string | null,
@@ -173,7 +180,7 @@ ElectionSchema.statics.createElection = function (
   })
   .then((election: types.ElectionBackendData) => {
     if (election)
-      return callback('duplicated_unique_field');
+      return callback(null, election);
 
     ElectionProgram.fetchElectionState(mina_contract_id, data.is_devnet ? MINA_DEVNET_RPC_URL : MINA_MAINNET_RPC_URL, (error, state) => {
       if (error)
@@ -201,6 +208,7 @@ ElectionSchema.statics.createElection = function (
             storage_layer_platform: storageInfo.platform,
             image_url: url,
             voters_merkle_root,
+            result: Array.from({ length: data.options.length }, () => 0),
             ...data
           };
 
@@ -214,7 +222,6 @@ ElectionSchema.statics.createElection = function (
             .catch((error: {
               code: number
             }) => {
-              console.log(error);
               if (error.code == DUPLICATED_UNIQUE_FIELD_ERROR_CODE)
                 return callback('duplicated_unique_field');
               return callback('database_error');

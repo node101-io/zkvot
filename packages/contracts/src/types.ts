@@ -60,7 +60,7 @@ namespace typesNamespace {
     voters_list: Voter[];
     voters_merkle_root: string;
     communication_layers: (AvailDaLayerInfo | CelestiaDaLayerInfo)[],
-    // result: number[]
+    result: number[]
   };
 };
 

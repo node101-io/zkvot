@@ -52,7 +52,7 @@ const VoteSchema = new Schema({
   },
   is_counted: {
     type: Boolean,
-    default: false,
+    default: false
   }
 });
 
@@ -134,6 +134,14 @@ VoteSchema.statics.createAndSubmitVote = function (
       });
     });
   });
+};
+
+VoteSchema.statics.countVote = function (
+  nullifier: bigint,
+  callback: (error: string | null) => any
+) {
+  const Vote = this;
+
 };
 
 export default model('Vote', VoteSchema) as Model<any> & VoteStatics;

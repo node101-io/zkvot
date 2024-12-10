@@ -16,7 +16,9 @@ import {
   UInt32,
 } from 'o1js';
 
-import Aggregation from './Aggregation.js';
+// import Aggregation from './Aggregation.js';
+import Aggregation from './AggregationMM.js';
+
 import Vote from './Vote.js';
 
 let ELECTION_START_BLOCK: number;

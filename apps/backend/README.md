@@ -1,12 +1,16 @@
 # zkVot Backend
 
-The zkVot backend serves two primary functions:
+The zkVot backend serves three primary functions:
 - **Election Listing**
 
   Provides a list of all elections for UX purposes without compromising user anonymity. Clients fetch the complete list and perform filtering on the client side.
 - **Vote Proof Submission**
 
   Offers users the ability to submit their vote proof in a secure and verifiable manner. The server ensures transparency by allowing users to verify the transaction submission to the Communication Layer, ensuring users cannot be deceived into believing their submission was completed when it wasn’t.
+
+- **Serving Soft Finality Results**
+
+  As of now, zkVot backend is the biggest (and probably only) aggregator in the zkVot ecosystem. By tracking all DAs and serving election's temporary (not settled yet) result along with a proof, the backend handles the soft finality functionality in the UI.
 
 ## Purpose
 This backend is designed as an optional service for users who prefer not to directly submit their vote proof to the Communication Layer using their own wallets. Instead, the backend server signs the proof with a wallet that contains funds and submits the transaction on behalf of the user. After submission, the server returns the transaction hash, allowing users to independently verify the transaction. This process ensures that users cannot be misled into thinking a transaction occurred when it did not.
