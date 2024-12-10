@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import { Field, Mina, MerkleTree, PrivateKey, Poseidon, Nullifier } from 'o1js';
 import dotenv from 'dotenv';
-import { votersList } from '../local/mock.js';
+import { votersArray as votersList } from '../local/mock.js';
 import Vote from '../Vote.js';
 import MerkleTreeNamespace from '../MerkleTree.js';
 import Aggregation from '../Aggregation.js';
@@ -64,7 +64,10 @@ export const mockVotes = async (electionPrivateKey: PrivateKey) => {
       votersRoot: votersRoot,
     });
     const nullifier = Nullifier.fromJSON(
-      Nullifier.createTestNullifier(electionPubKey.toFields(), privateKey)
+      Nullifier.createTestNullifier(
+        [Poseidon.hash(electionPubKey.toFields())],
+        privateKey
+      )
     );
 
     let votePrivateInputs = new Vote.PrivateInputs({
