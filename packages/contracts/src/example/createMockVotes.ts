@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import { Field, Mina, MerkleTree, PrivateKey, Poseidon, Nullifier } from 'o1js';
 import dotenv from 'dotenv';
-import { votersArray as votersList } from '../local/mock.js';
+import { votersList } from '../local/mock.js';
 import Vote from '../Vote.js';
 import MerkleTreeNamespace from '../MerkleTree.js';
 import Aggregation from '../Aggregation.js';

@@ -1,6 +1,7 @@
 'use client';
 
 import { LegacyRef, useEffect, useContext, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { utils } from 'zkvot-core';
 
@@ -13,6 +14,8 @@ import { ToastContext } from '@/contexts/toast-context.jsx';
 const Page = () => {
   const { auroWalletAddress, connectAuroWallet } = useContext(AuroWalletContext);
   const { showToast } = useContext(ToastContext);
+
+  const router = useRouter();
 
   const [activePanel, setActivePanel] = useState<string>('');
   const [electionID, setElectionID] = useState('');
@@ -52,7 +55,7 @@ const Page = () => {
       return;
     }
 
-    window.location.href = `/vote/${electionID}`;
+    router.push(`/vote/${electionID}`);
   };
 
   useEffect(() => {

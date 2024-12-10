@@ -4,7 +4,7 @@ const API_URL = process.env.NODE_ENV === 'production' ? 'https://backend.zkvot.i
 
 export const submitElectionToBackend = async (
   mina_contract_id: string
-): Promise<types.ElectionBackendData> => {
+): Promise<types.ElectionBackendData | undefined> => {
   try {
     const response = await fetch(`${API_URL}/election/create`, {
       method: 'POST',
@@ -28,7 +28,6 @@ export const submitElectionToBackend = async (
     return result.election;
   } catch (error) {
     console.log(error);
-    throw new Error('Failed to submit election to the backend');
   };
 };
 
