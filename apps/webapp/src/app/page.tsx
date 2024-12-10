@@ -2,12 +2,18 @@
 
 import { LegacyRef, useEffect, useContext, useRef, useState } from 'react';
 
+import { utils } from 'zkvot-core';
+
 import Panel from '@/app/(partials)/hero-panel.jsx';
 import InitialLoadingPage from '@/app/(partials)/initial-loading-page.jsx';
 
 import { AuroWalletContext } from '@/contexts/auro-wallet-context.jsx';
+import { ToastContext } from '@/contexts/toast-context.jsx';
 
 const Page = () => {
+  const { auroWalletAddress, connectAuroWallet } = useContext(AuroWalletContext);
+  const { showToast } = useContext(ToastContext);
+
   const [activePanel, setActivePanel] = useState<string>('');
   const [electionID, setElectionID] = useState('');
   const [exiting, setExiting] = useState(false);
@@ -17,8 +23,6 @@ const Page = () => {
   const rightPanelRef: LegacyRef<HTMLDivElement> | undefined  = useRef(null);
   const heroRef: LegacyRef<HTMLDivElement> | undefined  = useRef(null);
   const inputRef: LegacyRef<HTMLInputElement> | undefined  = useRef(null);
-
-  const { auroWalletAddress, connectAuroWallet } = useContext(AuroWalletContext);
 
   const handleClickOutside = (event: Event) => {
     if (
@@ -43,6 +47,11 @@ const Page = () => {
   }, [activePanel]);
 
   const handleJoinClick = () => {
+    if (!electionID.trim().length || !utils.isPublicKeyValid(electionID)) {
+      showToast('Please enter a valid election ID.', 'error');
+      return;
+    }
+
     window.location.href = `/vote/${electionID}`;
   };
 

@@ -1,4 +1,4 @@
-import { Field, Poseidon } from 'o1js';
+import { Field, Poseidon, PublicKey } from 'o1js';
 
 import Election from './Election.js';
 import MerkleTree from './MerkleTree.js';
@@ -10,8 +10,6 @@ import {
 } from './utils/storageLayer.js';
 
 import types from './types.js';
-
-
 
 namespace utilsNamespace {
   export const convertFieldToString = (
@@ -25,6 +23,14 @@ namespace utilsNamespace {
   ): Field => {
     const hexString = Buffer.from(str, 'utf-8').toString('hex');
     return new Field(BigInt('0x' + hexString));
+  };
+  export const isPublicKeyValid = (key: string) => {
+    try {
+      PublicKey.fromBase58(key);
+      return true;
+    } catch (e) {
+      return false;
+    }
   };
 
   export const StorageLayerPlatformDecoding: Record<types.StorageLayerPlatformCodes, types.StorageLayerPlatformNames> = {

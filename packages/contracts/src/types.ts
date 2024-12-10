@@ -59,7 +59,8 @@ namespace typesNamespace {
     image_url: string;
     voters_list: Voter[];
     voters_merkle_root: string;
-    communication_layers: (AvailDaLayerInfo | CelestiaDaLayerInfo)[]
+    communication_layers: (AvailDaLayerInfo | CelestiaDaLayerInfo)[],
+    // result: number[]
   };
 };
 

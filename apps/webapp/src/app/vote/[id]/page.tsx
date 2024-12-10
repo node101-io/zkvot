@@ -11,6 +11,8 @@ import ResultPage from '@/app/vote/(steps)/3-results.jsx';
 
 import { ToastContext } from '@/contexts/toast-context.jsx';
 
+import { submitElectionToBackend } from '@/utils/backend.js';
+
 const MINA_RPC_URL = process.env.NODE_ENV == 'production' ? 'https://api.minascan.io/node/mainnet/v1/graphql' : 'https://api.minascan.io/node/devnet/v1/graphql';
 
 const Page = ({ params }: {
@@ -78,6 +80,7 @@ const Page = ({ params }: {
     fetchElectionData()
       .then(election_data => {
         setElectionData(election_data);
+        submitElectionToBackend(election_data.mina_contract_id);
       })
       .catch((error) => {
         showToast('Failed to fetch election data, please try again later.', 'error');
