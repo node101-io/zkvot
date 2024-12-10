@@ -92,7 +92,8 @@ namespace VoteNamespace {
      * Converts the vote options to readible array of numbers
      * @returns Array of numbers
      */
-    toResults(): number[] { // TODO: Convert to unprovable at start, unoptimized like this
+    toResults(): number[] {
+      // TODO: Convert to unprovable at start, unoptimized like this
       let results: number[] = [];
 
       let voteArr = fieldToUInt32BigEndian(this.voteOptions_1);
@@ -147,7 +148,9 @@ namespace VoteNamespace {
 
           let nullifier = privateInput.nullifier;
 
-          nullifier.verify([ Poseidon.hash(publicInput.electionPubKey.toFields()) ]);
+          nullifier.verify([
+            Poseidon.hash(publicInput.electionPubKey.toFields()),
+          ]);
 
           nullifier.getPublicKey().assertEquals(voterPublicKey);
 
