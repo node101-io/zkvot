@@ -1,8 +1,9 @@
 'use client';
 
-import { Dispatch, useContext, useEffect, useState, SetStateAction } from 'react';
+import { useContext, useState } from 'react';
 import Image from 'next/image.js';
 import { FaImage } from 'react-icons/fa';
+import { IoClose } from 'react-icons/io5';
 
 import { types } from 'zkvot-core';
 
@@ -77,7 +78,7 @@ const DASelection = ({
   downloadVoteProof: () => void;
 }) => {
   const renderCelestiaDirectSubmissionInfo = () => (
-    <div>
+    <div className='mt-6'>
       zkVot doesn't support direct submission to Celestia yet. You can{" "}
       <button
         onClick={(e) => {
@@ -138,9 +139,9 @@ const DASelection = ({
 
   return (
     <>
+      {renderLayerGrid()}
       {selectionMode === "direct" && selectedDA === "Celestia"
-        ? renderCelestiaDirectSubmissionInfo()
-        : renderLayerGrid()}
+        ? renderCelestiaDirectSubmissionInfo(): null}
     </>
   );
 };
@@ -163,16 +164,24 @@ export default ({
   const { subwalletAccount, connectSubwallet, submitDataToAvailViaSubwallet, isSubmitting } = useContext(SubwalletContext);
   const { showToast } = useContext(ToastContext);
 
-  // electionData.communication_layers = [
-  //   {
-  //     name: 'Avail',
-  //     start_block_height: 123,
-  //     app_id: 123
-  //   }
-  // ];
+  electionData.communication_layers = [
+    {
+      name: 'Avail',
+      start_block_height: 123,
+      app_id: 123
+    },
+    {
+      name: 'Celestia',
+      namespace: 'fldsşd',
+      start_block_height: 123,
+      start_block_hash: 'fldsşigd'
+    }
+  ];
 
   const [selectionMode, setSelectionMode] = useState<'direct' | 'backend'>('backend');
   const [selectedDA, setSelectedDA] = useState<types.DaLayerInfo['name']>(electionData.communication_layers[0].name);
+  const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false);
+  const [isPopupConfirmed, setIsPopupConfirmed] = useState<boolean>(false);
 
   const downloadVoteProof = () => {
     const blob = new Blob([zkProofData], { type: 'text/plain' });
@@ -196,6 +205,12 @@ export default ({
     }
   };
 
+  const handlePopupConfirm = () => {
+    setIsPopupConfirmed(true);
+    setIsPopupOpen(false);
+    handleNext();
+  };
+
   const handleNext = async () => {
     if (!selectedDA) {
       showToast('Please select a DA Layer to proceed', 'error');
@@ -203,12 +218,20 @@ export default ({
     }
 
     if (selectionMode === 'direct') {
-      if (!subwalletAccount) {
-        showToast('Please connect your wallet to proceed', 'error');
-        return;
-      }
-      if (!zkProofData) {
-        showToast('No vote proof found', 'error');
+      if (selectedDA === 'Avail' && !subwalletAccount) {
+        if (!subwalletAccount) {
+          showToast('Please connect your wallet to proceed', 'error');
+          return;
+        }
+        if (!zkProofData) {
+          showToast('No vote proof found', 'error');
+          return;
+        }
+      } else if (selectedDA === 'Celestia') {
+        if (isPopupConfirmed)
+          goToNextStep();
+        else
+          setIsPopupOpen(true);
         return;
       }
     } else if (selectionMode === 'backend') {
@@ -340,13 +363,33 @@ export default ({
         >
           Back
         </Button>
-        {selectionMode === 'direct' && !subwalletAccount ? (
-          <div className={`${!selectedDA ? 'hidden' : 'flex'}`}>
-            <Button onClick={handleConnectWallet}>
-              Connect Wallet
+        {selectionMode === 'direct' ? (
+          selectedDA === 'Avail' ? (
+            !subwalletAccount ? (
+              <div className={`${!selectedDA ? 'hidden' : 'flex'}`}>
+                <Button onClick={handleConnectWallet}>
+                  Connect Wallet
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={handleNext}
+                disabled={!selectedDA || isSubmitting}
+                loading={isSubmitting}
+              >
+                Submit Vote
+              </Button>
+            )
+          ) : selectedDA === 'Celestia' ? (
+            <Button
+              onClick={handleNext}
+              disabled={!selectedDA || isSubmitting}
+              loading={isSubmitting}
+            >
+              Continue
             </Button>
-          </div>
-        ) : (
+          ) : null
+        ) : selectionMode === 'backend' ? (
           <Button
             onClick={handleNext}
             disabled={!selectedDA || isSubmitting}
@@ -354,8 +397,35 @@ export default ({
           >
             Submit Vote
           </Button>
-        )}
+        ) : null}
       </div>
+      {isPopupOpen && (
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'>
+          <div className='bg-[#141414] rounded-[50px] p-8 shadow-lg w-[680px] h-auto border-[1px] border-primary text-center relative'>
+            <button
+              onClick={() => setIsPopupOpen(false)}
+              className='flex w-full justify-end'
+            >
+              <IoClose size={28} />
+            </button>
+            <div className='px-[57px] py-2'>
+              <h3 className='text-xl mb-4'>
+                Manual Vote Submission Required
+              </h3>
+              <p className='mb-8'>
+                Please make sure you submitted your vote manually before continuing.
+              </p>
+              <div className='flex justify-center pt-9'>
+                <Button
+                  onClick={handlePopupConfirm}
+                >
+                  Continue
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
