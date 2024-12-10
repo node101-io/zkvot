@@ -2,38 +2,6 @@ import { Field, JsonProof, PublicKey, MerkleMap } from 'o1js';
 
 import { Aggregation, Vote } from 'zkvot-core';
 
-async function base_empty (
-  data: {
-    mina_contract_id: string;
-    voters_merkle_root: string;
-  },
-  callback: (error: string | null, proof?: JsonProof) => void
-) {
-  const { mina_contract_id, voters_merkle_root } = data;
-  let EID, root;
-
-  try {
-    EID = PublicKey.fromBase58(mina_contract_id);
-    root = Field.from(BigInt(voters_merkle_root));
-  } catch (error) {
-    console.log('Error parsing proofs', error);
-    return callback('bad_request');
-  }
-
-  const PublicInputs = {
-    votersRoot: root,
-    electionPubKey: EID,
-  };
-
-  try {
-    const proof = (await Aggregation.Program.base_empty(PublicInputs)).proof;
-    return callback(null, proof.toJSON());
-  } catch (error) {
-    console.log('Error generating proof', error);
-    return callback('proof_generation_error');
-  }
-};
-
 async function base_one (
   data: {
     proof_json: any
@@ -72,14 +40,14 @@ async function append_vote (
   data: {
     previous_proof_json: any,
     proof_json: any,
-    previous_votes: {
+    previous_voters: {
       vote: number,
       nullifier: string,
     }[]
   },
   callback: (error: string | null, proof?: JsonProof) => void
 ) {
-  const { previous_proof_json, proof_json, previous_votes } = data;
+  const { previous_proof_json, proof_json, previous_voters } = data;
   let PreviousProof, Proof, PreviousVotes;
 
   try {
@@ -104,7 +72,7 @@ async function append_vote (
   const merkleMap = new MerkleMap();
 
   try {
-    PreviousVotes = previous_votes.map(each => {
+    PreviousVotes = previous_voters.map(each => {
       return {
         vote: Field.from(each.vote),
         nullifier: Field.from(BigInt(each.nullifier)),
@@ -131,7 +99,6 @@ async function append_vote (
 };
 
 export {
-  base_empty,
   base_one,
   append_vote,
 };

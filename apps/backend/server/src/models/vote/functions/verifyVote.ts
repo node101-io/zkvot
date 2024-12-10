@@ -10,7 +10,10 @@ export default (
     electionId: string;
     merkleRoot: string;
   },
-  callback: (error: string | null, nullifier?: undefined | bigint) => any
+  callback: (error: string | null, result?: {
+    nullifier: string;
+    vote: number;
+  }) => any
 ) => {
   const verificationKey = getVerificationKey();
 
@@ -30,6 +33,9 @@ export default (
       if (!(await verify(voteProof, verificationKey)))
         return callback('invalid_vote');
 
-      return callback(null, voteProof.publicOutput.nullifier.toBigInt());
+      return callback(null, {
+        nullifier: voteProof.publicOutput.nullifier.toBigInt.toString(),
+        vote: voteProof.publicOutput.vote.toBigInt.toString(),
+      });
     });
 };

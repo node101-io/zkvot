@@ -1,9 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-
 import { Aggregation, Vote } from 'zkvot-core';
 
-const compile = async (force_compile: boolean) => {
+const compile = async () => {
   console.time('Vote compile');
   Vote.Program.compile()
     .then(() => {

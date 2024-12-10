@@ -1,4 +1,5 @@
 import { model, Model, Schema } from 'mongoose';
+import { JsonProof } from 'o1js';
 
 import {
   Election as ElectionProgram,
@@ -7,7 +8,18 @@ import {
   utils
 } from 'zkvot-core';
 
+import ResultProof from '../result-proof/ResultProof.js';
+
 import uploadImageRaw from './functions/uploadImageRaw.js';
+
+type ResultProofType = {
+  mina_contract_id: string;
+  proof: string;
+  previous_voters: {
+    vote: number;
+    nullifier: string;
+  }[];
+};
 
 const DEFAULT_QUERY_LIMIT = 100;
 const DUPLICATED_UNIQUE_FIELD_ERROR_CODE = 11000;
@@ -23,7 +35,7 @@ interface ElectionStatics {
       election?: types.ElectionBackendData
     ) => any
   ) => any;
-  findElectionByContractId: (
+  findOrCreateElectionByContractId: (
     mina_contract_id: string,
     callback: (
       error: string | null,
@@ -42,6 +54,24 @@ interface ElectionStatics {
       error: string | null,
       elections?: types.ElectionBackendData[]
     ) => any
+  ) => any;
+  findElectionByContractIdAndGetProof: (
+    mina_contract_id: string,
+    callback: (
+      error: string | null,
+      proof?: ResultProofType
+    ) => any
+  ) => any;
+  findElectionByContractIdAndAddVote: (
+    data: {
+      mina_contract_id: string,
+      proof: JsonProof,
+      new_voter: {
+        vote: number;
+        nullifier: string;
+      }
+    },
+    callback: ( error: string | null ) => any
   ) => any;
 };
 
@@ -233,22 +263,22 @@ ElectionSchema.statics.createElectionIfNotExist = function (
   .catch((err: any) => callback('database_error'));
 };
 
-ElectionSchema.statics.findElectionByContractId = function (
+ElectionSchema.statics.findOrCreateElectionByContractId = function (
   mina_contract_id: string,
   callback: (
     error: string | null,
     election?: types.ElectionBackendData
   ) => any
 ) {
-  const Election = this;
+  const Election = this as Model<any> & ElectionStatics;
 
   Election
     .findOne({ mina_contract_id })
     .then((election: types.ElectionBackendData) => {
-      if (!election)
-        return callback('document_not_found');
+      if (election)
+        return callback(null, election);
 
-      callback(null, election)
+      Election.createElectionIfNotExist({ mina_contract_id }, callback);
     })
     .catch((err: any) => callback('database_error'));
 };
@@ -305,5 +335,76 @@ ElectionSchema.statics.findElectionsByFilter = function (
     .then((elections: types.ElectionBackendData[]) => callback(null, elections))
     .catch((err: any) => callback('database_error'));
 };
+
+ElectionSchema.statics.findElectionByContractIdAndGetProof = function (
+  mina_contract_id: string,
+  callback: (
+    error: string | null,
+    proof?: ResultProofType
+  ) => any
+) {
+  const Election = this;
+
+  Election
+    .findOne({ mina_contract_id })
+    .then((election: types.ElectionBackendData) => {
+      if (!election)
+        return callback('document_not_found');
+
+      ResultProof.createOrFindResultProofByMinaContractId({
+        mina_contract_id: election.mina_contract_id,
+        voters_merkle_root: election.voters_merkle_root
+      }, (error, proof) => {
+        if (error || !proof)
+          return callback(error || 'unknown_error');
+
+        callback(null, proof);
+      });
+    })
+    .catch((err: any) => callback('database_error'));
+};
+
+ElectionSchema.statics.findElectionByContractIdAndAddVote = function (
+  data: {
+    mina_contract_id: string,
+    proof: JsonProof,
+    new_voter: {
+      vote: number;
+      nullifier: string;
+    }
+  },
+  callback: ( error: string | null ) => any
+) {
+  const Election = this;
+
+  Election
+    .findOne({ mina_contract_id: data.mina_contract_id })
+    .then((election: types.ElectionBackendData) => {
+      if (!election)
+        return callback('document_not_found');
+
+      Election
+        .findOneAndUpdate({ mina_contract_id: data.mina_contract_id }, {$set: {
+          result: election.result.map((count, index) => index == data.new_voter.vote ? count + 1 : count)
+        }}, { new: true })
+        .then((election: types.ElectionBackendData) => {
+          ResultProof.findResultProofByMinaContractIdAndUpdate({
+            mina_contract_id: election.mina_contract_id,
+            proof: data.proof,
+            new_voter: data.new_voter
+          }, (error) => {
+            if (error)
+              return callback(error);
+    
+            return callback(null);
+          });
+        })
+        .catch((err: any) => {
+          console.log(err)
+          return callback('database_error');
+        });
+    })
+    .catch((err: any) => callback('database_error'));
+}
 
 export default model('Election', ElectionSchema) as Model<any> & ElectionStatics;
