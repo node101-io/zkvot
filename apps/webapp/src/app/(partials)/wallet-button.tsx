@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import Image from 'next/image.js';
 
 import Button from '@/app/(partials)/button.jsx';
@@ -22,6 +22,15 @@ const WalletButton = () => {
   const { subwalletAccount, connectSubwallet, disconnectSubwallet } = useContext(SubwalletContext);
 
   const [isWalletModalOpen, setIsWalletModalOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!!auroWalletAddress.trim().length)
+      setSelectedWallet('Auro');
+    else if (!!subwalletAccount?.address.trim().length)
+      setSelectedWallet('Subwallet');
+    else
+      setSelectedWallet(null);
+  }, [auroWalletAddress, subwalletAccount])
 
   const handleConnect = () => {
     setIsWalletModalOpen(true);

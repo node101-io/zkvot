@@ -201,9 +201,9 @@ ElectionSchema.statics.createElection = function (
     election?: types.ElectionBackendData
   ) => any
 ) {
-  const Election = this;
-
   const mina_contract_id = data.mina_contract_id;
+
+  console.log(mina_contract_id)
 
   Election.findOne({
     mina_contract_id
@@ -262,21 +262,19 @@ ElectionSchema.statics.createElection = function (
 };
 
 ElectionSchema.statics.findOrCreateElectionByContractId = function (
-  mina_contract_id: string,
+  data: { mina_contract_id: string, is_devnet?: boolean },
   callback: (
     error: string | null,
     election?: types.ElectionBackendData
   ) => any
 ) {
-  const Election = this as Model<any> & ElectionStatics;
-
   Election
-    .findOne({ mina_contract_id })
+    .findOne({ mina_contract_id: data.mina_contract_id })
     .then((election: types.ElectionBackendData) => {
       if (election)
         return callback(null, election);
 
-      Election.createElection({ mina_contract_id }, callback);
+      Election.createElection(data, callback);
     })
     .catch((err: any) => callback('database_error'));
 };
@@ -295,8 +293,6 @@ ElectionSchema.statics.findElectionsByFilter = function (
     elections?: types.ElectionBackendData[]
   ) => any
 ) {
-  const Election = this;
-
   const filters: any[] = [
     { is_devnet: 'is_devnet' in data ? data.is_devnet : false }
   ];
@@ -341,8 +337,6 @@ ElectionSchema.statics.findElectionByContractIdAndGetProof = function (
     proof?: ResultProofType
   ) => any
 ) {
-  const Election = this;
-
   Election
     .findOne({ mina_contract_id })
     .then((election: types.ElectionBackendData) => {
@@ -373,8 +367,6 @@ ElectionSchema.statics.findElectionByContractIdAndAddVote = function (
   },
   callback: ( error: string | null ) => any
 ) {
-  const Election = this;
-
   Election
     .findOne({ mina_contract_id: data.mina_contract_id })
     .then((election: types.ElectionBackendData) => {
@@ -403,6 +395,7 @@ ElectionSchema.statics.findElectionByContractIdAndAddVote = function (
         });
     })
     .catch((err: any) => callback('database_error'));
-}
+};
 
-export default model('Election', ElectionSchema) as Model<any> & ElectionStatics;
+const Election = model('Election', ElectionSchema) as Model<any> & ElectionStatics;
+export default Election;

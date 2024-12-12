@@ -63,8 +63,6 @@ ResultProofSchema.statics.createOrFindResultProofByMinaContractId = function (
     proof?: ResultProofType
   ) => any
 ) {
-  const ResultProof = this;
-
   const { mina_contract_id, voters_merkle_root } = data;
 
   ResultProof.findOne({
@@ -99,8 +97,6 @@ ResultProofSchema.statics.findResultProofByMinaContractIdAndUpdate = async funct
     error: string | null
   ) => any
 ) {
-  const ResultProof = this;
-
   const { mina_contract_id, proof, new_voter } = data;
 
   try {
@@ -122,4 +118,5 @@ ResultProofSchema.statics.findResultProofByMinaContractIdAndUpdate = async funct
   };
 };
 
-export default model('ResultProof', ResultProofSchema) as Model<any> & ResultProofStatics;
+const ResultProof = model('ResultProof', ResultProofSchema) as Model<any> & ResultProofStatics;
+export default ResultProof;

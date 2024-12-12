@@ -1,8 +1,9 @@
 'use client';
 
+import { Poseidon, PublicKey } from 'o1js';
+
 import { PropsWithChildren, useContext, createContext, useState } from 'react';
 import { CreateNullifierArgs, Nullifier } from '@aurowallet/mina-provider';
-import { Poseidon, PublicKey } from 'o1js';
 
 import { ZKProgramCompileContext } from '@/contexts/zk-program-compile-context.jsx';
 
@@ -15,7 +16,7 @@ interface GenerateEncodedVoteProofParams {
 }
 interface AuroWalletContextInterface {
   auroWalletAddress: string;
-  connectAuroWallet: () => Promise<boolean>;
+  connectAuroWallet: () => Promise<string>;
   createNullifier: (electionId: string) => Promise<Nullifier | Error | null>;
   generateEncodedVoteProof: (vote: GenerateEncodedVoteProofParams) => Promise<string | Error>;
   disconnectAuroWallet: () => void;
@@ -23,7 +24,7 @@ interface AuroWalletContextInterface {
 
 export const AuroWalletContext = createContext<AuroWalletContextInterface>({
   auroWalletAddress: '',
-  connectAuroWallet: async () => false,
+  connectAuroWallet: async () => '',
   createNullifier: async () => null,
   generateEncodedVoteProof: async () => '',
   disconnectAuroWallet: () => {},
@@ -36,7 +37,7 @@ export const AuroWalletProvider = ({
 
   const { zkProgramWorkerClientInstance, isVoteProgramCompiled, isVoteProgramCompiling } = useContext(ZKProgramCompileContext);
 
-  const connectAuroWallet = async (): Promise<boolean> => {
+  const connectAuroWallet = async (): Promise<string> => {
     try {
       if (!(window as any).mina)
         throw new Error('Auro wallet extension not found. Please install it.');
@@ -46,11 +47,11 @@ export const AuroWalletProvider = ({
       if (accounts.length === 0)
         throw new Error('No accounts found in Auro wallet.');
 
-      const address = accounts[0];
+      const address = PublicKey.fromJSON(accounts[0]).toBase58();
 
       setAuroWalletAddress(address);
 
-      return true;
+      return address;
     } catch (error) {
       return Promise.reject(error);
     }

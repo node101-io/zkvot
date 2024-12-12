@@ -94,6 +94,8 @@ const VoteSchema = new Schema({
   }
 });
 
+// TODO: is_devnet parametresi ekle
+
 VoteSchema.statics.createVote = function (
   data: {
     voteProof: string;
@@ -102,8 +104,6 @@ VoteSchema.statics.createVote = function (
   },
   callback: (error: string | null, vote?: VoteType) => any
 ) {
-  const Vote = this as Model<any> & VoteStatics;
-
   if (!isBase64String(data.voteProof))
     return callback('bad_request');
 
@@ -164,8 +164,6 @@ VoteSchema.statics.createAndSubmitVote = function (
   },
   callback: (error: string | null, vote?: VoteType) => any
 ) {
-  const Vote = this as Model<any> & VoteStatics;
-
   if (!isBase64String(data.voteProof))
     return callback('bad_request');
 
@@ -239,8 +237,6 @@ VoteSchema.statics.countVote = function (
   nullifier: string,
   callback: (error: string | null) => any
 ) {
-  const Vote = this;
-
   Vote
     .findOne({ nullifier })
     .then((vote: any) => {
@@ -322,4 +318,5 @@ VoteSchema.statics.countVote = function (
     .catch((err: any) => callback('database_error'));
 };
 
-export default model('Vote', VoteSchema) as Model<any> & VoteStatics;
+const Vote = model('Vote', VoteSchema) as Model<any> & VoteStatics;
+export default Vote;

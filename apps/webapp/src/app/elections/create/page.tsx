@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 import { types, utils } from 'zkvot-core';
+
+import { ZKProgramCompileContext } from '@/contexts/zk-program-compile-context.jsx';
 
 import ElectionInfoStep from '@/app/elections/create/(steps)/1-election-info.jsx';
 import VotersListStep from '@/app/elections/create/(steps)/2-voters-list.jsx';
@@ -13,6 +15,8 @@ import StorageLayerSubmissionStep from '@/app/elections/create/(steps)/6-storage
 import DeployElectionStep from '@/app/elections/create/(steps)/7-deploy-election.jsx';
 
 const HomePage = () => {
+  const { isVoteProgramCompiled, compileAggregationProgramIfNotCompiled } = useContext(ZKProgramCompileContext);
+
   const [step, setStep] = useState<number>(1);
   const [electionData, setElectionData] = useState<types.ElectionStaticData>({
     start_date: new Date(),
@@ -44,7 +48,12 @@ const HomePage = () => {
   //     setStorageLayerId('bafkreiecgx2jxfh6o4sgntasljgyxyj6a36irad6phvbvu2ppfmvbomhra');
   //     setStep(7);
   //   });
-  // }, [])
+  // }, []);
+
+  useEffect(() => {
+    if (isVoteProgramCompiled)
+      compileAggregationProgramIfNotCompiled();
+  }, [isVoteProgramCompiled]);
 
   return (
     <div className="flex justify-center items-center h-full overflow-y-scroll pb-2">

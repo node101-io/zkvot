@@ -1,4 +1,4 @@
-import { useState, useEffect, KeyboardEvent, ChangeEvent } from 'react';
+import { useContext, useState, useEffect, KeyboardEvent, ChangeEvent } from 'react';
 
 import { types } from 'zkvot-core';
 
@@ -135,28 +135,13 @@ export default ({ onNext, initialData }: {
   onNext: (data: types.ElectionStaticData) => void;
   initialData: types.ElectionStaticData
 }) => {
-  const [pictureDataURL, setPictureDataURL] = useState<string>(
-    initialData.image_raw || ''
-  );
+  const [pictureDataURL, setPictureDataURL] = useState<string>(initialData.image_raw || '');
   const [question, setQuestion] = useState<string>(initialData?.question || '');
   const [choices, setChoices] = useState<string[]>(initialData?.options || []);
   const [description, setDescription] = useState<string>(initialData.description || '');
   const [startDate, setStartDate] = useState<Date>(initialData.start_date);
   const [endDate, setEndDate] = useState<Date>(initialData.end_date);
   const [isNextEnabled, setIsNextEnabled] = useState(false);
-
-  const handlePictureChange = (event: ChangeEvent) => {
-    const target = event.target as HTMLInputElement;
-
-    if (target.files && target.files[0]) {
-      const file = target.files[0];
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPictureDataURL(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   useEffect(() => {
     if (
@@ -171,6 +156,19 @@ export default ({ onNext, initialData }: {
       setIsNextEnabled(false);
     }
   }, [pictureDataURL, question, choices, startDate, endDate]);
+
+  const handlePictureChange = (event: ChangeEvent) => {
+    const target = event.target as HTMLInputElement;
+
+    if (target.files && target.files[0]) {
+      const file = target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPictureDataURL(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleNext = () => {
     if (isNextEnabled)

@@ -3,6 +3,8 @@ import Image from 'next/image.js';
 import { FaImage } from 'react-icons/fa';
 import confetti from 'canvas-confetti';
 
+import { PublicKey } from 'o1js';
+
 import { MerkleTree, Election, types, utils } from 'zkvot-core';
 
 import Button from '@/app/(partials)/button.jsx';
@@ -26,8 +28,8 @@ export default ({ onPrevious, data }: {
   onPrevious: () => void;
   data: {
     election: types.ElectionStaticData;
-    storage_layer_platform: types.StorageLayerPlatformCodes,
-    storage_layer_id: string
+    storage_layer_platform: types.StorageLayerPlatformCodes;
+    storage_layer_id: string;
   };
 }) => {
   const { auroWalletAddress, connectAuroWallet } = useContext(AuroWalletContext);
@@ -56,17 +58,11 @@ export default ({ onPrevious, data }: {
     if (submitted) return;
     if (loading) return;
 
-    let auroWalletLoaded = !!auroWalletAddress.trim().length;
+    let address = auroWalletAddress.trim();
 
-    if (!auroWalletLoaded)
-      try {
-        auroWalletLoaded = await connectAuroWallet()
-      } catch (err) {
-        showToast('Please connect your wallet to continue', 'error');
-        return;
-      };
-
-    if (!auroWalletLoaded) {
+    try {
+      address = await connectAuroWallet();
+    } catch (err) {
       showToast('Please connect your wallet to continue', 'error');
       return;
     };
@@ -99,7 +95,7 @@ export default ({ onPrevious, data }: {
 
       await compileAggregationProgramIfNotCompiled()
       const result = await zkProgramWorkerClientInstance.deployElection(
-        auroWalletAddress,
+        address,
         minaBlockData.startBlockHeight,
         minaBlockData.endBlockHeight,
         votersMerkleTree.getRoot().toBigInt(),

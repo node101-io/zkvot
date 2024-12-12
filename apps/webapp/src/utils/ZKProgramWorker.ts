@@ -1,7 +1,7 @@
 import { AccountUpdate, Field, Mina, PublicKey, PrivateKey, Nullifier } from 'o1js';
 import * as Comlink from 'comlink';
 
-import { MerkleTree, Vote, Aggregation } from 'zkvot-core';
+import { MerkleTree, Vote, AggregationMM as Aggregation } from 'zkvot-core';
 
 import { Nullifier as NullifierType } from '@aurowallet/mina-provider';
 
@@ -12,11 +12,13 @@ const state: {
   isVoteProgramCompiled: boolean;
   AggregationProgram: typeof Aggregation.Program | null;
   isAggregationProgramCompiled: boolean;
+  verificationKey: string;
 } = {
   VoteProgram: null,
   isVoteProgramCompiled: false,
   AggregationProgram: null,
-  isAggregationProgramCompiled: false
+  isAggregationProgramCompiled: false,
+  verificationKey: Aggregation.verificationKey
 };
 
 export const api = {
@@ -46,14 +48,16 @@ export const api = {
     if (!state.isVoteProgramCompiled)
       throw new Error('VoteProgram not compiled. Call loadAndCompileVoteProgram() first.');
 
-    const { Aggregation } = await import('zkvot-core');
+    const { AggregationMM } = await import('zkvot-core');
 
-    state.AggregationProgram = Aggregation.Program;
+    state.AggregationProgram = AggregationMM.Program;
 
     console.log('AggregationProgram compile');
     console.time('AggregationProgram compile');
-    await state.AggregationProgram.compile({ proofsEnabled: true });
+    const { verificationKey } = await state.AggregationProgram.compile({ proofsEnabled: true });
     console.timeEnd('AggregationProgram compile');
+
+    state.verificationKey = JSON.stringify(verificationKey);
 
     state.isAggregationProgramCompiled = true;
   },

@@ -94,13 +94,13 @@ export default ({ onPrevious, onNext, initialData }: {
         {initialData.communication_layers[0].name === 'Avail' ?
           (
             <>
-              <label className='block text-white'>App ID:</label>
+              {/* <label className='block text-white'>App ID:</label>
               <input
                 type='text'
                 value={(initialData.communication_layers[0] as types.AvailDaLayerInfo).app_id}
                 readOnly
                 className='w-full max-w-[620px] h-12 p-2 focus:outline-none bg-[#1E1E1E] text-[#B7B7B7] rounded-[50px] my-4'
-              />
+              /> */}
             </>
           ) : (
             <>

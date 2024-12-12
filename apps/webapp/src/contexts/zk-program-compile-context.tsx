@@ -56,12 +56,10 @@ export const ZKProgramCompileProvider = ({ children }: PropsWithChildren<{}>) =>
   }, []);
 
   const compileAggregationProgramIfNotCompiled = async () => {
-    if (isAggregationProgramCompiled) return;
+    if (isAggregationProgramCompiled || isAggregationProgramCompiling) return;
 
     if (!isVoteProgramCompiled || isVoteProgramCompiling)
       throw new Error('Vote program is not compiled yet');
-    if (isAggregationProgramCompiling)
-      throw new Error('Aggregation program is already compiling');
     if (!zkProgramWorkerClientInstance)
       throw new Error('zkProgramWorkerClientInstance is not set');
 

@@ -19,6 +19,7 @@ const compile = async (force_compile: boolean) => {
   } catch (error) {
     console.log('Verification key not found, recompiling...');
 
+    console.time('Vote compile');
     verificationKey = await Vote.Program.compile()
       .then(compiled => {
         console.timeEnd('Vote compile');

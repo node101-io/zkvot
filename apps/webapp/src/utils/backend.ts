@@ -96,7 +96,8 @@ export const sendVoteViaBackend = async (
       body: JSON.stringify({
         da_layer_submission_data,
         election_contract_id,
-        da_layer
+        da_layer,
+        is_devnet: process.env.NODE_ENV !== 'production'
       })
     });
 
