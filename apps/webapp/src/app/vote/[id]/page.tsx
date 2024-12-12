@@ -15,10 +15,7 @@ import { ToastContext } from '@/contexts/toast-context.jsx';
 
 import { submitElectionToBackend } from '@/utils/backend.js';
 
-const MINA_RPC_URL =
-  process.env.NODE_ENV == 'production'
-    ? 'https://api.minascan.io/node/mainnet/v1/graphql'
-    : 'https://api.minascan.io/node/devnet/v1/graphql';
+const MINA_RPC_URL = `https://api.minascan.io/node/${process.env.DEVNET ? 'devnet' : 'mainnet'}/v1/graphql`;
 
 const Page = ({
   params,
@@ -38,7 +35,7 @@ const Page = ({
     proof: ''
   });
   const [electionData, setElectionData] = useState<types.ElectionBackendData>({
-    is_devnet: process.env.NODE_ENV === 'production',
+    is_devnet: !!process.env.DEVNET,
     mina_contract_id: '',
     storage_layer_id: '',
     storage_layer_platform: 'A',
@@ -84,7 +81,7 @@ const Page = ({
 
                 return resolve(
                   utils.convertElectionStaticDataToBackendData(
-                    process.env.NODE_ENV !== 'production',
+                    !!process.env.DEVNET,
                     params.id,
                     storageLayerInfo.id,
                     storageLayerInfo.platform,

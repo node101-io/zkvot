@@ -1,6 +1,8 @@
 import { types } from 'zkvot-core';
 
-const API_URL = process.env.NODE_ENV === 'production' ? 'https://backend.zkvot.io/api' : 'http://localhost:8000/api';
+const API_URL = process.env.NODE_ENV === 'production' ?
+  'https://backend.zkvot.io/api' :
+  'http://localhost:8000/api';
 
 export const submitElectionToBackend = async (
   mina_contract_id: string
@@ -13,7 +15,7 @@ export const submitElectionToBackend = async (
       },
       body: JSON.stringify({
         mina_contract_id,
-        is_devnet: process.env.NODE_ENV !== 'production'
+        is_devnet: !!process.env.DEVNET
       })
     });
 
@@ -36,7 +38,7 @@ export const fetchElectionsFromBackend = async (
   is_ongoing: boolean = true
 ): Promise<types.ElectionBackendData[]> => {
   try {
-    const response = await fetch(`${API_URL}/election/filter?skip=${skip}&is_ongoing=${is_ongoing}&is_devnet=${process.env.NODE_ENV !== 'production'}`, {
+    const response = await fetch(`${API_URL}/election/filter?skip=${skip}&is_ongoing=${is_ongoing}&is_devnet=${!!process.env.DEVNET}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

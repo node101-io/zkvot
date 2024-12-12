@@ -21,7 +21,7 @@ import { CommunicationLayerDetails, StorageLayerDetails } from '@/utils/constant
 import formatDate from '@/utils/formatDate.js';
 
 const DEFAULT_VOTERS_COUNT_TO_DISPLAY = 5;
-const MINA_RPC_URL = process.env.NODE_ENV == 'production' ? 'https://api.minascan.io/node/mainnet/v1/graphql' : 'https://api.minascan.io/node/devnet/v1/graphql';
+const MINA_RPC_URL = `https://api.minascan.io/node/${process.env.DEVNET ? 'devnet' : 'mainnet'}/v1/graphql`;
 const TX_CONFIRM_WAIT_TIME = 15 * 1000;
 
 export default ({ onPrevious, data }: {
@@ -91,7 +91,7 @@ export default ({ onPrevious, data }: {
         return;
       };
 
-      zkProgramWorkerClientInstance.setActiveInstance({ devnet: process.env.NODE_ENV !== 'production' });
+      zkProgramWorkerClientInstance.setActiveInstance({ devnet: !!process.env.DEVNET });
 
       await compileAggregationProgramIfNotCompiled()
       const result = await zkProgramWorkerClientInstance.deployElection(
