@@ -1,4 +1,4 @@
-import { Aggregation, Vote } from 'zkvot-core';
+import { AggregationMM as Aggregation, Vote } from 'zkvot-core';
 
 const compile = async () => {
   console.time('Vote compile');

@@ -6,7 +6,7 @@ export default (
   req: Request,
   res: Response
 ) => {
-  if (!req.body.proof) {
+  if (!req.body.proof_json) {
     res.json({ success: false, error: 'bad_request' });
     return;
   }

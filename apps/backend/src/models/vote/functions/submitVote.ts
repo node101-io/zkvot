@@ -1,11 +1,13 @@
 import { JsonProof } from 'o1js';
 
+import { types } from 'zkvot-core';
+
 import writeToAvail from '../../../utils/da-layers/avail/write.js';
 import writeToCelestia from '../../../utils/da-layers/celestia/write.js';
 
 export default (
   data: {
-    proof: JsonProof;
+    submission_data: types.DaLayerSubmissionData;
     da_layer: 'avail' | 'celestia';
     namespace?: string;
     app_id?: number;
@@ -19,7 +21,7 @@ export default (
     if (!data.app_id)
       return callback('bad_request');
 
-    writeToAvail(data.app_id, data.proof, (err, availResult) => {
+    writeToAvail(data.app_id, data.submission_data, (err, availResult) => {
       if (err)
         return callback(err);
       if (!availResult)
@@ -31,7 +33,7 @@ export default (
     if (!data.namespace)
       return callback('bad_request');
 
-    writeToCelestia(data.namespace, data.proof, (err, celestiaResult) => {
+    writeToCelestia(data.namespace, data.submission_data, (err, celestiaResult) => {
       if (err)
         return callback(err);
       if (!celestiaResult)

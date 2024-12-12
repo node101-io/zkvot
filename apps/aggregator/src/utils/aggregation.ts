@@ -1,4 +1,4 @@
-import { Field, JsonProof, PublicKey, MerkleMap } from 'o1js';
+import { Field, JsonProof, MerkleMap } from 'o1js';
 
 import { AggregationMM, Vote } from 'zkvot-core';
 
@@ -14,7 +14,7 @@ async function base_one (
   const merkleMap = new MerkleMap();
 
   try {
-    Proof = (await Vote.Proof.fromJSON(proof_json)).proof as Vote.Proof;
+    Proof = (await Vote.Proof.fromJSON(JSON.parse(proof_json))) as Vote.Proof;
   } catch (error) {
     console.log('Error parsing proofs', error);
     return callback('proof_parse_error');
@@ -51,8 +51,8 @@ async function append_vote (
   let PreviousProof, Proof, PreviousVotes;
 
   try {
-    PreviousProof = (await AggregationMM.Proof.fromJSON(previous_proof_json)).proof as AggregationMM.Proof;
-    Proof = (await Vote.Proof.fromJSON(proof_json)).proof as Vote.Proof;
+    PreviousProof = (await AggregationMM.Proof.fromJSON(JSON.parse(previous_proof_json))) as AggregationMM.Proof;
+    Proof = (await Vote.Proof.fromJSON(JSON.parse(proof_json))) as Vote.Proof;
   } catch (error) {
     console.log('Error parsing proofs', error);
     return callback('proof_parse_error');

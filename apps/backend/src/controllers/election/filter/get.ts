@@ -6,7 +6,7 @@ export default (
   req: Request,
   res: Response
 ) => {
-  Election.findElectionsByFilter(req.body, (err, elections) => {
+  Election.findElectionsByFilter(req.query, (err, elections) => {
     if (err)
       return res.json({ success: false, error: err });
 

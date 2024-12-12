@@ -1,7 +1,7 @@
 import { model, Model, Schema } from 'mongoose';
 import { JsonProof } from 'o1js';
 
-import { Aggregation } from 'zkvot-core';
+import { AggregationMM as Aggregation } from 'zkvot-core';
 
 const MAX_DATABASE_TEXT_FIELD_LENGTH = 1e4;
 
@@ -48,7 +48,7 @@ const ResultProofSchema = new Schema({
   },
   proof: {
     type: String,
-    required: true
+    default: ''
   },
   previous_voters: {
     type: Array,
@@ -79,7 +79,7 @@ ResultProofSchema.statics.createOrFindResultProofByMinaContractId = function (
 
     newResultProofData.save()
       .then((proof: ResultProofType) => callback(null, proof))
-      .catch((_: any) => callback('database_error'));
+      .catch((err: any) => callback('database_error'));
   })
   .catch((err: any) => callback('database_error'));
 };

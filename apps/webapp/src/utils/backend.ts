@@ -38,7 +38,7 @@ export const fetchElectionsFromBackend = async (
   is_ongoing: boolean = true
 ): Promise<types.ElectionBackendData[]> => {
   try {
-    const response = await fetch(`${API_URL}/election/filter?skip=${skip}&is_ongoing=${is_ongoing}&is_devnet=${!!process.env.DEVNET}`, {
+    const response = await fetch(`${API_URL}/election/filter?skip=${skip}${is_ongoing ? '&is_ongoing' : ''}${process.env.DEVNET ? '&is_devnet' : ''}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -85,7 +85,7 @@ export const fetchElectionByContractIdFromBackend = async (
 };
 
 export const sendVoteViaBackend = async (
-  da_layer_submission_data: string,
+  da_layer_submission_data: types.DaLayerSubmissionData,
   election_contract_id: string,
   da_layer: types.DaLayerInfo['name']
 ) => {
@@ -96,10 +96,10 @@ export const sendVoteViaBackend = async (
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        is_devnet: !!process.env.DEVNET,
         da_layer_submission_data,
         election_contract_id,
-        da_layer,
-        is_devnet: process.env.NODE_ENV !== 'production'
+        da_layer
       })
     });
 
@@ -107,6 +107,8 @@ export const sendVoteViaBackend = async (
       throw new Error('Failed to submit vote to backend');
 
     const result = await response.json();
+
+    console.log(result);
 
     if (!result.success)
       throw new Error(result.error || 'Failed to suvmit vote to backend');
@@ -199,4 +201,4 @@ export const calculateMinaBlockHeightFromTimestampViaBackend = async (
     console.error('Error calculating Mina block height:', error);
     throw error;
   }
-}
+};

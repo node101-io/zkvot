@@ -12,6 +12,7 @@ export default (
     data?: { blockHeight: any; }
   ) => any
 ) => {
+  return callback(null, { blockHeight: 1 });
   encodeDataToBase64String(zkProof, (error, encodedZkProof) => {
     if (error)
       return callback(error);

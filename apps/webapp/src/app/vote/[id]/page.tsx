@@ -71,12 +71,10 @@ const Page = ({
                 if (err || !election_static_data)
                   return reject('Failed to fetch election data');
 
-                if (
-                  utils.verifyElectionDataCommitment(
-                    election_static_data,
-                    election_state.storageLayerCommitment
-                  )
-                )
+                if (!utils.verifyElectionDataCommitment(
+                  election_static_data,
+                  election_state.storageLayerCommitment
+                ))
                   return reject('Election data commitment verification failed');
 
                 return resolve(

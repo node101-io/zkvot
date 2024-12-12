@@ -7,7 +7,7 @@ import { getVerificationKey } from '../../../utils/compileZkProgram.js';
 export default (
   data: {
     vote: JsonProof;
-    electionId: string;
+    electionPubKey: string;
     merkleRoot: string;
   },
   callback: (error: string | null, result?: {
@@ -27,15 +27,15 @@ export default (
       if (voteProof.publicInput.votersRoot.toBigInt().toString() !== data.merkleRoot)
         return callback('invalid_vote');
 
-      if (voteProof.publicInput.electionId.toBase58() !== data.electionId)
+      if (voteProof.publicInput.electionPubKey.toBase58() !== data.electionPubKey)
         return callback('invalid_vote');
 
       if (!(await verify(voteProof, verificationKey)))
         return callback('invalid_vote');
 
       return callback(null, {
-        nullifier: voteProof.publicOutput.nullifier.toBigInt.toString(),
-        vote: voteProof.publicOutput.vote.toBigInt.toString(),
+        nullifier: voteProof.publicOutput.nullifier.toBigInt().toString(),
+        vote: voteProof.publicOutput.vote.toBigInt().toString(),
       });
     });
 };

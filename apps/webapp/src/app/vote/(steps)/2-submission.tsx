@@ -9,6 +9,7 @@ import { types } from 'zkvot-core';
 
 import Button from '@/app/(partials)/button.jsx';
 import CopyButton from '@/app/(partials)/copy-button.jsx';
+import DateFormatter from '@/app/(partials)/date-formatter.jsx';
 import LoadingOverlay from '@/app/(partials)/loading-overlay.jsx';
 import ToolTip from '@/app/(partials)/tool-tip.jsx';
 
@@ -168,19 +169,19 @@ export default ({
   const { subwalletAccount, connectSubwallet, submitDataToAvailViaSubwallet, isSubmitting } = useContext(SubwalletContext);
   const { showToast } = useContext(ToastContext);
 
-  electionData.communication_layers = [
-    {
-      name: 'Avail',
-      start_block_height: 123,
-      app_id: 101
-    },
-    {
-      name: 'Celestia',
-      namespace: 'fldsşd',
-      start_block_height: 123,
-      start_block_hash: 'fldsşigd'
-    }
-  ];
+  // electionData.communication_layers = [
+  //   {
+  //     name: 'Avail',
+  //     start_block_height: 123,
+  //     app_id: 101
+  //   },
+  //   {
+  //     name: 'Celestia',
+  //     namespace: 'fldsşd',
+  //     start_block_height: 123,
+  //     start_block_hash: 'fldsşigd'
+  //   }
+  // ];
 
   const [selectionMode, setSelectionMode] = useState<'direct' | 'backend'>('backend');
   const [selectedDA, setSelectedDA] = useState<types.DaLayerInfo['name']>(electionData.communication_layers[0].name);
@@ -276,30 +277,21 @@ export default ({
     } else if (selectionMode === 'backend') {
       setLoading(true);
 
-      formatAndGetDaLayerSubmissionData(async (err, data) => {
-        if (err || !data) {
-          console.error('Error encoding data to base64:', err);
-          setLoading(false);
-          showToast('Failed to generate the vote, please go to previous step and try again', 'error');
-          return;
-        }
-
-        try {
-          await sendVoteViaBackend(
-            data,
-            electionData.mina_contract_id,
-            selectedDA
-          );
-    
-          showToast('Your vote submitted succesfully! Please note that it may take a few minutes until it is counted', 'success');
-          setLoading(false);
-          goToNextStep();
-        } catch (err) {
-          console.error('Error submitting vote:', err);
-          setLoading(false);
-          showToast('Failed to submit the vote, please try again later', 'error');
-        };
-      });
+      try {
+        await sendVoteViaBackend(
+          daLayerSubmissionData,
+          electionData.mina_contract_id,
+          selectedDA
+        );
+  
+        showToast('Your vote submitted succesfully! Please note that it may take a few minutes until it is counted', 'success');
+        setLoading(false);
+        goToNextStep();
+      } catch (err) {
+        console.error('Error submitting vote:', err);
+        setLoading(false);
+        showToast('Failed to submit the vote, please try again later', 'error');
+      };
     };
   };
 
@@ -353,7 +345,8 @@ export default ({
             <div className='flex flex-col w-full'>
               <div className='text-[#B7B7B7] text-sm mb-2 flex flex-row items-center gap-2'>
                 <Clock />
-                {new Date(electionData.start_date).toLocaleDateString() + ' ' + new Date(electionData.start_date).getHours() + ':' + new Date(electionData.start_date).getMinutes() + ' - ' + new Date(electionData.end_date).toLocaleDateString() + ' ' + new Date(electionData.end_date).getHours() + ':' + new Date(electionData.end_date).getMinutes()}
+                <DateFormatter date={electionData.start_date} /> -{' '}
+                <DateFormatter date={electionData.end_date} />
               </div>
             </div>
             <div className='flex flex-col w-full'>

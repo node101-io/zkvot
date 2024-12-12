@@ -28,25 +28,21 @@ type VoteType = {
 interface VoteStatics {
   createVote: (
     data: {
-      voteProof: string;
+      is_devnet: boolean;
+      da_layer_submission_data: types.DaLayerSubmissionData;
       election_contract_id: string;
       da_layer: types.DaLayerInfo['name'];
     },
-    callback: (error: string | null, result?: {
-      block_height: number,
-      tx_hash: string
-    }) => any
+    callback: (error: string | null, vote?: VoteType) => any
   ) => any;
   createAndSubmitVote: (
     data: {
-      voteProof: string;
+      is_devnet: boolean;
+      da_layer_submission_data: types.DaLayerSubmissionData;
       election_contract_id: string;
       da_layer: types.DaLayerInfo['name'];
     },
-    callback: (error: string | null, result?: {
-      block_height: number,
-      tx_hash: string
-    }) => any
+    callback: (error: string | null, vote?: VoteType) => any
   ) => any;
   countVote: (
     nullifier: string,
@@ -94,35 +90,35 @@ const VoteSchema = new Schema({
   }
 });
 
-// TODO: is_devnet parametresi ekle
-
 VoteSchema.statics.createVote = function (
   data: {
-    voteProof: string;
+    is_devnet: boolean;
+    da_layer_submission_data: types.DaLayerSubmissionData;
     election_contract_id: string;
     da_layer: types.DaLayerInfo['name'];
   },
   callback: (error: string | null, vote?: VoteType) => any
 ) {
-  if (!isBase64String(data.voteProof))
+  if (!isBase64String(data.da_layer_submission_data.proof))
     return callback('bad_request');
 
-  Election.findOrCreateElectionByContractId(data.election_contract_id, (err, election) => {
-    if (err)
-      return callback(err);
-    if (!election)
-      return callback('bad_request');
+  Election.findOrCreateElectionByContractId({
+    mina_contract_id: data.election_contract_id,
+    is_devnet: data.is_devnet
+  }, (err, election) => {
+    if (err || !election)
+      return callback(err || 'unknown_error');
 
     if (!election.communication_layers.find(layer => layer.name == data.da_layer))
       return callback('bad_request');
 
-    decodeFromBase64String(data.voteProof, (err, jsonProof) => {
+    decodeFromBase64String(data.da_layer_submission_data.proof, (err, jsonProof) => {
       if (err || !jsonProof)
         return callback(err);
 
       verifyVote({
         vote: jsonProof,
-        electionId: election.mina_contract_id,
+        electionPubKey: election.mina_contract_id,
         merkleRoot: election.voters_merkle_root
       }, (err, voteOutput) => {
         if (err || !voteOutput)
@@ -158,36 +154,40 @@ VoteSchema.statics.createVote = function (
 
 VoteSchema.statics.createAndSubmitVote = function (
   data: {
-    voteProof: string;
+    is_devnet: boolean;
+    da_layer_submission_data: types.DaLayerSubmissionData;
     election_contract_id: string;
     da_layer: types.DaLayerInfo['name'];
   },
   callback: (error: string | null, vote?: VoteType) => any
 ) {
-  if (!isBase64String(data.voteProof))
+  if (!isBase64String(data.da_layer_submission_data.proof))
     return callback('bad_request');
 
-  Election.findOrCreateElectionByContractId(data.election_contract_id, (err, election) => {
+  Election.findOrCreateElectionByContractId({
+    mina_contract_id: data.election_contract_id,
+    is_devnet: data.is_devnet
+  }, (err, election) => {
     if (err || !election)
       return callback(err || 'unknown_error');
 
     if (!election.communication_layers.find(layer => layer.name == data.da_layer))
       return callback('bad_request');
 
-    decodeFromBase64String(data.voteProof, (err, jsonProof) => {
+    decodeFromBase64String(data.da_layer_submission_data.proof, (err, jsonProof) => {
       if (err || !jsonProof)
         return callback(err);
 
       verifyVote({
         vote: jsonProof,
-        electionId: election.mina_contract_id,
+        electionPubKey: election.mina_contract_id,
         merkleRoot: election.voters_merkle_root
       }, (err, voteOutput) => {
         if (err || !voteOutput)
           return callback(err || 'unknown_error');
 
         const submitVoteData: any = {
-          proof: data.voteProof,
+          submission_data: data.da_layer_submission_data,
           da_layer: data.da_layer
         };
 

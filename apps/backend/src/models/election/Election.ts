@@ -29,14 +29,14 @@ const MINA_MAINNET_RPC_URL = 'https://api.minascan.io/node/mainnet/v1/graphql';
 
 interface ElectionStatics {
   createElection: (
-    data: { mina_contract_id: string },
+    data: { mina_contract_id: string, is_devnet?: boolean },
     callback: (
       error: string | null,
       election?: types.ElectionBackendData
     ) => any
   ) => any;
   findOrCreateElectionByContractId: (
-    mina_contract_id: string,
+    data: { mina_contract_id: string, is_devnet?: boolean },
     callback: (
       error: string | null,
       election?: types.ElectionBackendData
@@ -44,6 +44,7 @@ interface ElectionStatics {
   ) => any;
   findElectionsByFilter: (
     data: {
+      is_devnet?: boolean;
       skip?: number;
       text?: string;
       start_after?: Date;
@@ -201,64 +202,54 @@ ElectionSchema.statics.createElection = function (
     election?: types.ElectionBackendData
   ) => any
 ) {
-  const mina_contract_id = data.mina_contract_id;
+  const { mina_contract_id, is_devnet } = data;
 
-  console.log(mina_contract_id)
+  ElectionProgram.fetchElectionState(mina_contract_id, data.is_devnet ? MINA_DEVNET_RPC_URL : MINA_MAINNET_RPC_URL, (error, state) => {
+    if (error)
+      return callback(error);
+    if (!state)
+      return callback('bad_request');
 
-  Election.findOne({
-    mina_contract_id
-  })
-  .then((election: types.ElectionBackendData) => {
-    if (election)
-      return callback(null, election);
+    const storageInfo = utils.decodeStorageLayerInfo(state.storageLayerInfoEncoding);
 
-    ElectionProgram.fetchElectionState(mina_contract_id, data.is_devnet ? MINA_DEVNET_RPC_URL : MINA_MAINNET_RPC_URL, (error, state) => {
+    utils.fetchDataFromStorageLayer(storageInfo, (error, data) => {
       if (error)
-        return callback(error);
-      if (!state)
+        return callback('bad_request');
+      if (!data)
         return callback('bad_request');
 
-      const storageInfo = utils.decodeStorageLayerInfo(state.storageLayerInfoEncoding);
+      const voters_merkle_root = MerkleTree.createFromStringArray(data.voters_list.map(voter => voter.public_key))?.getRoot().toBigInt().toString();
 
-      utils.fetchDataFromStorageLayer(storageInfo, (error, data) => {
+      uploadImageRaw(data.image_raw, (error, url) => {
         if (error)
-          return callback('bad_request');
-        if (!data)
-          return callback('bad_request');
+          return callback(error);
 
-        const voters_merkle_root = MerkleTree.createFromStringArray(data.voters_list.map(voter => voter.public_key))?.getRoot().toBigInt().toString();
+        const electionData = {
+          is_devnet: is_devnet || false,
+          mina_contract_id,
+          storage_layer_id: storageInfo.id,
+          storage_layer_platform: storageInfo.platform,
+          image_url: url,
+          voters_merkle_root,
+          result: Array.from({ length: data.options.length }, () => 0),
+          ...data
+        };
 
-        uploadImageRaw(data.image_raw, (error, url) => {
-          if (error)
-            return callback(error);
+        const election = new Election(electionData);
 
-          const electionData = {
-            mina_contract_id,
-            storage_layer_id: storageInfo.id,
-            storage_layer_platform: storageInfo.platform,
-            image_url: url,
-            voters_merkle_root,
-            result: Array.from({ length: data.options.length }, () => 0),
-            ...data
-          };
-
-          const election = new Election(electionData);
-
-          election
-            .save()
-            .then((election: types.ElectionBackendData) => callback(null, election))
-            .catch((error: {
-              code: number
-            }) => {
-              if (error.code == DUPLICATED_UNIQUE_FIELD_ERROR_CODE)
-                return callback('duplicated_unique_field');
-              return callback('database_error');
-            });
-        });
+        election
+          .save()
+          .then((election: types.ElectionBackendData) => callback(null, election))
+          .catch((error: {
+            code: number
+          }) => {
+            if (error.code == DUPLICATED_UNIQUE_FIELD_ERROR_CODE)
+              return callback('duplicated_unique_field');
+            return callback('database_error');
+          });
       });
     });
-  })
-  .catch((err: any) => callback('database_error'));
+  });
 };
 
 ElectionSchema.statics.findOrCreateElectionByContractId = function (
@@ -294,7 +285,7 @@ ElectionSchema.statics.findElectionsByFilter = function (
   ) => any
 ) {
   const filters: any[] = [
-    { is_devnet: 'is_devnet' in data ? data.is_devnet : false }
+    { is_devnet: 'is_devnet' in data }
   ];
 
   if (data.text)
@@ -315,7 +306,7 @@ ElectionSchema.statics.findElectionsByFilter = function (
       end_date: { $lte: data.end_before }
     });
 
-  if (data.is_ongoing)
+  if ('is_ongoing' in data)
     filters.push({
       start_date: { $lte: new Date() },
       end_date: { $gte: new Date() }

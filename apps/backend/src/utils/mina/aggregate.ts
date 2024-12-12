@@ -22,12 +22,19 @@ async function process() {
         body: JSON.stringify(data)
       });
 
-      if (!response.ok) return callback('prove_request_failed');
+      if (!response.ok) {
+        callback('prove_request_failed');
+        process();
+        return;
+      }
 
       const result = await response.json();
 
-      if (!result.success)
-        return callback(result.error || 'prove_request_failed');
+      if (!result.success) {
+        callback(result.error || 'prove_request_failed');
+        process();
+        return;
+      }
 
       callback(null, result.proof);
       process();
