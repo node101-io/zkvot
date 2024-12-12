@@ -9,11 +9,12 @@ import types from './types.js';
 import utils from './utils.js';
 
 export {
-  AggregationMM as Aggregation, // MerkleMap aggregation for now
+  AggregationMM,
+  Aggregation,
   AggregationTree,
   Election,
   MerkleTree,
   Vote,
   types,
-  utils
+  utils,
 };
