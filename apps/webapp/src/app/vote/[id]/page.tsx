@@ -91,7 +91,7 @@ const Page = ({
           }
         );
       }
-    );
+  );
 
   const goToNextStep = () => {
     setCurrentStep((prevStep) => prevStep + 1);
@@ -103,6 +103,7 @@ const Page = ({
   useEffect(() => {
     fetchElectionData()
       .then((election_data) => {
+        // setCurrentStep(3)
         setElectionData(election_data);
         submitElectionToBackend(election_data.mina_contract_id);
       })
@@ -134,6 +135,7 @@ const Page = ({
               goToNextStep={goToNextStep}
               setLoading={setLoading}
               setDaLayerSubmissionData={setDaLayerSubmissionData}
+              goToResults={() => setCurrentStep(3)}
             />
           )}
           {currentStep === 2 && (
@@ -150,7 +152,6 @@ const Page = ({
           {currentStep === 3 && (
             <ResultPage
               electionData={electionData}
-              selectedOption={selectedOption}
             />
           )}
         </div>

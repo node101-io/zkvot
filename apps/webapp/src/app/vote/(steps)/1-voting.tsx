@@ -31,6 +31,7 @@ export default ({
   setLoading,
   setDaLayerSubmissionData,
   goToNextStep,
+  goToResults,
 }: {
   electionData: types.ElectionBackendData;
   selectedOption: number;
@@ -40,6 +41,7 @@ export default ({
   setLoading: (loading: boolean) => void;
   setDaLayerSubmissionData: (daLayerSubmissionData: types.DaLayerSubmissionData) => void;
   goToNextStep: () => void;
+  goToResults: () => void;
 }) => {
   const { auroWalletAddress, connectAuroWallet, createNullifier, disconnectAuroWallet, generateEncodedVoteProof } = useContext(AuroWalletContext);
   const { setSelectedWallet } = useContext(SelectedWalletContext);
@@ -194,7 +196,10 @@ export default ({
       {loading && <LoadingOverlay text='Generating zk Proof...' />}
       <div className='py-4 w-full text-start'>
         Already voted?{' '}
-        <button className='relative inline-flex items-center font-medium text-gray-300 transition duration-300 ease-out hover:text-white'>
+        <button
+          className='relative inline-flex items-center font-medium text-gray-300 transition duration-300 ease-out hover:text-white'
+          onClick={goToResults}
+        >
           See Results
         </button>
       </div>

@@ -12,7 +12,6 @@ import DateFormatter from '@/app/(partials)/date-formatter.jsx';
 import ToolTip from '@/app/(partials)/tool-tip.jsx';
 
 import { ToastContext } from '@/contexts/toast-context.jsx';
-import { ZKProgramCompileContext } from '@/contexts/zk-program-compile-context.jsx';
 
 import LearnMoreIcon from '@/public/elections/partials/learn-more-icon.jsx';
 import Clock from '@/public/elections/partials/clock-icon.jsx';
@@ -21,12 +20,8 @@ import MinaLogo from '@/public/general/blockchain-logos/mina.png';
 
 const MINA_RPC_URL = `https://api.minascan.io/node/${process.env.DEVNET ? 'devnet' : 'mainnet'}/v1/graphql`;
 
-export default ({ electionData, selectedOption }: {
-  electionData: types.ElectionBackendData;
-  selectedOption: number;
-}) => {
+export default ({ electionData }: { electionData: types.ElectionBackendData; }) => {
   const { showToast } = useContext(ToastContext);
-  const { zkProgramWorkerClientInstance, isVoteProgramCompiled, isVoteProgramCompiling, compileAggregationProgramIfNotCompiled } = useContext(ZKProgramCompileContext);
 
   const [loading, setLoading] = useState<boolean>(true);
   const [results, setResults] = useState<{
@@ -66,14 +61,6 @@ export default ({ electionData, selectedOption }: {
       setResults(calculatedResults);
     });
   }, [electionData.options]);
-
-  useEffect(() => {
-    const setup = async () => {
-      await compileAggregationProgramIfNotCompiled()
-    };
-
-    setup();
-  }, []);
 
   const handleFetchAndLogData = async () => {
     Election.fetchElectionState(electionData.mina_contract_id, MINA_RPC_URL, (error, state) => {
