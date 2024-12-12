@@ -17,7 +17,6 @@ export default (
 
   calculateBlockHeight(start_date, end_date)
     .then(blockHeight => {
-      console.log('Block height:', blockHeight);
       res.json({ success: true, data: blockHeight });
     })
     .catch(error => {

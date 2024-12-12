@@ -6,17 +6,14 @@ import ToolTip from '@/app/(partials)/tool-tip.jsx';
 
 import AssignedElections from '@/app/elections/(partials)/assigned-elections.jsx';
 
-// import { MetamaskWalletContext } from '@/contexts/MetamaskWalletContext.jsx';
 import { AuroWalletContext } from '@/contexts/auro-wallet-context.jsx';
 
 const Page = () => {
   const [activePanel, setActivePanel] = useState('Assigned Elections');
   const [onlyOngoing, setOnlyOngoing] = useState(false);
 
-  // const { metamaskWalletAddress } = useContext(MetamaskWalletContext);
   const { auroWalletAddress } = useContext(AuroWalletContext);
 
-  // const isWalletConnected = metamaskWalletAddress || auroWalletAddress;
   const isWalletConnected = auroWalletAddress;
 
   return (

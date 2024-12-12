@@ -4,6 +4,9 @@ import path from 'path';
 const nextConfig = {
   // productionBrowserSourceMaps: true,
   reactStrictMode: false,
+  env: {
+    DEVNET: process.env.DEVNET,
+  },
   webpack(config, { webpack, isServer }) {
     if (!isServer) {
       config.resolve.alias = {

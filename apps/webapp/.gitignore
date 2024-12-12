@@ -35,3 +35,5 @@ next-env.d.ts
 electron/build
 
 dist
+
+.env
