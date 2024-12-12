@@ -39,7 +39,6 @@ export default ({ onPrevious, onNext, initialData }: {
   const { showToast } = useContext(ToastContext);
 
   const [blockHeight, setBlockHeight] = useState<number>(0);
-  const [appId, setAppId] = useState<number>(0);
   const [blockHash, setBlockHash] = useState<string>('');
 
   useEffect(() => {
@@ -53,34 +52,11 @@ export default ({ onPrevious, onNext, initialData }: {
 
   }, [initialData]);
 
-  useEffect(() => {
-    setAppId(0)
-  }, [subwalletAccount]);
-
-  const handleCreateAppId = async () => {
-    if (!subwalletAccount) {
-      await connectSubwallet();
-    } else {
-      try {
-        const appId = await createAppId('zkvot-' + Math.random().toString(36).substring(7));
-
-        if (appId) {
-          setAppId(appId);
-          showToast('App ID created successfully', 'success');
-        } else {
-          showToast('Invalid App ID data', 'error');
-        }
-      } catch (error) {
-        showToast(`Error creating App ID: ${error}`, 'error');
-      }
-    }
-  };
-
   const handleNext = () => {
     const communicationLayer = initialData.communication_layers[0];
 
-    if (communicationLayer.name == 'Avail' && appId <= 0) return;
-    if (communicationLayer.name == 'Celestia' && !blockHash?.trim().length) return;
+    if (communicationLayer.name == 'Avail' && blockHeight < 0) return;
+    if (communicationLayer.name == 'Celestia' && blockHeight < 0 && !blockHash?.trim().length) return;
 
     if (communicationLayer.name === 'Avail')
       onNext({
@@ -88,8 +64,7 @@ export default ({ onPrevious, onNext, initialData }: {
         communication_layers: [
           {
             ...communicationLayer,
-            start_block_height: blockHeight,
-            app_id: appId,
+            start_block_height: blockHeight
           }
         ]
       });
@@ -100,7 +75,7 @@ export default ({ onPrevious, onNext, initialData }: {
           {
             ...communicationLayer,
             start_block_height: blockHeight,
-            start_block_hash: blockHash,
+            start_block_hash: blockHash
           }
         ]
       });
@@ -122,32 +97,10 @@ export default ({ onPrevious, onNext, initialData }: {
               <label className='block text-white'>App ID:</label>
               <input
                 type='text'
-                value={appId}
+                value={(initialData.communication_layers[0] as types.AvailDaLayerInfo).app_id}
                 readOnly
                 className='w-full max-w-[620px] h-12 p-2 focus:outline-none bg-[#1E1E1E] text-[#B7B7B7] rounded-[50px] my-4'
               />
-              <div className='w-full pb-6'>
-                <button
-                  onClick={handleCreateAppId}
-                  disabled={appId > 0 || isSubmitting}
-                  className={`px-4 rounded-full py-4 flex flex-row justify-center items-center gap-x-2 transition-colors duration-300 ${
-                    isSubmitting || appId > 0
-                      ? 'bg-[#333] cursor-not-allowed'
-                      : 'bg-[#1E1E1E] hover:bg-[#333]'
-                  } text-white rounded`}
-                >
-                  {isSubmitting ? (
-                    'Submitting...'
-                  ) : appId > 0 ? (
-                    <>App ID Created</>
-                  ) : (
-                    <>
-                      <PlusIcon />
-                      {!subwalletAccount ? 'Connect Wallet' : 'Create App ID'}
-                    </>
-                  )}
-                </button>
-              </div>
             </>
           ) : (
             <>
@@ -173,13 +126,13 @@ export default ({ onPrevious, onNext, initialData }: {
           onClick={handleNext}
           disabled={
             blockHeight <= 0 ||
-            (initialData.communication_layers[0].name === 'Avail' && appId <= 0) ||
-            (initialData.communication_layers[0].name === 'Celestia' && !blockHash?.trim().length)
+            (initialData.communication_layers[0].name === 'Avail' && blockHeight < 0) ||
+            (initialData.communication_layers[0].name === 'Celestia' && blockHeight < 0 && !blockHash?.trim().length)
           }
           className={`${
             blockHeight <= 0 ||
-            (initialData.communication_layers[0].name === 'Avail' && appId <= 0) ||
-            (initialData.communication_layers[0].name === 'Celestia' && !blockHash?.trim().length) ? 'opacity-50 cursor-not-allowed' : ''
+            (initialData.communication_layers[0].name === 'Avail' && blockHeight < 0) ||
+            (initialData.communication_layers[0].name === 'Celestia' && blockHeight < 0 && !blockHash?.trim().length) ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
           Next

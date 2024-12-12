@@ -8,6 +8,7 @@ import {
   Provable,
   UInt32,
 } from 'o1js';
+
 import MerkleTree from './MerkleTree.js';
 
 namespace VoteNamespace {

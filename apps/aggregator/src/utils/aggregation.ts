@@ -1,6 +1,6 @@
 import { Field, JsonProof, PublicKey, MerkleMap } from 'o1js';
 
-import { Aggregation, Vote } from 'zkvot-core';
+import { AggregationMM, Vote } from 'zkvot-core';
 
 async function base_one (
   data: {
@@ -28,7 +28,7 @@ async function base_one (
   };
 
   try {
-    const proof = (await Aggregation.Program.base_one(PublicInputs, Proof, witness)).proof;
+    const proof = (await AggregationMM.Program.base_one(PublicInputs, Proof, witness)).proof;
     return callback(null, proof.toJSON());
   } catch (error) {
     console.log('Error generating proof', error);
@@ -51,7 +51,7 @@ async function append_vote (
   let PreviousProof, Proof, PreviousVotes;
 
   try {
-    PreviousProof = (await Aggregation.Proof.fromJSON(previous_proof_json)).proof as Aggregation.Proof;
+    PreviousProof = (await AggregationMM.Proof.fromJSON(previous_proof_json)).proof as AggregationMM.Proof;
     Proof = (await Vote.Proof.fromJSON(proof_json)).proof as Vote.Proof;
   } catch (error) {
     console.log('Error parsing proofs', error);
@@ -90,7 +90,7 @@ async function append_vote (
   const witness = merkleMap.getWitness(Proof.publicOutput.nullifier);
 
   try {
-    const proof = (await Aggregation.Program.append_vote(PublicInputs, PreviousProof, Proof, witness)).proof;
+    const proof = (await AggregationMM.Program.append_vote(PublicInputs, PreviousProof, Proof, witness)).proof;
     return callback(null, proof.toJSON());
   } catch (error) {
     console.log('Error generating proof', error);

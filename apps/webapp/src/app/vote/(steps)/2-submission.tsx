@@ -9,11 +9,13 @@ import { types } from 'zkvot-core';
 
 import Button from '@/app/(partials)/button.jsx';
 import CopyButton from '@/app/(partials)/copy-button.jsx';
+import LoadingOverlay from '@/app/(partials)/loading-overlay.jsx';
 import ToolTip from '@/app/(partials)/tool-tip.jsx';
 
 import { SubwalletContext } from '@/contexts/subwallet-context.jsx';
 import { ToastContext } from '@/contexts/toast-context.jsx';
 
+import encodeDataToBase64String from '@/utils/encodeDataToBase64String';
 import { sendVoteViaBackend } from '@/utils/backend.js';
 import { CommunicationLayerDetails } from '@/utils/constants.jsx';
 
@@ -149,16 +151,18 @@ const DASelection = ({
 export default ({
   electionData,
   selectedOption,
+  loading,
+  daLayerSubmissionData,
   goToNextStep,
   goToPrevStep,
-  zkProofData,
   setLoading,
 }: {
   electionData: types.ElectionBackendData;
   selectedOption: number;
+  loading: boolean;
+  daLayerSubmissionData: types.DaLayerSubmissionData;
   goToNextStep: () => void;
   goToPrevStep: () => void;
-  zkProofData: string;
   setLoading: (loading: boolean) => void;
 }) => {
   const { subwalletAccount, connectSubwallet, submitDataToAvailViaSubwallet, isSubmitting } = useContext(SubwalletContext);
@@ -168,7 +172,7 @@ export default ({
     {
       name: 'Avail',
       start_block_height: 123,
-      app_id: 123
+      app_id: 101
     },
     {
       name: 'Celestia',
@@ -183,15 +187,27 @@ export default ({
   const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false);
   const [isPopupConfirmed, setIsPopupConfirmed] = useState<boolean>(false);
 
-  const downloadVoteProof = () => {
-    const blob = new Blob([zkProofData], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
+  const formatAndGetDaLayerSubmissionData = (callback: (err: string | null, data?: string | undefined) => any) => {
+    encodeDataToBase64String(JSON.stringify(daLayerSubmissionData), callback);
+  };
 
-    const link = document.createElement('a');
-    link.download = 'zkvot-vote-proof-' + electionData.mina_contract_id + '.txt';
-    link.href = url;
-    link.click();
-    URL.revokeObjectURL(url);
+  const downloadVoteProof = () => {
+    formatAndGetDaLayerSubmissionData((err, data) => {
+      if (err || !data) {
+        console.error('Error encoding data to base64:', err);
+        showToast('Failed to generate the vote, please go to previous step and try again', 'error');
+        return;
+      }
+
+      const blob = new Blob([data], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.download = 'zkvot-vote-proof-' + electionData.mina_contract_id + '.txt';
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
+    });
   };
 
   const handleConnectWallet = async () => {
@@ -223,58 +239,68 @@ export default ({
           showToast('Please connect your wallet to proceed', 'error');
           return;
         }
-        if (!zkProofData) {
-          showToast('No vote proof found', 'error');
-          return;
-        }
+
+        setLoading(true);
+
+        formatAndGetDaLayerSubmissionData(async (err, data) => {
+          if (err || !data) {
+            console.error('Error encoding data to base64:', err);
+            setLoading(false);
+            showToast('Failed to generate the vote, please go to previous step and try again', 'error');
+            return;
+          }
+
+          try {
+            const transactionSuccess = await submitDataToAvailViaSubwallet(data);
+
+            if (transactionSuccess) {
+              setLoading(false);
+              goToNextStep();
+            } else {
+              setLoading(false);
+              showToast('Failed to submit the vote, please try again later', 'error');
+            }
+          } catch (err) {
+            console.error('Error submitting vote:', err);
+            setLoading(false);
+            showToast('Failed to submit the vote, please try again later', 'error');
+          }
+        });
       } else if (selectedDA === 'Celestia') {
         if (isPopupConfirmed)
           goToNextStep();
         else
           setIsPopupOpen(true);
         return;
-      }
+      };
     } else if (selectionMode === 'backend') {
-      if (!zkProofData) {
-        showToast('ZK proof data is missing. Please go back and generate it.', 'error');
-        return;
-      }
-    }
-
-    try {
       setLoading(true);
 
-      if (selectionMode === 'direct') {
-        let transactionSuccess = false;
-
-        if (selectedDA === 'Avail')
-          transactionSuccess = await submitDataToAvailViaSubwallet(zkProofData);
-
-        if (transactionSuccess)
-          goToNextStep();
-        else
-          throw new Error('Failed to submit vote to Avail');
-      } else if (selectionMode === 'backend') {
-        const response = await sendVoteViaBackend(
-          zkProofData,
-          electionData.mina_contract_id,
-          selectedDA
-        );
-
-        if (response.success) { // TODO: bu zaten arkaplanda yapılıyor
-          goToNextStep();
-        } else {
-          console.error(123,response);
-          throw new Error(response);
+      formatAndGetDaLayerSubmissionData(async (err, data) => {
+        if (err || !data) {
+          console.error('Error encoding data to base64:', err);
+          setLoading(false);
+          showToast('Failed to generate the vote, please go to previous step and try again', 'error');
+          return;
         }
-      }
 
-      setLoading(false);
-    } catch (error) {
-      console.error('Error submitting vote:', error);
-      showToast('Failed to submit vote. Please try again', 'error');
-      setLoading(false);
-    }
+        try {
+          await sendVoteViaBackend(
+            data,
+            electionData.mina_contract_id,
+            selectedDA
+          );
+    
+          showToast('Your vote submitted succesfully! Please note that it may take a few minutes until it is counted', 'success');
+          setLoading(false);
+          goToNextStep();
+        } catch (err) {
+          console.error('Error submitting vote:', err);
+          setLoading(false);
+          showToast('Failed to submit the vote, please try again later', 'error');
+        };
+      });
+    };
   };
 
   const Placeholder = ({ className }: { className: string }) => (
@@ -285,6 +311,7 @@ export default ({
 
   return (
     <div className='flex flex-col items-center px-8 sm:px-12 md:px-24 flex-grow py-12'>
+      {loading && <LoadingOverlay text='Generating zk Proof...' />}
       <div className='flex flex-col items-start w-full h-fit text-white mb-6 bg-[#222222] p-5 rounded-[30px] '>
         <div className='flex flex-col md:flex-row w-full h-fit '>
           <div className='w-full md:w-1/4 flex'>

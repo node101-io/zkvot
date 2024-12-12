@@ -83,7 +83,7 @@ export const fetchElectionByContractIdFromBackend = async (
 };
 
 export const sendVoteViaBackend = async (
-  vote: string,
+  da_layer_submission_data: string,
   election_contract_id: string,
   da_layer: types.DaLayerInfo['name']
 ) => {
@@ -94,7 +94,7 @@ export const sendVoteViaBackend = async (
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        vote,
+        da_layer_submission_data,
         election_contract_id,
         da_layer
       })
@@ -108,7 +108,7 @@ export const sendVoteViaBackend = async (
     if (!result.success)
       throw new Error(result.error || 'Failed to suvmit vote to backend');
 
-    return result.elections;
+    return result.vote;
   } catch (error) {
     throw new Error('Failed to submit vote to backend');
   }

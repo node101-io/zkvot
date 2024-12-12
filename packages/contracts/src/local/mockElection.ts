@@ -1,5 +1,5 @@
 import { fetchAccount, fetchLastBlock, Field, Mina, PrivateKey } from 'o1js';
-import { votersArray } from './mock.js';
+import { votersList } from './mock.js';
 import { mockVotes } from '../example/createMockVotes.js';
 import { runAggregate } from '../example/runAggregateMM.js';
 
@@ -25,7 +25,7 @@ const { electionContractPk: electionPrivKey, electionContractInstance } =
   await deploy(
     currentBlock,
     currentBlock + 10,
-    votersArray,
+    votersList,
     [Field.from(0), Field.from(0)],
     Field.from(0),
     feePayerKey

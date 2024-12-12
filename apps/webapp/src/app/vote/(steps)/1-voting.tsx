@@ -26,17 +26,19 @@ export default ({
   electionData,
   selectedOption,
   loading,
+  daLayerSubmissionData,
   setSelectedOption,
   setLoading,
-  setZkProofData,
+  setDaLayerSubmissionData,
   goToNextStep,
 }: {
   electionData: types.ElectionBackendData;
   selectedOption: number;
-  setSelectedOption: (option: number) => void;
   loading: boolean;
+  daLayerSubmissionData: types.DaLayerSubmissionData;
+  setSelectedOption: (option: number) => void;
   setLoading: (loading: boolean) => void;
-  setZkProofData: (proof: string) => void;
+  setDaLayerSubmissionData: (daLayerSubmissionData: types.DaLayerSubmissionData) => void;
   goToNextStep: () => void;
 }) => {
   const { auroWalletAddress, connectAuroWallet, createNullifier, disconnectAuroWallet, generateEncodedVoteProof } = useContext(AuroWalletContext);
@@ -169,7 +171,14 @@ export default ({
         return;
       };
 
-      setZkProofData(proof);
+      setDaLayerSubmissionData({
+        election_id: daLayerSubmissionData.election_id,
+        nullifier: JSON.stringify({
+          x: nullifier.public.nullifier.x.toString(),
+          y: nullifier.public.nullifier.y.toString(),
+        }),
+        proof
+      });
       setLoading(false);
       goToNextStep();
     } catch (error) {

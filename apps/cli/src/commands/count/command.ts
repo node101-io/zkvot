@@ -1,4 +1,5 @@
-import aggregateSavedVotes from './functions/aggregateSavedVotes.js';
+// import aggregateSavedVotes from './functions/aggregateSavedVotes.js';
+import aggregateSavedVotes from './functions/aggregateSavedVotesMM.js';
 import getAndSaveElectionDataByElectionIdIfNotExist from './functions/getAndSaveElectionDataByElectionIdIfNotExist.js';
 import installRequiredLightNodeByElectionIdIfNotExists from './functions/installRequiredLightNodeByElectionIdIfNotExists.js';
 import saveAllVotesFromBlockHeightToCurrentViaLightNode from './functions/saveAllVotesFromBlockHeightToCurrentViaLightNode.js';

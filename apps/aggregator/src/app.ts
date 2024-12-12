@@ -1,7 +1,5 @@
-import dotenv from 'dotenv';
 import express from 'express';
 import http from 'http';
-import path from 'path';
 
 import proveRouteController from './routes/proveRoute.js';
 
@@ -10,9 +8,7 @@ import { compileZkProgramIfNotCompiledBefore } from './utils/compileZkProgram.js
 const app = express();
 const server = http.createServer(app);
 
-const PORT = process.env.PORT || 8001;
-
-dotenv.config({ path: path.join(import.meta.dirname, '../.env') });
+const PORT = 8001;
 
 app.use(express.json());
 app.use((req, res, next) => {
@@ -25,7 +21,7 @@ app.use((req, res, next) => {
 app.use('/prove', proveRouteController);
 
 server.listen(PORT, () => {
-  console.log(`Server is on port ${PORT} as Worker`);
+  console.log(`Server is on port ${PORT}.`);
 
   compileZkProgramIfNotCompiledBefore(false);
 });

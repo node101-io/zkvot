@@ -1,5 +1,5 @@
 export default (
-  data: object,
+  data: object | string,
   callback: (error: string | null, base64String?: string) => any
 ) => {
   try {

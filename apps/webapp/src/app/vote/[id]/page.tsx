@@ -1,6 +1,8 @@
 'use client';
 
 import { useContext, useState, useEffect } from 'react';
+import { Proof } from 'o1js';
+
 import { Election, types, utils } from 'zkvot-core';
 
 import ProgressBar from '@/app/vote/(partials)/progress-bar.jsx';
@@ -30,7 +32,11 @@ const Page = ({
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [selectedOption, setSelectedOption] = useState<number>(-1);
-  const [zkProofData, setZkProofData] = useState<string>('');
+  const [daLayerSubmissionData, setDaLayerSubmissionData] = useState<types.DaLayerSubmissionData>({
+    election_id: params.id,
+    nullifier: '',
+    proof: ''
+  });
   const [electionData, setElectionData] = useState<types.ElectionBackendData>({
     is_devnet: process.env.NODE_ENV === 'production',
     mina_contract_id: '',
@@ -45,7 +51,7 @@ const Page = ({
     voters_list: [],
     voters_merkle_root: '0',
     communication_layers: [],
-    result: [],
+    result: []
   });
 
   const fetchElectionData = () =>
@@ -128,19 +134,21 @@ const Page = ({
               electionData={electionData}
               selectedOption={selectedOption}
               loading={loading}
+              daLayerSubmissionData={daLayerSubmissionData}
               setSelectedOption={setSelectedOption}
               goToNextStep={goToNextStep}
               setLoading={setLoading}
-              setZkProofData={setZkProofData}
+              setDaLayerSubmissionData={setDaLayerSubmissionData}
             />
           )}
           {currentStep === 2 && (
             <SubmissionStep
               electionData={electionData}
               selectedOption={selectedOption}
+              loading={loading}
+              daLayerSubmissionData={daLayerSubmissionData}
               goToNextStep={goToNextStep}
               goToPrevStep={goToPrevStep}
-              zkProofData={zkProofData}
               setLoading={setLoading}
             />
           )}

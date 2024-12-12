@@ -28,7 +28,7 @@ const MINA_DEVNET_RPC_URL = 'https://api.minascan.io/node/devnet/v1/graphql';
 const MINA_MAINNET_RPC_URL = 'https://api.minascan.io/node/mainnet/v1/graphql';
 
 interface ElectionStatics {
-  createElectionIfNotExist: (
+  createElection: (
     data: { mina_contract_id: string },
     callback: (
       error: string | null,
@@ -194,7 +194,7 @@ const ElectionSchema = new Schema({
   ]
 });
 
-ElectionSchema.statics.createElectionIfNotExist = function (
+ElectionSchema.statics.createElection = function (
   data: { mina_contract_id: string, is_devnet?: boolean },
   callback: (
     error: string | null,
@@ -246,9 +246,7 @@ ElectionSchema.statics.createElectionIfNotExist = function (
 
           election
             .save()
-            .then((election: types.ElectionBackendData) => {
-              return callback(null, election);
-            })
+            .then((election: types.ElectionBackendData) => callback(null, election))
             .catch((error: {
               code: number
             }) => {
@@ -278,7 +276,7 @@ ElectionSchema.statics.findOrCreateElectionByContractId = function (
       if (election)
         return callback(null, election);
 
-      Election.createElectionIfNotExist({ mina_contract_id }, callback);
+      Election.createElection({ mina_contract_id }, callback);
     })
     .catch((err: any) => callback('database_error'));
 };

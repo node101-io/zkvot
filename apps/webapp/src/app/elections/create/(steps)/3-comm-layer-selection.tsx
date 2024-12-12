@@ -32,7 +32,7 @@ export default ({ onPrevious, onNext, initialData }: {
       let communicationLayer: types.AvailDaLayerInfo = {
         name: selectedCommunicationLayer,
         start_block_height: 0,
-        app_id: 0
+        app_id: 101
       };
 
       try {

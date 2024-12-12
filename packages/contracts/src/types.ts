@@ -3,26 +3,28 @@ namespace typesNamespace {
     name: 'Avail' | 'Celestia',
     start_block_height: number
   };
-
   export type AvailDaLayerInfo = DaLayerInfo & {
-    app_id: number
+    app_id: 101
   };
-
   export type AvailDataTx = {
     data: string
   };
-
   export type CelestiaDaLayerInfo = DaLayerInfo & {
     namespace: string,
     start_block_hash: string
   };
-
   export type CelestiaDataTx = {
     namespace: string,
     data: string,
     share_version: number,
     commitment: string,
     index: number
+  };
+
+  export type DaLayerSubmissionData = {
+    election_id: string,
+    nullifier: string,
+    proof: string
   };
 
   export type VoterCustomFields = {
