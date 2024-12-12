@@ -45,10 +45,11 @@ if (cluster.isPrimary) {
   app.use(express.json());
   app.use(cors({
     origin: (origin, callback) => {
-      if (origin === 'http://localhost:3000' || origin === 'https://app.zkvot.io')
-        return callback(null, true);
+      return callback(null, true);
+      // if (origin === 'http://localhost:3000' || origin === 'https://app.zkvot.io')
+      //   return callback(null, true);
 
-      return callback(new Error('Not allowed by CORS'));
+      // return callback(new Error('Not allowed by CORS'));
     }
   }));
   app.use((req, res, next) => {

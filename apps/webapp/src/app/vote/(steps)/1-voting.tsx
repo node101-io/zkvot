@@ -86,15 +86,11 @@ export default ({
     let connectionSuccess = false;
 
     try {
-      connectionSuccess = await connectAuroWallet();
-
-      if (!connectionSuccess) {
-        setSelectedWallet(null);
-        showToast('Please connect your wallet to vote', 'error');
-      }
+      await connectAuroWallet();
     } catch (error) {
       console.error('Error during wallet selection:', error);
-      showToast('An error occurred while selecting the wallet, please try again later', 'error');
+      setSelectedWallet(null);
+      showToast('Please connect your wallet to vote', 'error');
     }
   };
 

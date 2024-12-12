@@ -25,7 +25,7 @@ const { electionContractPk: electionPrivKey, electionContractInstance } =
   await deploy(
     currentBlock,
     currentBlock + 10,
-    votersList,
+    votersList.map(each => each[0].toPublicKey()),
     [Field.from(0), Field.from(0)],
     Field.from(0),
     feePayerKey
