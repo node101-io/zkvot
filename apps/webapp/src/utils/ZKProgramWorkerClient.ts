@@ -72,17 +72,7 @@ export default class {
       votersRoot
     );
   };
-  async verifyAggregationProof(
-    proof: string,
-    electionPubKey: string,
-    votersRoot: string,
-    result: number[]
-  ) {
-    return this.remoteApi.verifyAggregationProof(
-      proof,
-      electionPubKey,
-      votersRoot,
-      result
-    );
+  getVerificationKey() {
+    return this.remoteApi.getVerificationKey();
   }
 };
