@@ -77,7 +77,6 @@ export const api = {
       votersRoot
     });
 
-    console.log('ElectionContract compile');
     console.time('ElectionContract compile');
     await Election.Contract.compile();
     console.timeEnd('ElectionContract compile');

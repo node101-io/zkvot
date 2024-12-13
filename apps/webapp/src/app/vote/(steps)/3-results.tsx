@@ -4,9 +4,8 @@ import Image from 'next/image.js';
 import { useContext, useEffect, useState } from 'react';
 import { FaImage } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import { verify } from 'o1js';
 
-import { AggregationMM as Aggregation, Election, Vote, types } from 'zkvot-core';
+import { Election, types } from 'zkvot-core';
 
 import CopyButton from '@/app/(partials)/copy-button.jsx';
 import DateFormatter from '@/app/(partials)/date-formatter.jsx';
@@ -21,6 +20,7 @@ import Clock from '@/public/elections/partials/clock-icon.jsx';
 import MinaLogo from '@/public/general/blockchain-logos/mina.png';
 
 import { fetchElectionResultByContractIdFromBackend } from '@/utils/backend.js';
+import { verifyAggregationProof } from '@/utils/o1js.js';
 
 const MINA_RPC_URL = `https://api.minascan.io/node/${process.env.DEVNET ? 'devnet' : 'mainnet'}/v1/graphql`;
 
@@ -48,12 +48,6 @@ export default ({ electionData }: { electionData: types.ElectionBackendData; }) 
   );
 
   const verifySoftFinalityProof = async (softFinalityResult: number[]) => {
-    if (!softFinalityProof.trim().length) {
-      showToast('The soft finality\'s proof is not found', 'error');
-      setSoftFinalityResult([]);
-      return;
-    }
-
     if (!zkProgramWorkerClientInstance) {
       showToast('zkProgramWorkerClientInstance is not found', 'error');
       setSoftFinalityResult([]);
@@ -61,49 +55,21 @@ export default ({ electionData }: { electionData: types.ElectionBackendData; }) 
     }
 
     try {
-      const proof = await Aggregation.Proof.fromJSON(JSON.parse(softFinalityProof));
-
       const verificationKey = await zkProgramWorkerClientInstance.getVerificationKey();
 
-      if (!proof) {
-        showToast('Error parsing proof', 'error');
-        setSoftFinalityResult([]);
-        return;
-      }
-
-      if (proof.publicInput.electionPubKey.toBase58() !== electionData.mina_contract_id) {
-        showToast('Election public key mismatch', 'error');
-        setSoftFinalityResult([]);
-        return;
-      }
-  
-      if (proof.publicInput.votersRoot.toBigInt().toString() !== electionData.voters_merkle_root) {
-        showToast('Voters root mismatch', 'error');
-        setSoftFinalityResult([]);
-        return;
-      }
-
-      const proofResults = new Vote.VoteOptions({
-        voteOptions_1: proof.publicOutput.voteOptions_1,
-        voteOptions_2: proof.publicOutput.voteOptions_2,
-        voteOptions_3: proof.publicOutput.voteOptions_3,
-      }).toResults().slice(0, electionData.options.length);
-
-      if (
-        electionData.options.length !== softFinalityResult.length ||
-        proofResults.find((any, index) => softFinalityResult[index] !== any)
-      ) {
-        showToast('Soft finality result mismatch', 'error');
-        setSoftFinalityResult([]);
-        return;
-      }
-  
-      if (!(await verify(proof, JSON.parse(verificationKey)))) {
+      if (!verifyAggregationProof(
+        softFinalityProof,
+        verificationKey,
+        electionData.mina_contract_id,
+        electionData.voters_merkle_root,
+        electionData.options.length,
+        softFinalityResult,
+      )) {
         showToast('Invalid soft finality proof', 'error');
         setSoftFinalityResult([]);
         return;
       }
-  
+
       setIsSoftFinalityResultVerified(true);
     } catch (error) {
       showToast('Invalid soft finality proof', 'error');

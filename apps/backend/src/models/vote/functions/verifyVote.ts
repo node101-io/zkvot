@@ -2,7 +2,7 @@ import { JsonProof, verify } from 'o1js';
 
 import { Vote } from 'zkvot-core';
 
-import { getVerificationKey } from '../../../utils/compileZkProgram.js';
+import { getVerificationKey } from '../../../utils/mina/compileZkProgram.js';
 
 export default (
   data: {

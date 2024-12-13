@@ -11,7 +11,7 @@ import voteRouteController from './routes/voteRoute.js';
 
 import Vote from './models/vote/Vote.js';
 
-import { compileZkProgramIfNotCompiledBefore } from './utils/compileZkProgram.js';
+import { compileZkProgramIfNotCompiledBefore } from './utils/mina/compileZkProgram.js';
 
 dotenv.config({ path: path.join(import.meta.dirname, '../.env') });
 
