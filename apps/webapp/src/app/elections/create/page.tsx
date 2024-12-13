@@ -1,21 +1,22 @@
-'use client';
+"use client";
 
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from "react";
 
-import { types, utils } from 'zkvot-core';
+import { types, utils } from "zkvot-core";
 
-import { ZKProgramCompileContext } from '@/contexts/zk-program-compile-context.jsx';
+import { ZKProgramCompileContext } from "@/contexts/zk-program-compile-context.jsx";
 
-import ElectionInfoStep from '@/app/elections/create/(steps)/1-election-info.jsx';
-import VotersListStep from '@/app/elections/create/(steps)/2-voters-list.jsx';
-import CommLayerSelectionStep from '@/app/elections/create/(steps)/3-comm-layer-selection.jsx';
-import CommLayerSubmissionStep from '@/app/elections/create/(steps)/4-comm-layer-submission.jsx';
-import StorageLayerSelectionStep from '@/app/elections/create/(steps)/5-storage-layer-selection.jsx';
-import StorageLayerSubmissionStep from '@/app/elections/create/(steps)/6-storage-layer-submission.jsx';
-import DeployElectionStep from '@/app/elections/create/(steps)/7-deploy-election.jsx';
+import ElectionInfoStep from "@/app/elections/create/(steps)/1-election-info.jsx";
+import VotersListStep from "@/app/elections/create/(steps)/2-voters-list.jsx";
+import CommLayerSelectionStep from "@/app/elections/create/(steps)/3-comm-layer-selection.jsx";
+import CommLayerSubmissionStep from "@/app/elections/create/(steps)/4-comm-layer-submission.jsx";
+import StorageLayerSelectionStep from "@/app/elections/create/(steps)/5-storage-layer-selection.jsx";
+import StorageLayerSubmissionStep from "@/app/elections/create/(steps)/6-storage-layer-submission.jsx";
+import DeployElectionStep from "@/app/elections/create/(steps)/7-deploy-election.jsx";
 
 const HomePage = () => {
-  const { isVoteProgramCompiled, compileAggregationProgramIfNotCompiled } = useContext(ZKProgramCompileContext);
+  const { isVoteProgramCompiled, compileAggregationProgramIfNotCompiled } =
+    useContext(ZKProgramCompileContext);
 
   const [step, setStep] = useState<number>(1);
   const [electionData, setElectionData] = useState<types.ElectionStaticData>({
@@ -34,25 +35,29 @@ const HomePage = () => {
 
   // IMPORTANT!!!! For easy testing DO NOT delete IMPORTANT!!!!
   // useEffect(() => {
-  //   utils.fetchDataFromStorageLayer({
-  //     platform: 'F',
-  //     id: 'bafkreiecgx2jxfh6o4sgntasljgyxyj6a36irad6phvbvu2ppfmvbomhra'
-  //   }, (err, data) => {
-  //     if (err || !data) {
-  //       console.error(err);
-  //       return;
-  //     }
+  //   utils.fetchDataFromStorageLayer(
+  //     {
+  //       platform: "F",
+  //       id: "bafkreiecgx2jxfh6o4sgntasljgyxyj6a36irad6phvbvu2ppfmvbomhra",
+  //     },
+  //     (err, data) => {
+  //       if (err || !data) {
+  //         console.error(err);
+  //         return;
+  //       }
 
-  //     setElectionData(data);
-  //     setStorageLayerPlatform('F');
-  //     setStorageLayerId('bafkreiecgx2jxfh6o4sgntasljgyxyj6a36irad6phvbvu2ppfmvbomhra');
-  //     setStep(7);
-  //   });
+  //       setElectionData(data);
+  //       setStorageLayerPlatform("F");
+  //       setStorageLayerId(
+  //         "bafkreiecgx2jxfh6o4sgntasljgyxyj6a36irad6phvbvu2ppfmvbomhra"
+  //       );
+  //       setStep(7);
+  //     }
+  //   );
   // }, []);
 
   useEffect(() => {
-    if (isVoteProgramCompiled)
-      compileAggregationProgramIfNotCompiled();
+    if (isVoteProgramCompiled) compileAggregationProgramIfNotCompiled();
   }, [isVoteProgramCompiled]);
 
   return (

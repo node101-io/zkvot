@@ -1,11 +1,11 @@
-import Image from 'next/image.js';
+import Image from "next/image.js";
 
-import ArweaveLogo from '@/public/general/blockchain-logos/arweave.png';
-import AvailLogo from '@/public/general/blockchain-logos/avail.png';
-import CelestiaLogo from '@/public/general/blockchain-logos/celestia.png';
-import FileCoinLogo from '@/public/general/blockchain-logos/filecoin.png';
+import ArweaveLogo from "@/public/general/blockchain-logos/arweave.png";
+import AvailLogo from "@/public/general/blockchain-logos/avail.png";
+import CelestiaLogo from "@/public/general/blockchain-logos/celestia.png";
+import FileCoinLogo from "@/public/general/blockchain-logos/filecoin.png";
 
-import { types } from 'zkvot-core';
+import { types } from "zkvot-core";
 
 export type CommunicationLayerDetailsType = {
   [key in types.CommunicationLayerNames]: {
@@ -14,7 +14,7 @@ export type CommunicationLayerDetailsType = {
     logo: JSX.Element;
   };
 };
-export type StorageLayerDetailsType= {
+export type StorageLayerDetailsType = {
   [key in types.StorageLayerPlatformNames]: {
     description: string;
     currency: string;
@@ -25,57 +25,57 @@ export type StorageLayerDetailsType= {
 
 export const CommunicationLayerDetails: CommunicationLayerDetailsType = {
   Avail: {
-    description: 'Avail is a decentralized data availability layer.',
-    currency: 'AVAIL',
+    description: "Avail is a decentralized data availability layer.",
+    currency: "AVAIL",
     logo: (
       <Image
         src={AvailLogo}
-        alt='Avail Logo'
-        width={12}
-        height={12}
-        className='w-12 h-12'
+        alt="Avail Logo"
+        width={64}
+        height={64}
+        className="w-16 h-16 object-contain"
       />
     ),
   },
   Celestia: {
-    description: 'Celestia is a modular consensus and data network.',
-    currency: 'TIA',
+    description: "Celestia is a modular consensus and data network.",
+    currency: "TIA",
     logo: (
       <Image
         src={CelestiaLogo}
-        alt='Celestia Logo'
-        width={12}
-        height={12}
-        className='w-12 h-12'
+        alt="Celestia Logo"
+        width={64}
+        height={64}
+        className="w-16 h-16 object-contain"
       />
-    )
-  }
+    ),
+  },
 };
-export const StorageLayerDetails: StorageLayerDetailsType= {
+export const StorageLayerDetails: StorageLayerDetailsType = {
   Arweave: {
-    description: 'Arweave is a decentralized storage network.',
-    currency: 'AR',
+    description: "Arweave is a decentralized storage network.",
+    currency: "AR",
     logo: (
       <Image
         src={ArweaveLogo}
-        alt='Arweave Logo'
+        alt="Arweave Logo"
         width={160}
         height={160}
       />
     ),
-    code: 'A'
+    code: "A",
   },
   Filecoin: {
-    description: 'Filecoin is a decentralized storage network.',
-    currency: 'FIL',
+    description: "Filecoin is a decentralized storage network.",
+    currency: "FIL",
     logo: (
       <Image
         src={FileCoinLogo}
-        alt='Filecoin Logo'
+        alt="Filecoin Logo"
         width={160}
         height={160}
       />
     ),
-    code: 'F'
-  }
+    code: "F",
+  },
 };

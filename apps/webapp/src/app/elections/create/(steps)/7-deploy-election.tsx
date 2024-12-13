@@ -1,30 +1,41 @@
-import { useContext, useState } from 'react';
-import Image from 'next/image.js';
-import { FaImage } from 'react-icons/fa';
-import confetti from 'canvas-confetti';
+import { useContext, useState } from "react";
+import Image from "next/image.js";
+import { FaImage } from "react-icons/fa";
+import confetti from "canvas-confetti";
 
-import { PublicKey } from 'o1js';
+import { PublicKey } from "o1js";
 
-import { MerkleTree, Election, types, utils } from 'zkvot-core';
+import { MerkleTree, Election, types, utils } from "zkvot-core";
 
-import Button from '@/app/(partials)/button.jsx';
-import LoadingOverlay from '@/app/(partials)/loading-overlay.jsx';
+import Button from "@/app/(partials)/button.jsx";
+import LoadingOverlay from "@/app/(partials)/loading-overlay.jsx";
 
-import Clock from '@/public/elections/partials/clock-icon.jsx';
+import Clock from "@/public/elections/partials/clock-icon.jsx";
 
-import { AuroWalletContext } from '@/contexts/auro-wallet-context.jsx';
-import { ToastContext } from '@/contexts/toast-context.jsx';
-import { ZKProgramCompileContext } from '@/contexts/zk-program-compile-context.jsx';
+import { AuroWalletContext } from "@/contexts/auro-wallet-context.jsx";
+import { ToastContext } from "@/contexts/toast-context.jsx";
+import { ZKProgramCompileContext } from "@/contexts/zk-program-compile-context.jsx";
 
-import { calculateMinaBlockHeightFromTimestampViaBackend, submitElectionToBackend } from '@/utils/backend.js';
-import { CommunicationLayerDetails, StorageLayerDetails } from '@/utils/constants.jsx';
-import formatDate from '@/utils/formatDate.js';
+import {
+  calculateMinaBlockHeightFromTimestampViaBackend,
+  submitElectionToBackend,
+} from "@/utils/backend.js";
+import {
+  CommunicationLayerDetails,
+  StorageLayerDetails,
+} from "@/utils/constants.jsx";
+import formatDate from "@/utils/formatDate.js";
 
 const DEFAULT_VOTERS_COUNT_TO_DISPLAY = 5;
-const MINA_RPC_URL = `https://api.minascan.io/node/${process.env.DEVNET ? 'devnet' : 'mainnet'}/v1/graphql`;
+const MINA_RPC_URL = `https://api.minascan.io/node/${
+  process.env.DEVNET ? "devnet" : "mainnet"
+}/v1/graphql`;
 const TX_CONFIRM_WAIT_TIME = 15 * 1000;
 
-export default ({ onPrevious, data }: {
+export default ({
+  onPrevious,
+  data,
+}: {
   onPrevious: () => void;
   data: {
     election: types.ElectionStaticData;
@@ -32,9 +43,15 @@ export default ({ onPrevious, data }: {
     storage_layer_id: string;
   };
 }) => {
-  const { auroWalletAddress, connectAuroWallet } = useContext(AuroWalletContext);
+  const { auroWalletAddress, connectAuroWallet } =
+    useContext(AuroWalletContext);
   const { showToast } = useContext(ToastContext);
-  const { zkProgramWorkerClientInstance, isVoteProgramCompiled, isVoteProgramCompiling, compileAggregationProgramIfNotCompiled } = useContext(ZKProgramCompileContext);
+  const {
+    zkProgramWorkerClientInstance,
+    isVoteProgramCompiled,
+    isVoteProgramCompiling,
+    compileAggregationProgramIfNotCompiled,
+  } = useContext(ZKProgramCompileContext);
 
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -45,12 +62,12 @@ export default ({ onPrevious, data }: {
     callback: () => void
   ) => {
     Election.fetchElectionState(minaContractId, MINA_RPC_URL, (err, state) => {
-      if (!err && state)
-        return callback();
+      if (!err && state) return callback();
 
-      setTimeout(() =>
-        waitUntilTxIsConfirmed(minaContractId, callback),
-      TX_CONFIRM_WAIT_TIME);
+      setTimeout(
+        () => waitUntilTxIsConfirmed(minaContractId, callback),
+        TX_CONFIRM_WAIT_TIME
+      );
     });
   };
 
@@ -63,52 +80,72 @@ export default ({ onPrevious, data }: {
     try {
       address = await connectAuroWallet();
     } catch (err) {
-      showToast('Please connect your wallet to continue', 'error');
+      showToast("Please connect your wallet to continue", "error");
       return;
-    };
+    }
 
     if (!zkProgramWorkerClientInstance) {
-      showToast('Something went wrong, please try again later', 'error');
+      showToast("Something went wrong, please try again later", "error");
       return;
     }
     if (isVoteProgramCompiling) {
-      showToast('zkVot is loading in the background, please wait a few more minutes and try again', 'error');
+      showToast(
+        "zkVot is loading in the background, please wait a few more minutes and try again",
+        "error"
+      );
       return;
     }
     if (!isVoteProgramCompiled) {
-      showToast('zkVot is loading in the background, please wait a few more minutes and try again', 'error');
+      showToast(
+        "zkVot is loading in the background, please wait a few more minutes and try again",
+        "error"
+      );
       return;
     }
     setLoading(true);
 
     try {
-      const minaBlockData = await calculateMinaBlockHeightFromTimestampViaBackend(data.election.start_date, data.election.end_date);
-      const votersMerkleTree = MerkleTree.createFromStringArray(data.election.voters_list.map(voter => voter.public_key));
+      const minaBlockData =
+        await calculateMinaBlockHeightFromTimestampViaBackend(
+          data.election.start_date,
+          data.election.end_date
+        );
+      const votersMerkleTree = MerkleTree.createFromStringArray(
+        data.election.voters_list.map((voter) => voter.public_key)
+      );
 
       if (!votersMerkleTree) {
-        showToast('Error creating Voters Merkle Tree from voters array', 'error');
+        showToast(
+          "Error creating Voters Merkle Tree from voters array",
+          "error"
+        );
         setLoading(false);
         return;
-      };
+      }
 
-      zkProgramWorkerClientInstance.setActiveInstance({ devnet: !!process.env.DEVNET });
+      zkProgramWorkerClientInstance.setActiveInstance({
+        devnet: !!process.env.DEVNET,
+      });
 
-      await compileAggregationProgramIfNotCompiled()
+      await compileAggregationProgramIfNotCompiled();
       const result = await zkProgramWorkerClientInstance.deployElection(
         address,
         minaBlockData.startBlockHeight,
         minaBlockData.endBlockHeight,
         votersMerkleTree.getRoot().toBigInt(),
-        utils.encodeStorageLayerInfo(data.storage_layer_platform, data.storage_layer_id),
+        utils.encodeStorageLayerInfo(
+          data.storage_layer_platform,
+          data.storage_layer_id
+        ),
         utils.createElectionDataCommitment(data.election),
         undefined
       );
 
       if (!result) {
-        showToast('Error deploying election, please try again later.', 'error');
+        showToast("Error deploying election, please try again later.", "error");
         setLoading(false);
         return;
-      };
+      }
 
       const { mina_contract_id, txJSON } = result;
 
@@ -116,7 +153,7 @@ export default ({ onPrevious, data }: {
         transaction: txJSON,
         feePayer: {
           fee: 0.1,
-          memo: 'zkvot.io',
+          memo: "zkvot.io",
         },
       });
 
@@ -129,7 +166,10 @@ export default ({ onPrevious, data }: {
         submitElectionToBackend(mina_contract_id).catch(console.error);
 
         // TODO: Show success message as pop up
-        showToast(`Election deployed successfully! Your TX is available in https://minascan.io/devnet/tx/${hash}.`, 'success');
+        showToast(
+          `Election deployed successfully! Your TX is available in https://minascan.io/devnet/tx/${hash}.`,
+          "success"
+        );
 
         confetti({
           particleCount: 100,
@@ -138,49 +178,58 @@ export default ({ onPrevious, data }: {
         });
       });
     } catch (error) {
-      showToast(`Error deploying election, please try again later. Message: ${error}`, 'error');
+      showToast(
+        `Error deploying election, please try again later. Message: ${error}`,
+        "error"
+      );
       setLoading(false);
     }
   };
 
   const Placeholder = ({ className }: { className: string }) => (
     <div className={`${className} flex items-center justify-center h-full`}>
-      <FaImage className='text-gray-500 text-6xl' />
+      <FaImage className="text-gray-500 text-6xl" />
     </div>
   );
 
-  const optionalFields = data.election.voters_list?.length > 0 ? Object.keys(data.election.voters_list[0]).filter(key => key !== 'public_key'): [];
+  const optionalFields =
+    data.election.voters_list?.length > 0
+      ? Object.keys(data.election.voters_list[0]).filter(
+          (key) => key !== "public_key"
+        )
+      : [];
 
   const renderCommunicationLayers = () => {
     return data.election.communication_layers.map((layer, index) => (
       <div
         key={index}
-        className='flex items-center bg-[#222222] p-4 rounded-2xl mb-4'
+        className="flex items-center bg-[#222222] p-4 rounded-2xl mb-4"
       >
-        <div className='w-16 h-16 flex-shrink-0 rounded-md mr-4 flex items-center justify-center bg-gray-500'>
+        <div className="w-16 h-16 flex-shrink-0 rounded-md overflow-hidden mr-4 flex items-center justify-center bg-gray-500">
           {CommunicationLayerDetails[layer.name].logo || (
-            <div className='w-full h-full bg-gray-500 rounded-md' />
+            <div className="w-full h-full bg-gray-500 rounded-md" />
           )}
         </div>
-        <div className='flex flex-col'>
-          <h3 className='text-white text-lg mb-1 capitalize'>{layer.name}</h3>
+        <div className="flex flex-col">
+          <h3 className="text-white text-lg mb-1 capitalize">{layer.name}</h3>
           {layer.start_block_height && (
-            <span className='text-sm text-gray-400'>
+            <span className="text-sm text-gray-400">
               Block Height: {layer.start_block_height}
             </span>
           )}
           {(layer as types.CelestiaDaLayerInfo).namespace && (
-            <span className='text-sm text-gray-400'>
+            <span className="text-sm text-gray-400">
               Namespace: {(layer as types.CelestiaDaLayerInfo).namespace}
             </span>
           )}
           {(layer as types.CelestiaDaLayerInfo).start_block_hash && (
-            <span className='text-sm text-gray-400'>
-              Block Hash: {(layer as types.CelestiaDaLayerInfo).start_block_hash}
+            <span className="text-sm text-gray-400">
+              Block Hash:{" "}
+              {(layer as types.CelestiaDaLayerInfo).start_block_hash}
             </span>
           )}
           {(layer as types.AvailDaLayerInfo).app_id && (
-            <span className='text-sm text-gray-400'>
+            <span className="text-sm text-gray-400">
               Namespace: {(layer as types.AvailDaLayerInfo).app_id}
             </span>
           )}
@@ -190,21 +239,29 @@ export default ({ onPrevious, data }: {
   };
 
   const renderStorageLayer = () => {
-    const layer = StorageLayerDetails[utils.StorageLayerPlatformDecoding[data.storage_layer_platform]];
+    const decodedPlatform =
+      utils.StorageLayerPlatformDecoding[data.storage_layer_platform];
+    const layer = StorageLayerDetails[decodedPlatform];
 
     return (
-      <div className='flex items-center bg-[#222222] p-4 rounded-2xl mb-4'>
-        <div className='w-16 h-16 flex-shrink-0 rounded-md mr-4 flex items-center justify-center bg-gray-500'>
-          {layer.logo || <div className='w-full h-full bg-gray-500 rounded-md' />}
+      <div className="flex items-start bg-[#222222] p-6 rounded-2xl mb-6 space-x-4">
+        <div className="w-16 h-16 flex-shrink-0 rounded-md flex items-center justify-center bg-gray-500">
+          {layer.logo || (
+            <div className="w-full h-full bg-gray-500 rounded-md" />
+          )}
         </div>
-        <div className='flex flex-col'>
-          <h3 className='text-white text-lg mb-1 capitalize'>{utils.StorageLayerPlatformDecoding[data.storage_layer_platform]}</h3>
-          <span className='text-sm text-gray-400'>
+        <div className="flex flex-col space-y-1">
+          <h3 className="text-white text-lg font-semibold capitalize">
+            {decodedPlatform}
+          </h3>
+          <span className="text-sm text-gray-400">
             Description: {layer.description}
           </span>
-          {/* <span className='text-sm text-gray-400'>
+          {/* Uncomment if needed
+          <span className='text-sm text-gray-400'>
             Fee: {layer.fee} {layer.currency}
-          </span> */}
+          </span>
+          */}
         </div>
       </div>
     );
@@ -216,7 +273,10 @@ export default ({ onPrevious, data }: {
       if (!value) return null;
 
       return (
-        <span key={index} className='mr-2 text-white text-sm bg-[#1E1E1E] p-3 rounded-full'>
+        <span
+          key={index}
+          className="mr-2 text-white text-sm bg-[#1E1E1E] p-3 rounded-full"
+        >
           {field}: {value}
         </span>
       );
@@ -224,22 +284,24 @@ export default ({ onPrevious, data }: {
   };
 
   const renderVotersList = () => {
-    const votersToDisplay = showAllVoters ? data.election.voters_list : data.election.voters_list.slice(0, DEFAULT_VOTERS_COUNT_TO_DISPLAY);
+    const votersToDisplay = showAllVoters
+      ? data.election.voters_list
+      : data.election.voters_list.slice(0, DEFAULT_VOTERS_COUNT_TO_DISPLAY);
 
     return (
       <>
-        <div className='grid grid-cols-1 gap-4'>
+        <div className="grid grid-cols-1 gap-4">
           {votersToDisplay.map((voter, index) => (
             <div
               key={index}
-              className='flex flex-row justify-between bg-[#222222] p-4 rounded-2xl overflow-scroll'
+              className="flex flex-row justify-between bg-[#222222] p-4 rounded-2xl overflow-scroll"
             >
-              <div className='flex items-center mb-2'>
-                <span className='text-white text-sm bg-[#1E1E1E] p-2 rounded-full max-w-[530px] overflow-scroll'>
+              <div className="flex items-center mb-2">
+                <span className="text-white text-sm bg-[#1E1E1E] p-2 rounded-full max-w-[530px] overflow-scroll">
                   {voter.public_key}
                 </span>
               </div>
-              <div className='flex items-center'>
+              <div className="flex items-center">
                 {renderOptionalFields(voter)}
               </div>
             </div>
@@ -248,9 +310,9 @@ export default ({ onPrevious, data }: {
         {data.election.voters_list.length > DEFAULT_VOTERS_COUNT_TO_DISPLAY && (
           <button
             onClick={() => setShowAllVoters(!showAllVoters)}
-            className='mt-4 text-white transition underline'
+            className="mt-4 text-white transition underline"
           >
-            {showAllVoters ? 'Show Less' : 'Show More'}
+            {showAllVoters ? "Show Less" : "Show More"}
           </button>
         )}
       </>
@@ -258,99 +320,105 @@ export default ({ onPrevious, data }: {
   };
 
   return (
-    <div className='flex flex-col items-center px-4 sm:px-6 md:px-8 h-full'>
-      {loading && <LoadingOverlay text='Submitting election' />}
-      <div className='pb-4 pt-8 w-full text-start'>Result</div>
-      <div className='flex flex-col items-start w-full h-fit text-white mb-6 bg-[#222222] p-5 rounded-[30px] '>
-        <div className='flex flex-col md:flex-row w-full h-fit'>
-          <div className='w-full md:w-1/4 flex'>
-            <div className='flex w-full h-32 rounded-3xl overflow-hidden'>
-              <div className='w-full relative'>
-                {data.election.image_raw?.length ? (
-                  <div className='w-full h-full relative'>
-                    <Image
-                      src={data.election.image_raw}
-                      alt='Candidate Image'
-                      fill
-                      style={{ objectFit: 'cover' }}
-                      className='rounded-l-lg'
-                    />
+    <div className="flex flex-col justify-between items-center space-y-6 min-h-[calc(100vh-160px)] max-h-[calc(100vh-162px)] overflow-y-auto p-4">
+      <div className="w-full">
+        {loading && <LoadingOverlay text="Submitting election" />}
+        <div className="mb-4">
+          <h2 className="text-white text-xl"> Result</h2>
+        </div>
+        <div className="w-full bg-[#222222] p-6 rounded-2xl shadow-lg mb-6">
+          <div className="flex flex-col md:flex-row">
+            <div className="w-full md:w-1/4 flex justify-center mb-4 md:mb-0">
+              <div className="flex w-full h-32 rounded-3xl overflow-hidden">
+                <div className="w-full relative">
+                  {data.election.image_raw?.length ? (
+                    <div className="w-full h-full relative">
+                      <Image
+                        src={data.election.image_raw}
+                        alt="Candidate Image"
+                        fill
+                        style={{ objectFit: "cover" }}
+                        className="rounded-l-lg"
+                      />
+                    </div>
+                  ) : (
+                    <Placeholder className="rounded-l-lg" />
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="md:ml-6 flex-1">
+              <div className="flex items-center mb-2 text-gray-400 text-sm space-x-1">
+                <Clock />
+                <div className="flex space-x-2">
+                  <div>
+                    <span className="font-medium ">Start Date: </span>
+                    {formatDate(data.election.start_date)}
                   </div>
-                ) : (
-                  <Placeholder className='rounded-l-lg' />
-                )}
-              </div>
-            </div>
-          </div>
-          <div className='px-4 w-full h-fit flex flex-col justify-start'>
-            <div className='flex flex-row w-full justify-between '>
-              <div className='text-[#B7B7B7] text-sm mb-2 flex flex-row items-center '>
-                <span className='flex flex-row justify-center items-center '>
-                  <span>
-                    <Clock />
-                  </span>
-                  <span className='text-sm text-[#B7B7B7]'>
-                    Start Date:{' '}
-                    {formatDate(data.election.start_date)},
-                    End Date:{' '}
+                  <div>
+                    <span className="font-medium ">End Date: </span>
                     {formatDate(data.election.end_date)}
-                  </span>
-                </span>
+                  </div>
+                </div>
               </div>
+              <h2 className="text-2xl mt-2">{data.election.question}</h2>
+              <p className="text-sm italic text-gray-400">
+                {data.election.description.length > 100
+                  ? data.election.description.slice(0, 100) + "..."
+                  : data.election.description}
+              </p>
             </div>
-            <div className='flex flex-col w-full h-fit '>
-              <h2 className='text-2xl mb-2'>{data.election.question}</h2>
-              <div className='flex flex-col md:flex-row justify-between py-2 gap-y-1'>
-                <span>
-                  <span className='text-sm mr-1 flex flex-col items-start'>
-                    <span className='text-[16px] italic'>
-                      {data.election.description}
-                    </span>
-                  </span>
-                </span>
-              </div>
+          </div>
+
+          <div className="mt-6">
+            <h3 className="text-sm text-gray-400 mb-2">Options</h3>
+            <div className="space-y-2">
+              {data.election.options.map((option, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between w-full h-12 px-4 bg-[#333] rounded-full"
+                >
+                  <span className="text-sm">{option}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
-        <div className='pt-4 pb-2 w-full'>
-          <h3 className='text-[16px] text-[#B7B7B7] mb-4'>Options</h3>
-          <div className='pl-4 rounded text-[20px]'>
-            {data.election.options.map((option, index) => (
-              <div key={index} className='flex items-center justify-between w-full h-12 px-4 bg-[#333] rounded-[23px] mb-2' >
-                <span className='text-[16px]'>{option}</span>
-              </div>
-            ))}
-          </div>
+
+        <div className="w-full">
+          <h3 className="text-sm text-gray-400 mb-4">Communication Layer</h3>
+          <div className="space-y-6">{renderCommunicationLayers()}</div>
+        </div>
+
+        <div className="w-full">
+          <h3 className="text-sm text-gray-400 mb-4">Storage Layer</h3>
+          <div>{renderStorageLayer()}</div>
+        </div>
+
+        <div className="w-full">
+          <h3 className="text-sm text-gray-400 mb-4">Voters List</h3>
+          {data.election.voters_list?.length > 0 ? (
+            renderVotersList()
+          ) : (
+            <p className="text-gray-500">No voters have participated yet.</p>
+          )}
         </div>
       </div>
-      <div className='pt-4 pb-2 w-full'>
-        <h3 className='text-[16px] text-[#B7B7B7] mb-4'>Communication Layer</h3>
 
-        <div className='pl-4 rounded text-[20px]'>
-          {renderCommunicationLayers()}
-        </div>
-      </div>
-      <div className='pt-4 pb-2 w-full'>
-        <h3 className='text-[16px] text-[#B7B7B7] mb-4'>Storage Layer</h3>
-
-        <div className='pl-4 rounded text-[20px]'>{renderStorageLayer()}</div>
-      </div>
-      <div className='pt-4 pb-2 w-full'>
-        <h3 className='text-[16px] text-[#B7B7B7] mb-4'>Voters List</h3>
-        {data.election.voters_list?.length > 0 ? (
-          renderVotersList()
-        ) : (
-          <p className='text-gray-500'>No voters have participated yet.</p>
-        )}
-      </div>
-      <div className='w-full flex justify-between pt-4'>
-        <Button onClick={onPrevious} variant='back'>Previous</Button>
+      <div className="w-full flex justify-between pt-4">
+        <Button
+          onClick={onPrevious}
+          variant="back"
+        >
+          Previous
+        </Button>
         <Button
           onClick={handleSubmit}
           // disabled={submitted}
-          className={`${submitted ? 'bg-gray-500 cursor-not-allowed' : ''}`}
+          className={`${submitted ? "bg-gray-500 cursor-not-allowed" : ""}`}
         >
-          {submitted ? 'Submitted' : 'Submit'}
+          {submitted ? "Submitted" : "Submit"}
         </Button>
       </div>
     </div>
