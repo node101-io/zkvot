@@ -4,3 +4,4 @@ build
 .env
 .DS_Store
 VoteVerificationKey.json
+src/cron/data/lastReadBlock.json
