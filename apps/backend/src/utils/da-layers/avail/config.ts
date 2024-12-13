@@ -1,6 +1,16 @@
-if (!process.env.AVAIL_LIGHT_CLIENT_SEED_PHRASE)
-  console.error('AVAIL_LIGHT_CLIENT_SEED_PHRASE environment variable not set');
+if (!process.env.AVAIL_SEED_PHRASE_MAINNET)
+  console.warn('AVAIL_SEED_PHRASE_MAINNET environment variable not set');
+if (!process.env.AVAIL_SEED_PHRASE_DEVNET)
+  console.warn('AVAIL_SEED_PHRASE_DEVNET environment variable not set');
 
-export const seedPhrase = process.env.AVAIL_LIGHT_CLIENT_SEED_PHRASE;
-export const rpcEndpoint = process.env.AVAIL_LIGHT_CLIENT_RPC_ENDPOINT || 'https://api.lightclient.mainnet.avail.so';
-export const appID = 101;
+export const mainnet = {
+  seedPhrase: process.env.AVAIL_SEED_PHRASE_MAINNET,
+  providerEndpoint: process.env.AVAIL_PROVIDER_ENDPOINT_MAINNET || 'wss://turing-rpc.avail.so/ws',
+  appID: 101
+};
+
+export const devnet = {
+  seedPhrase: process.env.AVAIL_SEED_PHRASE_DEVNET,
+  providerEndpoint: process.env.AVAIL_PROVIDER_ENDPOINT_DEVNET || 'wss://mainnet.avail-rpc.com',
+  appID: 101
+};

@@ -21,7 +21,7 @@ import { calculateBlockHeightFromTimestamp, checkIfAccountExists } from '@/utils
 
 const DEFAULT_VOTERS_COUNT_TO_DISPLAY = 5;
 const MINA_RPC_URL = `https://api.minascan.io/node/${process.env.DEVNET ? 'devnet' : 'mainnet'}/v1/graphql`;
-const TX_CONFIRM_WAIT_TIME = 15 * 1000;
+const TX_CONFIRM_WAIT_TIME = 30 * 1000;
 
 export default ({ onPrevious, data }: {
   onPrevious: () => void;

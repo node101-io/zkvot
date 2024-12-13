@@ -46,7 +46,7 @@ const HomePage = () => {
 
       setElectionData(data);
       setStorageLayerPlatform('F');
-      setStorageLayerId('bafkreiecgx2jxfh6o4sgntasljgyxyj6a36irad6phvbvu2ppfmvbomhra');
+      setStorageLayerId('bafkreianqmbzkk3teruaazk5tlqvkqli47xccjnkrjpgezdqihocwymw54');
       setStep(7);
     });
   }, []);

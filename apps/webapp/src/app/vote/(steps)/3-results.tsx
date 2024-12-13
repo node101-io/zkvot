@@ -117,7 +117,7 @@ export default ({ electionData }: { electionData: types.ElectionBackendData; }) 
         softFinalityProof = data.proof;
 
         verifySoftFinalityProof(data.result.map(result => Number(result.voteCount)));
-      })
+      });
   }, []);
 
   const handleFetchAndLogData = async () => {

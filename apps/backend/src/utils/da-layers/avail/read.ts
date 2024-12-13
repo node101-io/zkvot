@@ -1,4 +1,4 @@
-import { WaitFor, Keyring } from 'avail-js-sdk';
+import { SDK, WaitFor, Keyring } from 'avail-js-sdk';
 
 import { types } from 'zkvot-core';
 
@@ -6,14 +6,11 @@ import { getSDK } from './sdk.js';
 import { devnet, mainnet } from './config.js';
 
 export default async (
-  data: types.DaLayerSubmissionData,
+  height: number,
   is_devnet: boolean,
   callback: (
     error: string | null,
-    data?: {
-      blockHeight: number;
-      txHash: string;
-    }
+    submission_data_list?: types.DaLayerSubmissionData[]
   ) => any
 ) => {
   const seedPhrase = is_devnet ? devnet.seedPhrase : mainnet.seedPhrase;
@@ -27,17 +24,9 @@ export default async (
    
     const account = new Keyring({ type: 'sr25519' }).addFromUri(seedPhrase)
    
-    const result = await sdk.tx.dataAvailability.submitData(JSON.stringify(data), WaitFor.BlockInclusion, account)
-  
-    console.log(result);
-  
-    if (result.isErr)
-      return callback('submit_error');
-  
-    return callback(null, {
-      blockHeight: result.blockNumber,
-      txHash: result.txHash.toString()
-    });
+    const hash = await sdk.api.rpc.chain.getBlockHash(height);
+    const result = await sdk.api.rpc.chain.getBlock(hash)
+
   } catch (error) {
     console.error(error);
     return callback('submit_error');
