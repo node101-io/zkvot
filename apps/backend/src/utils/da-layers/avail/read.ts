@@ -1,4 +1,4 @@
-import { SDK, WaitFor, Keyring } from 'avail-js-sdk';
+import { Keyring } from 'avail-js-sdk';
 
 import { types } from 'zkvot-core';
 
@@ -24,11 +24,16 @@ export default async (
    
     const account = new Keyring({ type: 'sr25519' }).addFromUri(seedPhrase)
    
-    const hash = await sdk.api.rpc.chain.getBlockHash(height);
-    const result = await sdk.api.rpc.chain.getBlock(hash)
+    const hash = (await sdk.api.rpc.chain.getBlockHash(height));
+    const result = await sdk.api.rpc.chain.getBlock(hash);
+    const txs = result.block.extrinsics.map(each => {
+      return (each as any).appId
+    });
+
+    console.log(txs.length);
 
   } catch (error) {
     console.error(error);
-    return callback('submit_error');
+    return callback('read_error');
   };
 };

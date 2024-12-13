@@ -33,23 +33,23 @@ const HomePage = () => {
   const [storageLayerId, setStorageLayerId] = useState<string>("");
 
   // IMPORTANT!!!! For easy testing DO NOT delete IMPORTANT!!!!
-  useEffect(() => {
-    utils.fetchDataFromStorageLayer({
-      platform: 'F',
-      // id: 'bafkreiecgx2jxfh6o4sgntasljgyxyj6a36irad6phvbvu2ppfmvbomhra'
-      id: 'bafkreianqmbzkk3teruaazk5tlqvkqli47xccjnkrjpgezdqihocwymw54'
-    }, (err, data) => {
-      if (err || !data) {
-        console.error(err);
-        return;
-      }
+  // useEffect(() => {
+  //   utils.fetchDataFromStorageLayer({
+  //     platform: 'F',
+  //     // id: 'bafkreiecgx2jxfh6o4sgntasljgyxyj6a36irad6phvbvu2ppfmvbomhra'
+  //     id: 'bafkreianqmbzkk3teruaazk5tlqvkqli47xccjnkrjpgezdqihocwymw54'
+  //   }, (err, data) => {
+  //     if (err || !data) {
+  //       console.error(err);
+  //       return;
+  //     }
 
-      setElectionData(data);
-      setStorageLayerPlatform('F');
-      setStorageLayerId('bafkreianqmbzkk3teruaazk5tlqvkqli47xccjnkrjpgezdqihocwymw54');
-      setStep(7);
-    });
-  }, []);
+  //     setElectionData(data);
+  //     setStorageLayerPlatform('F');
+  //     setStorageLayerId('bafkreianqmbzkk3teruaazk5tlqvkqli47xccjnkrjpgezdqihocwymw54');
+  //     setStep(7);
+  //   });
+  // }, []);
 
   useEffect(() => {
     if (isVoteProgramCompiled)

@@ -25,11 +25,11 @@ export default async (
   
     const sdk = await getSDK(is_devnet)
    
-    const account = new Keyring({ type: 'sr25519' }).addFromUri(seedPhrase)
+    const account = new Keyring({ type: 'sr25519' }).addFromUri(seedPhrase);
    
-    const result = await sdk.tx.dataAvailability.submitData(JSON.stringify(data), WaitFor.BlockInclusion, account)
-  
-    console.log(result);
+    const result = await sdk.tx.dataAvailability.submitData(JSON.stringify(data), WaitFor.BlockInclusion, account, {
+      app_id: appID
+    });
   
     if (result.isErr)
       return callback('submit_error');

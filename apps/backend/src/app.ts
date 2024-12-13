@@ -9,7 +9,7 @@ import blockInfoRouteController from './routes/blockInfoRoute.js';
 import electionRouteController from './routes/electionRoute.js';
 import voteRouteController from './routes/voteRoute.js';
 
-import Vote from './models/vote/Vote.js';
+import availRead from './utils/da-layers/avail/read.js';
 
 import { compileZkProgramIfNotCompiledBefore } from './utils/mina/compileZkProgram.js';
 
@@ -46,4 +46,8 @@ server.listen(PORT, () => {
   console.log(`Server is on port ${PORT}.`);
 
   compileZkProgramIfNotCompiledBefore(false);
+
+  availRead(1046316, true, (err, result) => {
+    console.log(err,result)
+  })
 });
