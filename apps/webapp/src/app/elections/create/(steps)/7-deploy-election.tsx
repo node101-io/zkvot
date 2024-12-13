@@ -3,7 +3,7 @@ import Image from "next/image.js";
 import { FaImage } from "react-icons/fa";
 import confetti from "canvas-confetti";
 
-import { PublicKey, MerkleTree, Election, types, utils } from 'zkvot-core';
+import { MerkleTree, Election, types, utils } from 'zkvot-core';
 
 import Button from "@/app/(partials)/button.jsx";
 import LoadingOverlay from "@/app/(partials)/loading-overlay.jsx";
