@@ -1,9 +1,13 @@
-import encodeDataToBase64String from '../../encodeDataToBase64String.js';
-import { rpcEndpoint } from './config.js';
+import { WaitFor, Keyring } from 'avail-js-sdk';
 
-export default (
-  app_id: any,
-  zkProof: object,
+import { types } from 'zkvot-core';
+
+import { getSDK } from './sdk.js';
+import { devnet, mainnet } from './config.js';
+
+export default async (
+  data: types.DaLayerSubmissionData,
+  is_devnet: boolean,
   callback: (
     error: string | null,
     data?: {
@@ -12,36 +16,30 @@ export default (
     }
   ) => any
 ) => {
-  encodeDataToBase64String(zkProof, async (error, encodedZkProof) => {
-    if (error) return callback(error);
+  const seedPhrase = is_devnet ? devnet.seedPhrase : mainnet.seedPhrase;
+  const appID = is_devnet ? devnet.appID : mainnet.appID;
 
-    try {
-      const body = JSON.stringify({
-        data: encodedZkProof,
-        app_id: app_id,
-      });
-
-      const response = await fetch(`${rpcEndpoint}/v2/submit`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: body,
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const { block_number, hash } = data;
-
-        return callback(null, {
-          blockHeight: block_number,
-          txHash: hash,
-        });
-      } else {
-        return callback('da_layer_error');
-      }
-    } catch (err) {
-      return callback('rpc_connection_error');
-    }
-  });
+  try {
+    if (!seedPhrase || !appID)
+      return callback('not_authenticated_request');
+  
+    const sdk = await getSDK(is_devnet)
+   
+    const account = new Keyring({ type: 'sr25519' }).addFromUri(seedPhrase);
+   
+    const result = await sdk.tx.dataAvailability.submitData(JSON.stringify(data), WaitFor.BlockInclusion, account, {
+      app_id: appID
+    });
+  
+    if (result.isErr)
+      return callback('submit_error');
+  
+    return callback(null, {
+      blockHeight: result.blockNumber,
+      txHash: result.txHash.toString()
+    });
+  } catch (error) {
+    console.error(error);
+    return callback('submit_error');
+  };
 };

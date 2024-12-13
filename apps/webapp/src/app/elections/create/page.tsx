@@ -35,25 +35,21 @@ const HomePage = () => {
 
   // IMPORTANT!!!! For easy testing DO NOT delete IMPORTANT!!!!
   // useEffect(() => {
-  //   utils.fetchDataFromStorageLayer(
-  //     {
-  //       platform: "F",
-  //       id: "bafkreiecgx2jxfh6o4sgntasljgyxyj6a36irad6phvbvu2ppfmvbomhra",
-  //     },
-  //     (err, data) => {
-  //       if (err || !data) {
-  //         console.error(err);
-  //         return;
-  //       }
-
-  //       setElectionData(data);
-  //       setStorageLayerPlatform("F");
-  //       setStorageLayerId(
-  //         "bafkreiecgx2jxfh6o4sgntasljgyxyj6a36irad6phvbvu2ppfmvbomhra"
-  //       );
-  //       setStep(7);
+  //   utils.fetchDataFromStorageLayer({
+  //     platform: 'F',
+  //     // id: 'bafkreiecgx2jxfh6o4sgntasljgyxyj6a36irad6phvbvu2ppfmvbomhra'
+  //     id: 'bafkreianqmbzkk3teruaazk5tlqvkqli47xccjnkrjpgezdqihocwymw54'
+  //   }, (err, data) => {
+  //     if (err || !data) {
+  //       console.error(err);
+  //       return;
   //     }
-  //   );
+
+  //     setElectionData(data);
+  //     setStorageLayerPlatform('F');
+  //     setStorageLayerId('bafkreianqmbzkk3teruaazk5tlqvkqli47xccjnkrjpgezdqihocwymw54');
+  //     setStep(7);
+  //   });
   // }, []);
 
   useEffect(() => {

@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.701.0",
+    "avail-js-sdk": "^0.3.0",
     "body-parser": "^1.20.3",
     "cluster": "^0.7.7",
     "cors": "^2.8.5",

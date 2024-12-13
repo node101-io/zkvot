@@ -5,7 +5,7 @@ import { useContext, useEffect, useState } from 'react';
 import { FaImage } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
-import { AggregationMM as Aggregation, Election, types } from 'zkvot-core';
+import { Election, types } from 'zkvot-core';
 
 import CopyButton from '@/app/(partials)/copy-button.jsx';
 import DateFormatter from '@/app/(partials)/date-formatter.jsx';
@@ -20,6 +20,7 @@ import Clock from '@/public/elections/partials/clock-icon.jsx';
 import MinaLogo from '@/public/general/blockchain-logos/mina.png';
 
 import { fetchElectionResultByContractIdFromBackend } from '@/utils/backend.js';
+import { verifyAggregationProof } from '@/utils/o1js.js';
 
 const MINA_RPC_URL = `https://api.minascan.io/node/${process.env.DEVNET ? 'devnet' : 'mainnet'}/v1/graphql`;
 
@@ -31,12 +32,10 @@ export default ({ electionData }: { electionData: types.ElectionBackendData; }) 
 
   const [loading, setLoading] = useState<boolean>(true);
   const [hardFinalityResult, setHardFinalityResult] = useState<{
-    name: string,
     percentage: number,
     voteCount: string,
   }[]>([]);
   const [softFinalityResult, setSoftFinalityResult] = useState<{
-    name: string,
     percentage: number,
     voteCount: string,
   }[]>([]);
@@ -48,14 +47,7 @@ export default ({ electionData }: { electionData: types.ElectionBackendData; }) 
     </div>
   );
 
-  const verifySoftFinalityProof = async () => {
-    console.log("HeRE")
-    if (!softFinalityProof.trim().length) {
-      showToast('The soft finality\'s proof is not found', 'error');
-      setSoftFinalityResult([]);
-      return;
-    }
-
+  const verifySoftFinalityProof = async (softFinalityResult: number[]) => {
     if (!zkProgramWorkerClientInstance) {
       showToast('zkProgramWorkerClientInstance is not found', 'error');
       setSoftFinalityResult([]);
@@ -63,17 +55,23 @@ export default ({ electionData }: { electionData: types.ElectionBackendData; }) 
     }
 
     try {
-      await zkProgramWorkerClientInstance.verifyAggregationProof(
+      const verificationKey = await zkProgramWorkerClientInstance.getVerificationKey();
+
+      if (!verifyAggregationProof(
         softFinalityProof,
+        verificationKey,
         electionData.mina_contract_id,
         electionData.voters_merkle_root,
-        softFinalityResult.map(result => Number(result.voteCount))
-      );
-
-      console.log("Verified!")
+        electionData.options.length,
+        softFinalityResult,
+      )) {
+        showToast('Invalid soft finality proof', 'error');
+        setSoftFinalityResult([]);
+        return;
+      }
 
       setIsSoftFinalityResultVerified(true);
-    } catch (_) {
+    } catch (error) {
       showToast('Invalid soft finality proof', 'error');
       setSoftFinalityResult([]);
     };
@@ -96,7 +94,6 @@ export default ({ electionData }: { electionData: types.ElectionBackendData; }) 
         const percentage = totalVotes > 0 ? (Number(voteCount) / Number(totalVotes)) * 100 : 0;
 
         return {
-          name: option,
           percentage: Math.floor(percentage),
           voteCount: voteCount.toString(),
         };
@@ -116,13 +113,11 @@ export default ({ electionData }: { electionData: types.ElectionBackendData; }) 
           return;
         }
 
-        console.log(data.result)
-
         setSoftFinalityResult(data.result);
         softFinalityProof = data.proof;
 
-        verifySoftFinalityProof();
-      })
+        verifySoftFinalityProof(data.result.map(result => Number(result.voteCount)));
+      });
   }, []);
 
   const handleFetchAndLogData = async () => {
@@ -259,8 +254,8 @@ export default ({ electionData }: { electionData: types.ElectionBackendData; }) 
         <p className='italic'>Do you think the settlement is going too slow?</p>
         <p className='underline cursor-pointer'>Become a sequencer</p>
       </div>
-      <div className='w-full items-start'>
-        <div className='flex flex-col max-w-[945px] w-full space-y-[32px] items-start mt-20 h-full'>
+      <div className='flex w-full items-start gap-20'>
+        <div className='flex flex-col max-w-[945px] space-y-[32px] items-start mt-20 h-full'>
           <div className='w-full flex flex-row items-start space-x-4 max-h-[108px]'>
             <div>
               <Image
@@ -288,7 +283,55 @@ export default ({ electionData }: { electionData: types.ElectionBackendData; }) 
                 >
                   <div className='flex items-center justify-start w-full'>
                     <span className='text-white text-[14px]'>
-                      {result.name}
+                      {electionData.options[index]}
+                    </span>
+                    <span className='text-white text-[14px] pl-2'>
+                      %{result.percentage} (
+                      {Number(result.voteCount).toLocaleString()})
+                    </span>
+                  </div>
+
+                  <div className='w-full bg-[#434446] rounded-full overflow-hidden h-[30px]'>
+                    <motion.div
+                      className='bg-green h-full rounded-r-full'
+                      initial={{ width: '0%' }}
+                      animate={{ width: `${result.percentage}%` }}
+                      transition={{ delay: index * 0.2 + 0.4, duration: 0.8 }}
+                    />
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+        <div className='flex flex-col max-w-[945px] space-y-[32px] items-start mt-20 h-full'>
+          <div className='w-full flex flex-row items-start space-x-4 max-h-[108px]'>
+            <div>
+              <Image
+                src={MinaLogo}
+                alt='Settlement Layer Logo'
+                width={108}
+                height={108}
+              />
+            </div>
+            <div className='flex flex-col text-white'>
+              <p className='text-[32px] -translate-y-1'>Settled hardFinalityResult</p>
+              <p className='w-[407px] text-[16px] leading-6 tracking-[-0.16px] font-light'>
+                The final hardFinalityResult come from Mina, the settlement layer. There
+                might be a small difference between the settled...
+              </p>
+            </div>
+          </div>
+          <div className='w-full h-full pb-44 space-y-7'>
+            {loading && <p>Loading hardFinalityResult...</p>}
+            {!loading &&
+              softFinalityResult.map((result, index) => (
+                <div
+                  key={index}
+                  className='w-full flex flex-col items-start space-y-2'
+                >
+                  <div className='flex items-center justify-start w-full'>
+                    <span className='text-white text-[14px]'>
+                      {electionData.options[index]}
                     </span>
                     <span className='text-white text-[14px] pl-2'>
                       %{result.percentage} (

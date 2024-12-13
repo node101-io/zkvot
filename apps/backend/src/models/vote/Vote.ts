@@ -94,7 +94,6 @@ VoteSchema.statics.createVote = function (
   data: {
     is_devnet: boolean;
     da_layer_submission_data: types.DaLayerSubmissionData;
-    election_contract_id: string;
     da_layer: types.DaLayerInfo['name'];
   },
   callback: (error: string | null, vote?: VoteType) => any
@@ -103,7 +102,7 @@ VoteSchema.statics.createVote = function (
     return callback('bad_request');
 
   Election.findOrCreateElectionByContractId({
-    mina_contract_id: data.election_contract_id,
+    mina_contract_id: data.da_layer_submission_data.election_id,
     is_devnet: data.is_devnet
   }, (err, election) => {
     if (err || !election)
@@ -125,7 +124,7 @@ VoteSchema.statics.createVote = function (
           return callback(err || 'unknown_error');
 
         const vote = new Vote({
-          election_contract_id: data.election_contract_id,
+          election_contract_id: data.da_layer_submission_data.election_id,
           nullifier: voteOutput.nullifier,
           vote: voteOutput.vote,
           da_layer: data.da_layer,
@@ -156,7 +155,6 @@ VoteSchema.statics.createAndSubmitVote = function (
   data: {
     is_devnet: boolean;
     da_layer_submission_data: types.DaLayerSubmissionData;
-    election_contract_id: string;
     da_layer: types.DaLayerInfo['name'];
   },
   callback: (error: string | null, vote?: VoteType) => any
@@ -165,7 +163,7 @@ VoteSchema.statics.createAndSubmitVote = function (
     return callback('bad_request');
 
   Election.findOrCreateElectionByContractId({
-    mina_contract_id: data.election_contract_id,
+    mina_contract_id: data.da_layer_submission_data.election_id,
     is_devnet: data.is_devnet
   }, (err, election) => {
     if (err || !election)
@@ -203,7 +201,7 @@ VoteSchema.statics.createAndSubmitVote = function (
             return callback(err);
 
           const vote = new Vote({
-            election_contract_id: data.election_contract_id,
+            election_contract_id: data.da_layer_submission_data.election_id,
             nullifier: voteOutput.nullifier,
             vote: voteOutput.vote,
             da_layer: data.da_layer,

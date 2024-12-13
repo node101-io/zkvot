@@ -3,9 +3,7 @@ import Image from "next/image.js";
 import { FaImage } from "react-icons/fa";
 import confetti from "canvas-confetti";
 
-import { PublicKey } from "o1js";
-
-import { MerkleTree, Election, types, utils } from "zkvot-core";
+import { PublicKey, MerkleTree, Election, types, utils } from 'zkvot-core';
 
 import Button from "@/app/(partials)/button.jsx";
 import LoadingOverlay from "@/app/(partials)/loading-overlay.jsx";
@@ -16,21 +14,14 @@ import { AuroWalletContext } from "@/contexts/auro-wallet-context.jsx";
 import { ToastContext } from "@/contexts/toast-context.jsx";
 import { ZKProgramCompileContext } from "@/contexts/zk-program-compile-context.jsx";
 
-import {
-  calculateMinaBlockHeightFromTimestampViaBackend,
-  submitElectionToBackend,
-} from "@/utils/backend.js";
-import {
-  CommunicationLayerDetails,
-  StorageLayerDetails,
-} from "@/utils/constants.jsx";
-import formatDate from "@/utils/formatDate.js";
+import { submitElectionToBackend } from '@/utils/backend.js';
+import { CommunicationLayerDetails, StorageLayerDetails } from '@/utils/constants.jsx';
+import formatDate from '@/utils/formatDate.js';
+import { calculateBlockHeightFromTimestamp, checkIfAccountExists } from '@/utils/o1js.js';
 
 const DEFAULT_VOTERS_COUNT_TO_DISPLAY = 5;
-const MINA_RPC_URL = `https://api.minascan.io/node/${
-  process.env.DEVNET ? "devnet" : "mainnet"
-}/v1/graphql`;
-const TX_CONFIRM_WAIT_TIME = 15 * 1000;
+const MINA_RPC_URL = `https://api.minascan.io/node/${process.env.DEVNET ? 'devnet' : 'mainnet'}/v1/graphql`;
+const TX_CONFIRM_WAIT_TIME = 30 * 1000;
 
 export default ({
   onPrevious,
@@ -48,9 +39,8 @@ export default ({
   const { showToast } = useContext(ToastContext);
   const {
     zkProgramWorkerClientInstance,
-    isVoteProgramCompiled,
-    isVoteProgramCompiling,
-    compileAggregationProgramIfNotCompiled,
+    isVoteProgramCompiled, isVoteProgramCompiling,
+    isAggregationProgramCompiled, isAggregationProgramCompiling, compileAggregationProgramIfNotCompiled
   } = useContext(ZKProgramCompileContext);
 
   const [submitted, setSubmitted] = useState<boolean>(false);
@@ -88,47 +78,49 @@ export default ({
       showToast("Something went wrong, please try again later", "error");
       return;
     }
-    if (isVoteProgramCompiling) {
-      showToast(
-        "zkVot is loading in the background, please wait a few more minutes and try again",
-        "error"
-      );
+
+    if (isVoteProgramCompiling || !isVoteProgramCompiled) {
+      showToast('zkVot is loading in the background, please wait a few more minutes and try again', 'error');
       return;
     }
-    if (!isVoteProgramCompiled) {
-      showToast(
-        "zkVot is loading in the background, please wait a few more minutes and try again",
-        "error"
-      );
-      return;
-    }
+
+    if (loading) return;
+
     setLoading(true);
 
+    if (!(await checkIfAccountExists(address))) {
+      showToast('The connected wallet appears to have no MINA funds. Please transfer some funds to your wallet or change the connect wallet from Auro Wallet', 'error');
+      setLoading(false);
+      return;
+    }
+
+    let minaBlockData, votersMerkleTree, result;
+
     try {
-      const minaBlockData =
-        await calculateMinaBlockHeightFromTimestampViaBackend(
-          data.election.start_date,
-          data.election.end_date
-        );
-      const votersMerkleTree = MerkleTree.createFromStringArray(
-        data.election.voters_list.map((voter) => voter.public_key)
-      );
+      minaBlockData = await calculateBlockHeightFromTimestamp(data.election.start_date, data.election.end_date);
+      votersMerkleTree = MerkleTree.createFromStringArray(data.election.voters_list.map(voter => voter.public_key));
+    } catch (error) {
+      showToast('There was an error while creating the election data, please retry in a few minutes', 'error');
+      setLoading(false);
+      return;
+    }
 
-      if (!votersMerkleTree) {
-        showToast(
-          "Error creating Voters Merkle Tree from voters array",
-          "error"
-        );
-        setLoading(false);
-        return;
-      }
+    if (!votersMerkleTree) {
+      showToast('There was an error while creating the election data, please retry in a few minutes', 'error');
+      setLoading(false);
+      return;
+    };
 
-      zkProgramWorkerClientInstance.setActiveInstance({
-        devnet: !!process.env.DEVNET,
-      });
+    if (isAggregationProgramCompiling || !isAggregationProgramCompiled) {
+      showToast('zkVot is loading in the background, please wait a few more minutes and try again', 'error');
+      setLoading(false);
+      return;
+    }
 
-      await compileAggregationProgramIfNotCompiled();
-      const result = await zkProgramWorkerClientInstance.deployElection(
+    try {
+      zkProgramWorkerClientInstance.setActiveInstance({ devnet: !!process.env.DEVNET });
+
+      result = await zkProgramWorkerClientInstance.deployElection(
         address,
         minaBlockData.startBlockHeight,
         minaBlockData.endBlockHeight,
@@ -140,52 +132,48 @@ export default ({
         utils.createElectionDataCommitment(data.election),
         undefined
       );
-
-      if (!result) {
-        showToast("Error deploying election, please try again later.", "error");
-        setLoading(false);
-        return;
-      }
-
-      const { mina_contract_id, txJSON } = result;
-
-      const { hash } = await (window as any).mina.sendTransaction({
-        transaction: txJSON,
-        feePayer: {
-          fee: 0.1,
-          memo: "zkvot.io",
-        },
-      });
-
-      console.log(`https://minascan.io/devnet/tx/${hash}`);
-
-      waitUntilTxIsConfirmed(mina_contract_id, () => {
-        setLoading(false);
-
-        // Do not wait for backend, intentionally not awaited
-        submitElectionToBackend(mina_contract_id).catch(console.error);
-
-        // TODO: Show success message as pop up
-        showToast(
-          `Election deployed successfully! Your TX is available in https://minascan.io/devnet/tx/${hash}.`,
-          "success"
-        );
-
-        confetti({
-          particleCount: 100,
-          spread: 180,
-          origin: { y: 0.6 },
-        });
-      });
     } catch (error) {
-      showToast(
-        `Error deploying election, please try again later. Message: ${error}`,
-        "error"
-      );
+      showToast('There was an error while submitting the election, please retry in a few minutes', 'error');
       setLoading(false);
+      return;
     }
+
+    if (!result) {
+      showToast('Error deploying election, please try again later.', 'error');
+      setLoading(false);
+      return;
+    };
+
+    const { mina_contract_id, txJSON } = result;
+
+    const { hash } = await (window as any).mina.sendTransaction({
+      transaction: txJSON,
+      feePayer: {
+        fee: 0.1,
+        memo: 'zkvot.io',
+      },
+    });
+
+    console.log(`https://minascan.io/devnet/tx/${hash}`);
+
+    waitUntilTxIsConfirmed(mina_contract_id, () => {
+      setLoading(false);
+
+      // Do not wait for backend, intentionally not awaited
+      submitElectionToBackend(mina_contract_id).catch(console.error);
+
+      // TODO: Show success message as pop up
+      showToast(`Election deployed successfully! Your TX is available in https://minascan.io/devnet/tx/${hash}.`, 'success');
+
+      confetti({
+        particleCount: 100,
+        spread: 180,
+        origin: { y: 0.6 },
+      });
+    });
   };
 
+  // TODO: Move this to a separate component
   const Placeholder = ({ className }: { className: string }) => (
     <div className={`${className} flex items-center justify-center h-full`}>
       <FaImage className="text-gray-500 text-6xl" />

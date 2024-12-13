@@ -25,7 +25,7 @@ namespace AggregationMerkleMapNamespace {
   }) {}
 
   export const Program = ZkProgram({
-    name: 'AggregationProgram',
+    name: 'AggregationMerkleMapProgram',
     publicInput: PublicInputs,
     publicOutput: PublicOutputs,
 

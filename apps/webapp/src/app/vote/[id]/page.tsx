@@ -1,7 +1,7 @@
 'use client';
 
 import { useContext, useState, useEffect } from 'react';
-import { Proof } from 'o1js';
+import { Proof, Poseidon } from 'o1js';
 
 import { Election, types, utils } from 'zkvot-core';
 
@@ -56,6 +56,7 @@ const Page = ({
       (resolve: (data: types.ElectionBackendData) => void, reject) => {
         Election.fetchElectionState(
           params.id,
+          // "B62qkCYFCQDVXtis2tLKuGQwzwKY2X7WhN5NjHrWj68wK2odS7ASxND",
           MINA_RPC_URL,
           (err, election_state) => {
             if (err || !election_state)
