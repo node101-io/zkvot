@@ -1,7 +1,7 @@
-import { AccountUpdate, Field, Mina, PublicKey, PrivateKey, Nullifier } from 'o1js';
+import { AccountUpdate, Field, Mina, PublicKey, PrivateKey, Nullifier, verify } from 'o1js';
 import * as Comlink from 'comlink';
 
-import { MerkleTree, Vote, AggregationMM as Aggregation } from 'zkvot-core';
+import { AggregationMM as Aggregation, MerkleTree, Vote} from 'zkvot-core';
 
 import { Nullifier as NullifierType } from '@aurowallet/mina-provider';
 
@@ -196,6 +196,45 @@ export const api = {
     } catch (error) {
       console.log(error);
       console.error('Error deploying election contract:', error);
+      throw error;
+    }
+  },
+  async verifyAggregationProof(
+    proofJSON: string,
+    electionPubKey: string,
+    votersRoot: string,
+    result: number[]
+  ) {
+    try {
+      const proof = await Aggregation.Proof.fromJSON(JSON.parse(proofJSON))
+        
+      if (!proof)
+        throw new Error('Error parsing proof');
+
+      if (proof.publicInput.electionPubKey.toBase58() !== electionPubKey)
+        throw new Error('Election public key mismatch');
+  
+      if (proof.publicInput.votersRoot.toBigInt().toString() !== votersRoot)
+        throw new Error('Voters root mismatch');
+
+      const proofResults = new Vote.VoteOptions({
+        voteOptions_1: proof.publicOutput.voteOptions_1,
+        voteOptions_2: proof.publicOutput.voteOptions_2,
+        voteOptions_3: proof.publicOutput.voteOptions_3,
+      }).toResults();
+
+      if (
+        proofResults.length !== result.length ||
+        proofResults.find((any, index) => result[index] !== any)
+      )
+        throw new Error('Proof result mismatch');
+  
+      if (!(await verify(proof, state.verificationKey)))
+        throw new Error('Invalid proof');
+  
+      return true;
+    } catch (error: any) {
+      throw new Error(error);
     }
   }
 };

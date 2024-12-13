@@ -74,6 +74,20 @@ interface ElectionStatics {
     },
     callback: ( error: string | null ) => any
   ) => any;
+  findElectionByContractIdAndGetResults: (
+    mina_contract_id: string,
+    callback: (
+      error: string | null,
+      data?: {
+        result: {
+          name: string,
+          percentage: number,
+          voteCount: string,
+        }[],
+        proof: string
+      }
+    ) => any
+  ) => any;
 };
 
 const ElectionSchema = new Schema({
@@ -335,8 +349,7 @@ ElectionSchema.statics.findElectionByContractIdAndGetProof = function (
         return callback('document_not_found');
 
       ResultProof.createOrFindResultProofByMinaContractId({
-        mina_contract_id: election.mina_contract_id,
-        voters_merkle_root: election.voters_merkle_root
+        mina_contract_id: election.mina_contract_id
       }, (error, proof) => {
         if (error || !proof)
           return callback(error || 'unknown_error');
@@ -384,6 +397,49 @@ ElectionSchema.statics.findElectionByContractIdAndAddVote = function (
           console.log(err)
           return callback('database_error');
         });
+    })
+    .catch((err: any) => callback('database_error'));
+};
+
+ElectionSchema.statics.findElectionByContractIdAndGetResults = function (
+  mina_contract_id: string,
+  callback: (
+    error: string | null,
+    data?: {
+      result: {
+        name: string,
+        percentage: number,
+        voteCount: string,
+      }[],
+      proof: string
+    }
+  ) => any
+) {
+  Election
+    .findOne({ mina_contract_id })
+    .then((election: types.ElectionBackendData) => {
+      if (!election)
+        return callback('document_not_found');
+
+      ResultProof.createOrFindResultProofByMinaContractId({
+        mina_contract_id: election.mina_contract_id
+      }, (error, proof) => {
+        if (error || !proof)
+          return callback(error || 'unknown_error');
+
+        const totalVotes = election.result.reduce((acc, curr) => acc + curr, 0);
+
+        callback(null, {
+          result: election.result.map((count, index) => {
+            return {
+              name: election.options[index],
+              percentage: Math.floor((count / totalVotes) * 10000) / 100,
+              voteCount: count.toString()
+            }
+          }),
+          proof: proof.proof
+        });
+      });
     })
     .catch((err: any) => callback('database_error'));
 };

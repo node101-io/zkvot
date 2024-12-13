@@ -5,30 +5,42 @@ import { useContext, useEffect, useState } from 'react';
 import { FaImage } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
-import { Election, types } from 'zkvot-core';
+import { AggregationMM as Aggregation, Election, types } from 'zkvot-core';
 
 import CopyButton from '@/app/(partials)/copy-button.jsx';
 import DateFormatter from '@/app/(partials)/date-formatter.jsx';
 import ToolTip from '@/app/(partials)/tool-tip.jsx';
 
 import { ToastContext } from '@/contexts/toast-context.jsx';
+import { ZKProgramCompileContext } from '@/contexts/zk-program-compile-context.jsx';
 
 import LearnMoreIcon from '@/public/elections/partials/learn-more-icon.jsx';
 import Clock from '@/public/elections/partials/clock-icon.jsx';
 
 import MinaLogo from '@/public/general/blockchain-logos/mina.png';
 
+import { fetchElectionResultByContractIdFromBackend } from '@/utils/backend.js';
+
 const MINA_RPC_URL = `https://api.minascan.io/node/${process.env.DEVNET ? 'devnet' : 'mainnet'}/v1/graphql`;
 
 export default ({ electionData }: { electionData: types.ElectionBackendData; }) => {
   const { showToast } = useContext(ToastContext);
+  const { zkProgramWorkerClientInstance } = useContext(ZKProgramCompileContext);
+
+  let softFinalityProof: string = '';
 
   const [loading, setLoading] = useState<boolean>(true);
-  const [results, setResults] = useState<{
+  const [hardFinalityResult, setHardFinalityResult] = useState<{
     name: string,
     percentage: number,
     voteCount: string,
   }[]>([]);
+  const [softFinalityResult, setSoftFinalityResult] = useState<{
+    name: string,
+    percentage: number,
+    voteCount: string,
+  }[]>([]);
+  const [isSoftFinalityResultVerified, setIsSoftFinalityResultVerified] = useState<boolean>(false);
 
   const Placeholder = ({ className }: { className: string }) => (
     <div className={`${className} flex items-center justify-center h-full`}>
@@ -36,12 +48,44 @@ export default ({ electionData }: { electionData: types.ElectionBackendData; }) 
     </div>
   );
 
+  const verifySoftFinalityProof = async () => {
+    console.log("HeRE")
+    if (!softFinalityProof.trim().length) {
+      showToast('The soft finality\'s proof is not found', 'error');
+      setSoftFinalityResult([]);
+      return;
+    }
+
+    if (!zkProgramWorkerClientInstance) {
+      showToast('zkProgramWorkerClientInstance is not found', 'error');
+      setSoftFinalityResult([]);
+      return;
+    }
+
+    try {
+      await zkProgramWorkerClientInstance.verifyAggregationProof(
+        softFinalityProof,
+        electionData.mina_contract_id,
+        electionData.voters_merkle_root,
+        softFinalityResult.map(result => Number(result.voteCount))
+      );
+
+      console.log("Verified!")
+
+      setIsSoftFinalityResultVerified(true);
+    } catch (_) {
+      showToast('Invalid soft finality proof', 'error');
+      setSoftFinalityResult([]);
+    };
+  };
+
   useEffect(() => {
     setLoading(true);
+
     Election.fetchElectionState(electionData.mina_contract_id, MINA_RPC_URL, (error, state) => {
       setLoading(false);
       if (error || !state) {
-        showToast('Error fetching election results', 'error');
+        showToast('Error fetching election\'s hard finality result', 'error');
         return;
       };
 
@@ -58,14 +102,33 @@ export default ({ electionData }: { electionData: types.ElectionBackendData; }) 
         };
       });
 
-      setResults(calculatedResults);
+      setHardFinalityResult(calculatedResults);
     });
-  }, [electionData.options]);
+
+    fetchElectionResultByContractIdFromBackend(electionData.mina_contract_id)
+      .catch(_ => {
+        showToast('Error fetching election\'s soft finality result', 'error');
+        return;
+      })
+      .then(data => {
+        if (!data) {
+          showToast('Error fetching election\'s soft finality result', 'error');
+          return;
+        }
+
+        console.log(data.result)
+
+        setSoftFinalityResult(data.result);
+        softFinalityProof = data.proof;
+
+        verifySoftFinalityProof();
+      })
+  }, []);
 
   const handleFetchAndLogData = async () => {
     Election.fetchElectionState(electionData.mina_contract_id, MINA_RPC_URL, (error, state) => {
       if (error || !state) {
-        showToast('Error fetching election results', 'error');
+        showToast('Error fetching election hardFinalityResult', 'error');
         return;
       };
 
@@ -82,7 +145,7 @@ export default ({ electionData }: { electionData: types.ElectionBackendData; }) 
         };
       });
 
-      setResults(calculatedResults);
+      setHardFinalityResult(calculatedResults);
     });
   };
 
@@ -208,17 +271,17 @@ export default ({ electionData }: { electionData: types.ElectionBackendData; }) 
               />
             </div>
             <div className='flex flex-col text-white'>
-              <p className='text-[32px] -translate-y-1'>Settled Results</p>
+              <p className='text-[32px] -translate-y-1'>Settled hardFinalityResult</p>
               <p className='w-[407px] text-[16px] leading-6 tracking-[-0.16px] font-light'>
-                The final results come from Mina, the settlement layer. There
+                The final hardFinalityResult come from Mina, the settlement layer. There
                 might be a small difference between the settled...
               </p>
             </div>
           </div>
           <div className='w-full h-full pb-44 space-y-7'>
-            {loading && <p>Loading results...</p>}
+            {loading && <p>Loading hardFinalityResult...</p>}
             {!loading &&
-              results.map((result, index) => (
+              hardFinalityResult.map((result, index) => (
                 <div
                   key={index}
                   className='w-full flex flex-col items-start space-y-2'

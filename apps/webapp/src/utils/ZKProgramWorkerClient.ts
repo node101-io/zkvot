@@ -1,6 +1,6 @@
 import * as Comlink from 'comlink';
 
-import { Election } from 'zkvot-core';
+import { Election, AggregationMM as Aggregation } from 'zkvot-core';
 
 import { Nullifier } from '@aurowallet/mina-provider';
 import { Field } from 'o1js';
@@ -72,4 +72,17 @@ export default class {
       votersRoot
     );
   };
+  async verifyAggregationProof(
+    proof: string,
+    electionPubKey: string,
+    votersRoot: string,
+    result: number[]
+  ) {
+    return this.remoteApi.verifyAggregationProof(
+      proof,
+      electionPubKey,
+      votersRoot,
+      result
+    );
+  }
 };

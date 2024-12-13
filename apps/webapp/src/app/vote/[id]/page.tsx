@@ -103,7 +103,6 @@ const Page = ({
   useEffect(() => {
     fetchElectionData()
       .then((election_data) => {
-        // setCurrentStep(3)
         setElectionData(election_data);
         submitElectionToBackend(election_data.mina_contract_id);
       })

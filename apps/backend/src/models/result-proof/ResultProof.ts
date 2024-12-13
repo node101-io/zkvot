@@ -16,7 +16,7 @@ type ResultProofType = {
 
 interface ResultProofStatics {
   createOrFindResultProofByMinaContractId: (
-    data: { mina_contract_id: string, voters_merkle_root: string },
+    data: { mina_contract_id: string },
     callback: (
       error: string | null,
       proof?: ResultProofType
@@ -57,13 +57,13 @@ const ResultProofSchema = new Schema({
 });
 
 ResultProofSchema.statics.createOrFindResultProofByMinaContractId = function (
-  data: { mina_contract_id: string, voters_merkle_root: string },
+  data: { mina_contract_id: string },
   callback: (
     error: string | null,
     proof?: ResultProofType
   ) => any
 ) {
-  const { mina_contract_id, voters_merkle_root } = data;
+  const { mina_contract_id } = data;
 
   ResultProof.findOne({
     mina_contract_id

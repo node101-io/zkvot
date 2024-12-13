@@ -59,11 +59,18 @@ export const fetchElectionsFromBackend = async (
   };
 };
 
-export const fetchElectionByContractIdFromBackend = async (
+export const fetchElectionResultByContractIdFromBackend = async (
   id: string
-): Promise<types.ElectionBackendData> => {
+): Promise<{
+  result: {
+    name: string,
+    percentage: number,
+    voteCount: string,
+  }[],
+  proof: string
+}> => {
   try {
-    const response = await fetch(`${API_URL}/election/${id}`, {
+    const response = await fetch(`${API_URL}/election/result?id=${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -71,16 +78,16 @@ export const fetchElectionByContractIdFromBackend = async (
     });
 
     if (!response.ok)
-      throw new Error('Failed to fetch the election');
+      throw new Error('Failed to fetch the election result');
 
     const result = await response.json();
 
     if (!result.success)
-      throw new Error(result.error || 'Failed to fetch the election');
+      throw new Error(result.error || 'Failed to fetch the election result');
 
-    return result.election;
+    return result.data;
   } catch (error) {
-    throw new Error('Failed to fetch elections');
+    throw new Error('Failed to fetch election result');
   };
 };
 

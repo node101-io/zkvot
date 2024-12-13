@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import SuccessIcon from '@/public/general/toast/success.jsx';
 import ErrorIcon from '@/public/general/toast/error.jsx';
 
-const TOAST_DURATION = 3000;
+const TOAST_DURATION = 7000;
 
 interface ToastInterface {
   _id: string;
