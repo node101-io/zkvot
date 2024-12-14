@@ -159,7 +159,7 @@ export default ({
       setNullifier(createdNullifier);
 
       const votersArray = electionData.voters_list.map((voter) => voter.public_key).filter(each => each && each.trim().length)
-      
+
       if (votersArray.length === 0) {
         showToast('No valid voters found', 'error');
         setLoading(false);
@@ -195,6 +195,7 @@ export default ({
       setLoading(false);
       goToNextStep();
     } catch (error) {
+      console.error(error);
       setLoading(false);
       showToast('Error creating the vote, please try again later', 'error');
     }
@@ -329,7 +330,7 @@ export default ({
               ))}
             </div>
           </div>
-      
+
           <div className='w-full pt-8 flex justify-end space-x-4'>
             <Button
               onClick={handleButtonClick}

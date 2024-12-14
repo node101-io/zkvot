@@ -1,7 +1,6 @@
 'use client';
 
 import { useContext, useState, useEffect } from 'react';
-import { Proof, Poseidon } from 'o1js';
 import { Nullifier } from '@aurowallet/mina-provider';
 
 import { Election, types, utils } from 'zkvot-core';

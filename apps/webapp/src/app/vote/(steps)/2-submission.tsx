@@ -169,19 +169,19 @@ export default ({
   const { subwalletAccount, connectSubwallet, submitDataToAvailViaSubwallet, isSubmitting } = useContext(SubwalletContext);
   const { showToast } = useContext(ToastContext);
 
-  // electionData.communication_layers = [
-  //   {
-  //     name: 'Avail',
-  //     start_block_height: 123,
-  //     app_id: 101
-  //   },
-  //   {
-  //     name: 'Celestia',
-  //     namespace: 'fldsşd',
-  //     start_block_height: 123,
-  //     start_block_hash: 'fldsşigd'
-  //   }
-  // ];
+  electionData.communication_layers = [
+    {
+      name: 'Avail',
+      start_block_height: 123,
+      app_id: 101
+    },
+    {
+      name: 'Celestia',
+      namespace: 'fldsşd',
+      start_block_height: 123,
+      start_block_hash: 'fldsşigd'
+    }
+  ];
 
   const [selectionMode, setSelectionMode] = useState<'direct' | 'backend'>('backend');
   const [selectedDA, setSelectedDA] = useState<types.DaLayerInfo['name']>(electionData.communication_layers[0].name);
@@ -235,7 +235,7 @@ export default ({
     }
 
     if (selectionMode === 'direct') {
-      if (selectedDA === 'Avail' && !subwalletAccount) {
+      if (selectedDA === 'Avail') {
         if (!subwalletAccount) {
           showToast('Please connect your wallet to proceed', 'error');
           return;
@@ -283,7 +283,7 @@ export default ({
           electionData.mina_contract_id,
           selectedDA
         );
-  
+
         showToast('Your vote submitted succesfully! Please note that it may take a few minutes until it is counted', 'success');
         setLoading(false);
         goToNextStep();
