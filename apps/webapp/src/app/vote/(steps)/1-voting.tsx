@@ -4,6 +4,7 @@ import { useContext, useState, useEffect } from 'react';
 import Image from 'next/image.js';
 import { FaImage } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
+import { Nullifier } from '@aurowallet/mina-provider';
 
 import { types } from 'zkvot-core';
 
@@ -27,6 +28,8 @@ export default ({
   selectedOption,
   loading,
   daLayerSubmissionData,
+  nullifier,
+  setNullifier,
   setSelectedOption,
   setLoading,
   setDaLayerSubmissionData,
@@ -37,6 +40,8 @@ export default ({
   selectedOption: number;
   loading: boolean;
   daLayerSubmissionData: types.DaLayerSubmissionData;
+  nullifier: Nullifier | null;
+  setNullifier: (nullifier: Nullifier | null) => void;
   setSelectedOption: (option: number) => void;
   setLoading: (loading: boolean) => void;
   setDaLayerSubmissionData: (daLayerSubmissionData: types.DaLayerSubmissionData) => void;
@@ -46,13 +51,12 @@ export default ({
   const { auroWalletAddress, connectAuroWallet, createNullifier, disconnectAuroWallet, generateEncodedVoteProof } = useContext(AuroWalletContext);
   const { setSelectedWallet } = useContext(SelectedWalletContext);
   const { showToast } = useContext(ToastContext);
-  const { isVoteProgramCompiled, compileAggregationProgramIfNotCompiled } = useContext(ZKProgramCompileContext);
+  const { isVoteProgramCompiled } = useContext(ZKProgramCompileContext);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-  const [isDataLoading, setIsDataLoading] = useState(true);
-
-  const [eligibilityStatus, setEligibilityStatus] = useState('not_connected');
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState<boolean>(false);
+  const [isDataLoading, setIsDataLoading] = useState<boolean>(true);
+  const [eligibilityStatus, setEligibilityStatus] = useState<'not_connected' | 'not_eligible' | 'eligible'>('not_connected');
 
   // useEffect(() => {
   //   (window as any).mina?.on('accountsChanged', () => {
@@ -95,7 +99,6 @@ export default ({
 
     setSelectedWallet('Auro');
     setIsWalletModalOpen(false);
-    let connectionSuccess = false;
 
     try {
       await connectAuroWallet();
@@ -145,15 +148,16 @@ export default ({
         return;
       }
 
-      const nullifier = await createNullifier(electionData.mina_contract_id);
+      const createdNullifier = nullifier || await createNullifier(electionData.mina_contract_id);
 
-      if (!nullifier || nullifier instanceof Error) {
-        showToast('You need to sign the election ID to vote in the election', 'error');
+      if (!createdNullifier || createdNullifier instanceof Error) {
+        showToast('Failed to create the nullifier, please try again', 'error');
         setLoading(false);
         return;
       };
 
-      
+      setNullifier(createdNullifier);
+
       const votersArray = electionData.voters_list.map((voter) => voter.public_key).filter(each => each && each.trim().length)
       
       if (votersArray.length === 0) {
@@ -166,7 +170,7 @@ export default ({
 
       const voteData = {
         electionPubKey: electionData.mina_contract_id,
-        nullifier,
+        nullifier: createdNullifier,
         vote: selectedOption,
         votersArray,
         publicKey: publicKey,
@@ -183,8 +187,8 @@ export default ({
       setDaLayerSubmissionData({
         election_id: daLayerSubmissionData.election_id,
         nullifier: JSON.stringify({
-          x: nullifier.public.nullifier.x.toString(),
-          y: nullifier.public.nullifier.y.toString(),
+          x: createdNullifier.public.nullifier.x.toString(),
+          y: createdNullifier.public.nullifier.y.toString(),
         }),
         proof
       });
@@ -236,8 +240,7 @@ export default ({
 
   return (
     <div className='flex flex-col items-center px-4 sm:px-6 md:px-8'>
-      {loading && <LoadingOverlay text='Generating zk Proof...' />}
-      
+      {loading && <LoadingOverlay text={nullifier ? 'Generating your vote...' : 'Please approve to proceed...'} />}
       {isDataLoading ? (
         <Placeholder />
       ) : (
