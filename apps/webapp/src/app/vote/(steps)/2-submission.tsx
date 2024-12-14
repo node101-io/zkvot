@@ -81,28 +81,40 @@ const DASelection = ({
   downloadVoteProof: () => void;
 }) => {
   const renderCelestiaDirectSubmissionInfo = () => (
-    <div className='mt-6'>
-      zkVot doesn't support direct submission to Celestia yet. You can{" "}
-      <button
-        onClick={(e) => {
-          e.preventDefault();
-          downloadVoteProof();
-        }}
-        className="text-primary"
-      >
-        download
-      </button>{" "}
-      your vote and submit it manually from{" "}
-      <a
-        href="https://celenium.io/"
-        target="_blank"
-        className="text-primary"
-        rel="noopener noreferrer"
-      >
-        celenium.io
-      </a>{" "}
-      website.
+    <div className="mt-6 bg-[#222222] rounded-2xl p-6 border w-full border-primary">
+    <div className="flex items-start space-x-4">
+      <div className="flex-grow">
+        <h4 className="text-white text-lg font-semibold mb-2">Celestia Direct Submission</h4>
+        <p className="text-gray-300 mb-4">
+          zkVot doesn't support direct submission to Celestia yet. You can      <button
+            onClick={(e) => {
+              e.preventDefault();
+              downloadVoteProof();
+            }}
+            className="inline-flex items-center text-white rounded-md hover:bg-primary-dark transition duration-200 underline"
+          >
+            Download 
+          </button> your vote and submit it manually.
+        </p>
+        <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+     
+          <a
+            href="https://celenium.io/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center px-4 py-2 bg-[#333333] text-white rounded-md hover:bg-[#444444] transition duration-200"
+          >
+            Submit on celenium.io
+          </a>
+        </div>
+        <div className="mt-4 bg-[#333333] rounded-lg p-3">
+          <p className="text-gray-300 text-sm">
+            <span className="font-semibold">Namespace:</span> {(communicationLayers.find(layer => layer.name === 'Celestia') as types.CelestiaDaLayerInfo).namespace || 'N/A'}
+          </p>
+        </div>
+      </div>
     </div>
+  </div>
   );
 
   const renderLayerGrid = () => (
@@ -144,10 +156,12 @@ const DASelection = ({
     <>
       {renderLayerGrid()}
       {selectionMode === "direct" && selectedDA === "Celestia"
-        ? renderCelestiaDirectSubmissionInfo(): null}
+        ? renderCelestiaDirectSubmissionInfo()
+        : null}
     </>
   );
 };
+
 
 export default ({
   electionData,
@@ -302,123 +316,126 @@ export default ({
   );
 
   return (
-    <div className='flex flex-col items-center px-8 sm:px-12 md:px-24 flex-grow py-12'>
+    <div className='flex flex-col items-center px-4 sm:px-6 md:px-8 flex-grow  h-full justify-between'>
       {loading && <LoadingOverlay text='Generating zk Proof...' />}
-      <div className='flex flex-col items-start w-full h-fit text-white mb-6 bg-[#222222] p-5 rounded-[30px] '>
-        <div className='flex flex-col md:flex-row w-full h-fit '>
-          <div className='w-full md:w-1/4 flex'>
-            <div className='flex w-full h-32 rounded-3xl overflow-hidden'>
-              <div className='w-full relative'>
-                {electionData.image_url.length ? (
-                  <div className='w-full h-full relative'>
-                    <Image
-                      src={electionData.image_url}
-                      alt='Candidate 1'
-                      fill
-                      style={{ objectFit: 'cover' }}
-                      className='rounded-l-lg'
-                    />
-                  </div>
-                ) : (
-                  <Placeholder className='rounded-l-lg' />
-                )}
+      <div className='w-full flex flex-col items-center'>
+        <div className='flex flex-col items-start w-full h-fit text-white mb-6 bg-[#222222] p-5 rounded-[30px] '>
+          <div className='flex flex-col md:flex-row w-full h-fit '>
+            <div className='w-full md:w-1/4 flex'>
+              <div className='flex w-full h-32 rounded-3xl overflow-hidden'>
+                <div className='w-full relative'>
+                  {electionData.image_url.length ? (
+                    <div className='w-full h-full relative'>
+                      <Image
+                        src={electionData.image_url}
+                        alt='Candidate 1'
+                        fill
+                        style={{ objectFit: 'cover' }}
+                        className='rounded-l-lg'
+                      />
+                    </div>
+                  ) : (
+                    <Placeholder className='rounded-l-lg' />
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className='px-4 w-full h-fit flex flex-col justify-start'>
+              <div className='flex flex-row w-full justify-between '>
+                <div className='text-[#B7B7B7] text-sm mb-2 flex flex-row items-center '>
+                  Election id:{' '}
+                  {String(electionData.mina_contract_id).slice(0, 12) + '...'}
+                  <span className='ml-1 cursor-pointer w-fit'>
+                    <CopyButton
+                      textToCopy={electionData.mina_contract_id}
+                      iconColor='#F6F6F6'
+                      position={{ top: -26, left: -38 }}
+                    />{' '}
+                  </span>
+                </div>
+              </div>
+              <div className=' flex flex-col  w-full h-fit '>
+                <h2 className='text-[24px] mb-2'>{electionData.question}</h2>
+              </div>
+              <div className='flex flex-col w-full'>
+                <div className='text-[#B7B7B7] text-sm mb-2 flex flex-row items-center gap-2'>
+                  <Clock />
+                  <DateFormatter date={electionData.start_date} /> -{' '}
+                  <DateFormatter date={electionData.end_date} />
+                </div>
+              </div>
+              <div className='flex flex-col w-full'>
+                <div className='text-[#B7B7B7] text-sm mb-2 flex flex-row items-center '>
+                  {electionData.voters_list.length} Voters
+                </div>
               </div>
             </div>
           </div>
-          <div className='px-4 w-full h-fit flex flex-col justify-start'>
-            <div className='flex flex-row w-full justify-between '>
-              <div className='text-[#B7B7B7] text-sm mb-2 flex flex-row items-center '>
-                Election id:{' '}
-                {String(electionData.mina_contract_id).slice(0, 12) + '...'}
-                <span className='ml-1 cursor-pointer w-fit'>
-                  <CopyButton
-                    textToCopy={electionData.mina_contract_id}
-                    iconColor='#F6F6F6'
-                    position={{ top: -26, left: -38 }}
-                  />{' '}
-                </span>
-              </div>
-            </div>
-            <div className=' flex flex-col  w-full h-fit '>
-              <h2 className='text-[24px] mb-2'>{electionData.question}</h2>
-            </div>
-            <div className='flex flex-col w-full'>
-              <div className='text-[#B7B7B7] text-sm mb-2 flex flex-row items-center gap-2'>
-                <Clock />
-                <DateFormatter date={electionData.start_date} /> -{' '}
-                <DateFormatter date={electionData.end_date} />
-              </div>
-            </div>
-            <div className='flex flex-col w-full'>
-              <div className='text-[#B7B7B7] text-sm mb-2 flex flex-row items-center '>
-                {electionData.voters_list.length} Voters
-              </div>
+          <div className='pt-4 pb-2 w-full'>
+            <h3 className='text-[16px] text-[#B7B7B7] mb-4'>Your Choice</h3>
+            <div className='pl-4 rounded text-[20px]'>
+              {electionData.options[selectedOption]}
             </div>
           </div>
         </div>
-        <div className='pt-4 pb-2 w-full'>
-          <h3 className='text-[16px] text-[#B7B7B7] mb-4'>Your Choice</h3>
-          <div className='pl-4 rounded text-[20px]'>
-            {electionData.options[selectedOption]}
-          </div>
-        </div>
+        <ModeSelection
+          setSelectionMode={setSelectionMode}
+          selectionMode={selectionMode}
+        />
+        <DASelection
+          selectionMode={selectionMode}
+          communicationLayers={electionData.communication_layers}
+          selectedDA={selectedDA}
+          setSelectedDA={setSelectedDA}
+          isSubmitting={isSubmitting}
+          downloadVoteProof={downloadVoteProof}
+        />
       </div>
-      <ModeSelection
-        setSelectionMode={setSelectionMode}
-        selectionMode={selectionMode}
-      />
-      <DASelection
-        selectionMode={selectionMode}
-        communicationLayers={electionData.communication_layers}
-        selectedDA={selectedDA}
-        setSelectedDA={setSelectedDA}
-        isSubmitting={isSubmitting}
-        downloadVoteProof={downloadVoteProof}
-      />
-      <div className='w-full pt-8 flex justify-between'>
-        <Button
-          onClick={goToPrevStep}
-          variant='back'
-          className='mr-4'
-        >
-          Back
-        </Button>
-        {selectionMode === 'direct' ? (
-          selectedDA === 'Avail' ? (
-            !subwalletAccount ? (
-              <div className={`${!selectedDA ? 'hidden' : 'flex'}`}>
-                <Button onClick={handleConnectWallet}>
-                  Connect Wallet
+        <div className='w-full pt-8 flex justify-between'>
+          <Button
+            onClick={goToPrevStep}
+            variant='back'
+            className='mr-4'
+          >
+            Back
+          </Button>
+          {selectionMode === 'direct' ? (
+            selectedDA === 'Avail' ? (
+              !subwalletAccount ? (
+                <div className={`${!selectedDA ? 'hidden' : 'flex'}`}>
+                  <Button onClick={handleConnectWallet}>
+                    Connect Wallet
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  onClick={handleNext}
+                  disabled={!selectedDA || isSubmitting}
+                  loading={isSubmitting}
+                >
+                  Submit Vote
                 </Button>
-              </div>
-            ) : (
+              )
+            ) : selectedDA === 'Celestia' ? (
               <Button
                 onClick={handleNext}
                 disabled={!selectedDA || isSubmitting}
                 loading={isSubmitting}
               >
-                Submit Vote
+                Continue
               </Button>
-            )
-          ) : selectedDA === 'Celestia' ? (
+            ) : null
+          ) : selectionMode === 'backend' ? (
             <Button
               onClick={handleNext}
               disabled={!selectedDA || isSubmitting}
               loading={isSubmitting}
             >
-              Continue
+              Submit Vote
             </Button>
-          ) : null
-        ) : selectionMode === 'backend' ? (
-          <Button
-            onClick={handleNext}
-            disabled={!selectedDA || isSubmitting}
-            loading={isSubmitting}
-          >
-            Submit Vote
-          </Button>
-        ) : null}
-      </div>
+          ) : null}
+        </div>
+
       {isPopupOpen && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'>
           <div className='bg-[#141414] rounded-[50px] p-8 shadow-lg w-[680px] h-auto border-[1px] border-primary text-center relative'>
