@@ -1,8 +1,10 @@
-import { useState, KeyboardEvent } from "react";
+import { useState, useContext, KeyboardEvent, ChangeEvent } from "react";
 import { PublicKey } from "o1js";
 import ChevronDownIcon from "@heroicons/react/solid/ChevronDownIcon.js";
 
 import { types, utils } from "zkvot-core";
+
+import { ToastContext } from "@/contexts/toast-context.jsx";
 
 import Button from "@/app/(partials)/button.jsx";
 
@@ -461,10 +463,11 @@ export default ({
   onNext: (data: types.ElectionStaticData) => void;
   initialData: types.ElectionStaticData;
 }) => {
+  const { showToast } = useContext(ToastContext);
+
   const [voters, setVoters] = useState<types.Voter[]>(initialData.voters_list);
   const [requiredFields, setRequiredFields] = useState<string[]>([]);
-  const [customOptionNames, setCustomOptionNames] =
-    useState<types.VoterCustomFields>({});
+  const [customOptionNames, setCustomOptionNames] = useState<types.VoterCustomFields>({});
 
   const isNextEnabled = voters.length > 0;
 
@@ -476,10 +479,84 @@ export default ({
       });
   };
 
+  const csvToVoterList = (stringValue: string): types.Voter[] => {
+    const [keysRow, ...dataRows] = stringValue.trim().split("\n");
+
+    const keys = keysRow.split(";").map((key) => key.trim());
+
+    if (!keys.includes("public_key")) {
+      showToast("Missing `public_key` field in CSV", "error");
+      return [];
+    };
+
+    const votersList: types.Voter[] = [];
+
+    let invalidCount = 0;
+
+    for (const row of dataRows) {
+      const values = row.split(";").map((value) => value.trim());
+      const voter: Partial<types.Voter> = {};
+
+      keys.forEach((key, index) => {
+        if (key)
+          voter[key as keyof types.Voter] = values[index];
+      });
+
+      if (voter.public_key && utils.isPublicKeyValid(voter.public_key))
+        votersList.push(voter as types.Voter);
+      else
+        invalidCount++;
+    };
+
+    if (invalidCount > 0)
+      showToast(`Skipped ${invalidCount} invalid voter${invalidCount > 1 ? 's' : ''}`, "error");
+
+    if (votersList.length !== 0) {
+      setRequiredFields(Object.keys(votersList[0]).filter((key) => key !== "public_key"));
+
+      // TODO: fix here
+    };
+
+    return votersList;
+  };
+
+  const handleCSVUpload = (event: ChangeEvent) => {
+    const target = event.target as HTMLInputElement;
+
+    if (target.files && target.files[0]) {
+      const file = target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const votersList = csvToVoterList(String(reader.result));
+
+        console.log(votersList);
+
+        setVoters(votersList);
+      };
+      reader.readAsText(file);
+    };
+  };
+
   return (
     <div className="flex flex-col min-h-[calc(100vh-160px)] max-h-[calc(100vh-162px)] p-4">
-      <div className="mb-6">
-        <h3 className="text-white text-xl">Add Voter Addresses</h3>
+      <h3 className="mb-6 text-white text-xl">Add Voter Addresses</h3>
+      <div className="mb-4">
+        <input
+          id="csv-upload"
+          type="file"
+          accept=".csv"
+          onChange={handleCSVUpload}
+          className="hidden"
+        />
+        <Button
+          upload={true}
+          onClick={() => {
+            const input = document.getElementById("csv-upload") as HTMLInputElement;
+            input.click();
+          }}
+        >
+          Import from CSV
+        </Button>
       </div>
       <div className="mb-8">
         <VoterInput
