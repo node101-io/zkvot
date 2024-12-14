@@ -10,14 +10,14 @@ if (!process.env.AVAIL_SEED_PHRASE_DEVNET)
 
 export const mainnet = {
   seedPhrase: process.env.AVAIL_SEED_PHRASE_MAINNET,
-  rpcEndpoint: process.env.AVAIL_RPC_ENDPOINT_MAINNET || 'https://turing-rpc.avail.so/rpc',
-  providerEndpoint: process.env.AVAIL_PROVIDER_ENDPOINT_MAINNET || 'wss://turing-rpc.avail.so/ws',
+  rpcEndpoint: process.env.AVAIL_RPC_ENDPOINT_MAINNET || 'https://mainnet-rpc.avail.so/rpc',
+  providerEndpoint: process.env.AVAIL_PROVIDER_ENDPOINT_MAINNET || 'wss://mainnet.avail-rpc.com',
   appID: 101
 };
 
 export const devnet = {
   seedPhrase: process.env.AVAIL_SEED_PHRASE_DEVNET,
-  rpcEndpoint: process.env.AVAIL_RPC_ENDPOINT_MAINNET || 'https://mainnet-rpc.avail.so/rpc',
-  providerEndpoint: process.env.AVAIL_PROVIDER_ENDPOINT_DEVNET || 'wss://mainnet.avail-rpc.com',
+  rpcEndpoint: process.env.AVAIL_RPC_ENDPOINT_MAINNET || 'https://turing-rpc.avail.so/rpc',
+  providerEndpoint: process.env.AVAIL_PROVIDER_ENDPOINT_DEVNET || 'wss://turing-rpc.avail.so/ws',
   appID: 101
 };

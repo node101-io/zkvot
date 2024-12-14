@@ -22,21 +22,24 @@ export default async (
   try {
     if (!seedPhrase || !appID)
       return callback('not_authenticated_request');
-  
+
     const sdk = await getSDK(is_devnet)
-   
+
     const account = new Keyring({ type: 'sr25519' }).addFromUri(seedPhrase);
-   
-    const result = await sdk.tx.dataAvailability.submitData(JSON.stringify(data), WaitFor.BlockInclusion, account, {
-      app_id: appID
-    });
-  
-    if (result.isErr)
+
+    const submissionResult = await sdk.tx.dataAvailability.submitData(
+      JSON.stringify(data),
+      WaitFor.BlockInclusion,
+      account,
+      { app_id: appID }
+    );
+
+    if (submissionResult.isErr)
       return callback('submit_error');
-  
+
     return callback(null, {
-      blockHeight: result.blockNumber,
-      txHash: result.txHash.toString()
+      blockHeight: submissionResult.blockNumber,
+      txHash: submissionResult.txHash.toString()
     });
   } catch (error) {
     console.error(error);

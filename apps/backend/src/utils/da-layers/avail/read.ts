@@ -1,7 +1,3 @@
-import { Keyring } from 'avail-js-sdk';
-
-import { types } from 'zkvot-core';
-
 import { getSDK } from './sdk.js';
 import { devnet, mainnet } from './config.js';
 
@@ -10,30 +6,52 @@ export default async (
   is_devnet: boolean,
   callback: (
     error: string | null,
-    submission_data_list?: types.DaLayerSubmissionData[]
+    submission_data_list?: { appId: number; data: string }[]
   ) => any
 ) => {
-  const seedPhrase = is_devnet ? devnet.seedPhrase : mainnet.seedPhrase;
-  const appID = is_devnet ? devnet.appID : mainnet.appID;
+  let submission_data_list = [];
+  const defaultAppId = is_devnet ? devnet.appID : mainnet.appID;
 
   try {
-    if (!seedPhrase || !appID)
+    if (!defaultAppId)
       return callback('not_authenticated_request');
-  
-    const sdk = await getSDK(is_devnet)
-   
-    const account = new Keyring({ type: 'sr25519' }).addFromUri(seedPhrase)
-   
-    const hash = (await sdk.api.rpc.chain.getBlockHash(height));
-    const result = await sdk.api.rpc.chain.getBlock(hash);
-    const txs = result.block.extrinsics.map(each => {
-      return (each as any).appId
+
+    const sdk = await getSDK(is_devnet);
+
+    const blockHash = await sdk.api.rpc.chain.getBlockHash(height);
+    const signedBlock = await sdk.api.rpc.chain.getBlock(blockHash);
+
+    const extrinsics = signedBlock.block.extrinsics;
+
+    const submitDataTransactions = extrinsics.filter((extrinsic) => {
+      try {
+        const { method } = extrinsic;
+        return method.section === 'dataAvailability' && method.method === 'submitData';
+      } catch (err) {
+        return callback('da_tx_error');
+      };
     });
 
-    console.log(txs.length);
+    for (let i = 0; i < submitDataTransactions.length; i++) {
+      const extrinsic = submitDataTransactions[i];
 
+      try {
+        const submittedDataAppId = Number((extrinsic as any).__internal__raw.signature.appId);
+
+        if (submittedDataAppId === defaultAppId) {
+          const data = String(extrinsic.method.args[0].toHuman() || '');
+
+          submission_data_list.push({ appId: submittedDataAppId, data: data });
+        }
+      } catch (err) {
+        return callback('extrinsic_error');
+      }
+    }
+
+    const result = submission_data_list.length > 0 ? submission_data_list : undefined;
+
+    return callback(null, result);
   } catch (error) {
-    console.error(error);
     return callback('read_error');
   };
 };
