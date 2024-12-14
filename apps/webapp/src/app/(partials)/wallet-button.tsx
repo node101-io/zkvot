@@ -75,7 +75,7 @@ const WalletButton = () => {
   };
 
   return (
-    <div className='flex items-center md:ml-12'>
+    <div className='flex items-center'>
       {selectedWallet ? (
         <div className='flex items-center space-x-4 py-2'>
           <div className='flex items-center space-x-2'>
