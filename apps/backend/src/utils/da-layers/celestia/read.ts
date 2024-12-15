@@ -15,10 +15,10 @@ export default (
 
   const celestiaNetwork = is_devnet ? testnet : mainnet;
 
-  if (!celestiaNetwork.rpcEndpoint || !celestiaNetwork.authToken)
+  if (!celestiaNetwork.localEndpoint || !celestiaNetwork.authToken)
     return callback('not_authenticated_request');
 
-  fetch(celestiaNetwork.rpcEndpoint, {
+  fetch(celestiaNetwork.localEndpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

@@ -136,7 +136,7 @@ export const sendVoteViaBackend = async (
 
 export const fetchAvailBlockHeightFromBackend = async () => {
   try {
-    const response = await fetch(`${API_URL}/block-info/avail`);
+    const response = await fetch(`${API_URL}/block-info/avail${process.env.DEVNET ? '?is_devnet' : ''}`);
 
     if (!response.ok) {
       const errorText = await response.text();

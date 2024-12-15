@@ -1,17 +1,17 @@
 import { Request, Response } from 'express';
+import { testnet, mainnet } from 'src/utils/da-layers/celestia/config.js';
 
 interface BlockInfo {
   block_height: number;
   block_hash: string;
 };
 
-const CELESTIA_MAINNET_RPC = 'https://rpc-mocha.pops.one/block';
 const BLOCK_INFO_CACHE_TIME = 5 * 60 * 1000;
 
 let lastResponse: BlockInfo;
 let lastRequestTime: number;
 
-export default async (_req: Request, res: Response) => {
+export default async (req: Request, res: Response) => {
   try {
     if (lastResponse && Date.now() - lastRequestTime < BLOCK_INFO_CACHE_TIME) {
       res.json({
@@ -21,7 +21,7 @@ export default async (_req: Request, res: Response) => {
       return;
     }
 
-    const response = await fetch(CELESTIA_MAINNET_RPC, {
+    const response = await fetch(`${'is_devnet' in req.query ? testnet.rpcEndpoint : mainnet.rpcEndpoint}/block`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
