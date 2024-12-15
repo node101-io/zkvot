@@ -1,17 +1,24 @@
 import { Request, Response } from 'express';
+import { z } from 'zod';
 
 import Election from '../../../models/election/Election.js';
+
+const RequestQuery = z.object({
+  id: z.string()
+});
 
 export default (
   req: Request,
   res: Response
 ) => {
-  if (!req.query.id || typeof req.query.id !== 'string') {
+  const { success, data } = RequestQuery.safeParse(req.body);
+
+  if (!success || !data) {
     res.json({ success: false, error: 'bad_request' });
     return;
-  }
+  };
 
-  Election.findElectionByContractIdAndGetResults(req.query.id, (err, data) => {
+  Election.findElectionByContractIdAndGetResults(data.id, (err, data) => {
     if (err)
       return res.json({ success: false, error: err });
 
