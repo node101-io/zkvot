@@ -108,9 +108,19 @@ const DASelection = ({
           </a>
         </div>
         <div className="mt-4 bg-[#333333] rounded-lg p-3">
-          <p className="text-gray-300 text-sm">
-            <span className="font-semibold">Namespace:</span> {(communicationLayers.find(layer => layer.name === 'Celestia') as types.CelestiaDaLayerInfo).namespace || 'N/A'}
-          </p>
+          <div className="text-white text-sm flex space-x-1">
+            <span className="font-semibold">Namespace:</span> 
+            <span className='flex items-center'>
+              {(communicationLayers.find(layer => layer.name === 'Celestia') as types.CelestiaDaLayerInfo).namespace || 'N/A'}
+              <span className='ml-1 cursor-pointer w-fit'>
+                <CopyButton
+                  textToCopy={(communicationLayers.find(layer => layer.name === 'Celestia') as types.CelestiaDaLayerInfo).namespace || 'N/A'}
+                  iconColor='#F6F6F6'
+                  position={{ top: -26, left: -38 }}
+                  />
+              </span>
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -350,7 +360,7 @@ export default ({
                       textToCopy={electionData.mina_contract_id}
                       iconColor='#F6F6F6'
                       position={{ top: -26, left: -38 }}
-                    />{' '}
+                    />
                   </span>
                 </div>
               </div>

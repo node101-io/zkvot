@@ -61,7 +61,7 @@ export default function RootLayout({
             Please use a larger screen for the best experience on zkVot.
           </span>
         </div>
-        <main className="flex flex-col px-4 overflow-hidden h-screen">
+        <main className="flex flex-col px-4 overflow-hidden">
           <ZKProgramCompileProvider>
             <ToastProvider>
               <WalletProvider>
