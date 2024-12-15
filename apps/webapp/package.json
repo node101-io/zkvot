@@ -12,7 +12,7 @@
     "@heroicons/react": "^1.0.6",
     "@polkadot/api": "^14.2.3",
     "@polkadot/extension-dapp": "^0.56.2",
-    "@polkadot/util": "^13.2.3",
+    "@polkadot/util": "^12.6.2",
     "avail-js-sdk": "^0.3.0",
     "canvas-confetti": "^1.9.3",
     "comlink": "^4.4.1",
