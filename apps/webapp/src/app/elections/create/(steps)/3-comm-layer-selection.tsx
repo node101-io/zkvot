@@ -11,7 +11,6 @@ import {
   fetchCelestiaBlockInfoFromBackend,
 } from "@/utils/backend.js";
 import { CommunicationLayerDetails } from "@/utils/constants.jsx";
-import generateRandomCelestiaNamespace from "@/utils/generateRandomCelestiaNamespace.js";
 
 export default ({
   onPrevious,
@@ -62,7 +61,7 @@ export default ({
       const communicationLayer: types.CelestiaDaLayerInfo = {
         name: selectedCommunicationLayer,
         start_block_height: 0,
-        namespace: generateRandomCelestiaNamespace(),
+        namespace: 'AAAAAAAAAAAAAAAAAAAAAAAAAGM1NjM4OWY5Yzk=',
         start_block_hash: "",
       };
 
