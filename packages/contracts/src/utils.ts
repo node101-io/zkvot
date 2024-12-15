@@ -108,7 +108,8 @@ namespace utilsNamespace {
     mina_contract_id: string,
     storage_layer_id: string,
     storage_layer_platform: types.StorageLayerPlatformCodes,
-    electionData: types.ElectionStaticData
+    electionData: types.ElectionStaticData,
+    result: number[]
   ): types.ElectionBackendData => {
     return {
       is_devnet,
@@ -130,7 +131,7 @@ namespace utilsNamespace {
           .toBigInt()
           .toString() || '',
       communication_layers: electionData.communication_layers,
-      result: [], // TODO implement
+      result
     };
   };
 

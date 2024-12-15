@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import Election from '../../../models/election/Election.js';
 
-const RequestQuery = z.object({
+const RequestBody = z.object({
   is_devnet: z.boolean().optional(),
   skip: z.number().optional(),
   text: z.string().optional(),
@@ -16,7 +16,7 @@ export default (
   req: Request,
   res: Response
 ) => {
-  const { success, data } = RequestQuery.safeParse(req.body);
+  const { success, data } = RequestBody.safeParse(req.body);
 
   if (!success || !data) {
     res.json({ success: false, error: 'bad_request' });

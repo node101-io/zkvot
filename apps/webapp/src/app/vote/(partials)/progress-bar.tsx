@@ -20,7 +20,7 @@ export default ({ currentStep, totalSteps, loading }: {
   const stepLabels = [
     ['We are converting', 'your vote into a ZK proof.'],
     ['You are submitting', 'your proof.'],
-    ['Wait for decentralized', 'sequencers to settle'],
+    ['Wait for decentralized', 'aggregators to settle'],
   ];
 
   const defaultIcons = [Step1, Step2, Step3];

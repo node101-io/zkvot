@@ -9,7 +9,7 @@ import ProgressBar from '@/app/vote/(partials)/progress-bar.jsx';
 
 import VotingStep from '@/app/vote/(steps)/1-voting.jsx';
 import SubmissionStep from '@/app/vote/(steps)/2-submission.jsx';
-import ResultPage from '@/app/vote/(steps)/3-results.jsx';
+import SubmittedStep from '@/app/vote/(steps)/3-submitted.jsx';
 
 import { ToastContext } from '@/contexts/toast-context.jsx';
 
@@ -80,13 +80,16 @@ const Page = ({
                 ))
                   return reject('Election data commitment verification failed');
 
+                const result = election_state.voteOptions.toResults();
+
                 return resolve(
                   utils.convertElectionStaticDataToBackendData(
                     !!process.env.DEVNET,
                     params.id,
                     storageLayerInfo.id,
                     storageLayerInfo.platform,
-                    election_static_data
+                    election_static_data,
+                    result
                   )
                 );
               }
@@ -108,6 +111,7 @@ const Page = ({
       .then((election_data) => {
         setElectionData(election_data);
         submitElectionToBackend(election_data.mina_contract_id);
+        setCurrentStep(3)
       })
       .catch((error) => {
         console.error(error);
@@ -154,7 +158,7 @@ const Page = ({
             />
           )}
           {currentStep === 3 && (
-            <ResultPage
+            <SubmittedStep
               electionData={electionData}
             />
           )}
