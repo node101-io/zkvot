@@ -47,7 +47,7 @@ server.listen(PORT, () => {
 
   compileZkProgramIfNotCompiledBefore(false);
 
-  availRead(1046316, true, (err, result) => {
-    console.log(err,result)
-  })
+  // availRead(1046316, true, (err, result) => {
+  //   console.log(err,result)
+  // })
 });

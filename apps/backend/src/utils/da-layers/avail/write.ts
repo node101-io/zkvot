@@ -31,6 +31,8 @@ export default async (
       app_id: appID
     });
   
+    console.log(result);
+
     if (result.isErr)
       return callback('submit_error');
   
