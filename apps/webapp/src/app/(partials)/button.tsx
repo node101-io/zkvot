@@ -7,6 +7,7 @@ interface ButtonProps {
   disabled?: boolean;
   loading?: boolean;
   TextColor?: string;
+  upload?: boolean;
   download?: boolean;
   backgroundColor?: string;
   variant?: "front" | "back";
@@ -20,6 +21,7 @@ const Spinner = () => (
 const Button: FC<ButtonProps> = ({
   onClick,
   children,
+  upload = false,
   download = false,
   disabled = false,
   loading = false,
@@ -58,8 +60,10 @@ const Button: FC<ButtonProps> = ({
         >
           {!loading && (
             <div
-              className={`${isBack ? "transform rotate-180" : ""} ${
-                download ? "transform rotate-90" : ""
+              className={`${
+                isBack ? "transform rotate-180" :
+                download ? "transform rotate-90" :
+                upload ? "transform -rotate-90" : ""
               }`}
             >
               <RightArrow />

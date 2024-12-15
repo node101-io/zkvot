@@ -9,7 +9,7 @@ import AssignedElections from '@/app/elections/(partials)/assigned-elections.jsx
 import { AuroWalletContext } from '@/contexts/auro-wallet-context.jsx';
 
 const Page = () => {
-  const [activePanel, setActivePanel] = useState('Assigned Elections');
+  const [activePanel, setActivePanel] = useState('All Elections');
   const [onlyOngoing, setOnlyOngoing] = useState(false);
 
   const { auroWalletAddress } = useContext(AuroWalletContext);
@@ -22,14 +22,14 @@ const Page = () => {
         <div className='flex flex-col md:flex-row md:items-center justify-between mb-4'>
           <div className='flex mb-2 md:mb-0 space-x-12'>
             <button
-              onClick={() => setActivePanel('Assigned Elections')}
+              onClick={() => setActivePanel('All Elections')}
               className={`focus:outline-none ${
-                activePanel === 'Assigned Elections'
+                activePanel === 'All Elections'
                   ? 'text-white border-b-[1px] pb-1 border-primary'
                   : 'text-[#B7B7B7]'
               }`}
             >
-              Assigned Elections
+              All Elections
             </button>
             <button
               onClick={() => setActivePanel('Voted Elections')}
@@ -77,26 +77,23 @@ const Page = () => {
           </ToolTip>
         </div>
         <div className='px-6'>
-          {activePanel === 'Assigned Elections' && (
+          {activePanel === 'All Elections' && (
             <div className='py-8'>
               <AssignedElections
                 onlyOngoing={onlyOngoing}
-                // metamaskWalletAddress={metamaskWalletAddress}
                 auroWalletAddress={auroWalletAddress}
               />
             </div>
           )}
           {activePanel === 'Voted Elections' && (
             <div className='flex w-full min-h-[40vh] justify-center items-center'>
-              <p className='max-w-3xl text-center text-gray-400'>
+              <p className='max-w-3xl text-center text-gray-400 leading-6'>
                 Oops, something went wrong. Just kidding... This is actually you
                 not seeing your previous elections because it is impossible to
                 do so in a truly anonymous system. Do not get us wrong, you
                 cannot vote twice, but the only way to anonymously see if you
-                have voted for an election or not is to check all single votes
-                in the client side. If you are looking for a specific election,
-                just click the “See if I have Voted Before” in an election’s
-                page.
+                have voted for an election or not is to check all votes on by
+                one to find out if one of them is yours.
               </p>
             </div>
           )}

@@ -4,6 +4,7 @@ import { useContext, useState, useEffect } from 'react';
 import Image from 'next/image.js';
 import { FaImage } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
+import { Nullifier } from '@aurowallet/mina-provider';
 
 import { types } from 'zkvot-core';
 
@@ -27,6 +28,8 @@ export default ({
   selectedOption,
   loading,
   daLayerSubmissionData,
+  nullifier,
+  setNullifier,
   setSelectedOption,
   setLoading,
   setDaLayerSubmissionData,
@@ -37,6 +40,8 @@ export default ({
   selectedOption: number;
   loading: boolean;
   daLayerSubmissionData: types.DaLayerSubmissionData;
+  nullifier: Nullifier | null;
+  setNullifier: (nullifier: Nullifier | null) => void;
   setSelectedOption: (option: number) => void;
   setLoading: (loading: boolean) => void;
   setDaLayerSubmissionData: (daLayerSubmissionData: types.DaLayerSubmissionData) => void;
@@ -46,12 +51,12 @@ export default ({
   const { auroWalletAddress, connectAuroWallet, createNullifier, disconnectAuroWallet, generateEncodedVoteProof } = useContext(AuroWalletContext);
   const { setSelectedWallet } = useContext(SelectedWalletContext);
   const { showToast } = useContext(ToastContext);
-  const { isVoteProgramCompiled, compileAggregationProgramIfNotCompiled } = useContext(ZKProgramCompileContext);
+  const { isVoteProgramCompiled } = useContext(ZKProgramCompileContext);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-
-  const [eligibilityStatus, setEligibilityStatus] = useState('not_connected');
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState<boolean>(false);
+  const [isDataLoading, setIsDataLoading] = useState<boolean>(true);
+  const [eligibilityStatus, setEligibilityStatus] = useState<'not_connected' | 'not_eligible' | 'eligible'>('not_connected');
 
   // useEffect(() => {
   //   (window as any).mina?.on('accountsChanged', () => {
@@ -59,6 +64,15 @@ export default ({
   //     setSelectedWallet(null);
   //   });
   // }, [])
+
+
+  useEffect(() => {
+    if (electionData && electionData.question && electionData.options) {
+      setIsDataLoading(false);
+    } else {
+      setIsDataLoading(true);
+    }
+  }, [electionData]);
 
   useEffect(() => {
     if (!auroWalletAddress) {
@@ -85,7 +99,6 @@ export default ({
 
     setSelectedWallet('Auro');
     setIsWalletModalOpen(false);
-    let connectionSuccess = false;
 
     try {
       await connectAuroWallet();
@@ -135,13 +148,15 @@ export default ({
         return;
       }
 
-      const nullifier = await createNullifier(electionData.mina_contract_id);
+      const createdNullifier = nullifier || await createNullifier(electionData.mina_contract_id);
 
-      if (!nullifier || nullifier instanceof Error) {
-        showToast('You need to sign the election ID to vote in the election', 'error');
+      if (!createdNullifier || createdNullifier instanceof Error) {
+        showToast('Failed to create the nullifier, please try again', 'error');
         setLoading(false);
         return;
       };
+
+      setNullifier(createdNullifier);
 
       const votersArray = electionData.voters_list.map((voter) => voter.public_key).filter(each => each && each.trim().length)
 
@@ -155,7 +170,7 @@ export default ({
 
       const voteData = {
         electionPubKey: electionData.mina_contract_id,
-        nullifier,
+        nullifier: createdNullifier,
         vote: selectedOption,
         votersArray,
         publicKey: publicKey,
@@ -172,112 +187,152 @@ export default ({
       setDaLayerSubmissionData({
         election_id: daLayerSubmissionData.election_id,
         nullifier: JSON.stringify({
-          x: nullifier.public.nullifier.x.toString(),
-          y: nullifier.public.nullifier.y.toString(),
+          x: createdNullifier.public.nullifier.x.toString(),
+          y: createdNullifier.public.nullifier.y.toString(),
         }),
         proof
       });
       setLoading(false);
       goToNextStep();
     } catch (error) {
+      console.error(error);
       setLoading(false);
       showToast('Error creating the vote, please try again later', 'error');
     }
   };
 
-  const Placeholder = ({ className }: { className: string }) => (
-    <div className={`${className} flex items-center justify-center h-full`}>
-      <FaImage className='text-gray-500 text-6xl' />
-    </div>
-  );
-
-  return (
-    <div className='flex flex-col items-center px-4 sm:px-6 md:px-8'>
-      {loading && <LoadingOverlay text='Generating zk Proof...' />}
-      <div className='py-4 w-full text-start'>
-        Already voted?{' '}
-        <button
-          className='relative inline-flex items-center font-medium text-gray-300 transition duration-300 ease-out hover:text-white'
-          onClick={goToResults}
-        >
-          See Results
-        </button>
+  const Placeholder = () => (
+    <div className="animate-pulse flex flex-col w-full">
+      <div className='pb-4 w-full text-start'>
+        <div className='bg-[#1B1B1B] h-4 w-1/6 rounded'></div>
       </div>
       <div className='flex flex-col md:flex-row items-start w-full h-full text-white mb-6 flex-grow'>
         <div className='w-full md:w-1/2 flex'>
           <div className='flex w-full h-64 rounded-3xl overflow-hidden'>
-            <div className='w-full relative'>
-              {electionData.image_url.length ? (
-                <div className='w-full h-full relative'>
-                  <Image
-                    src={electionData.image_url}
-                    alt='Candidate 1'
-                    fill
-                    style={{ objectFit: 'cover' }}
-                    className='rounded-l-lg'
-                  />
-                </div>
-              ) : (
-                <Placeholder className='rounded-l-lg' />
-              )}
-            </div>
+            <div className='w-full relative bg-[#1B1B1B]'></div>
           </div>
         </div>
         <div className='p-4 w-full h-full flex flex-col justify-between'>
           <div className='flex flex-row w-full justify-between'>
-            <div className='text-[#B7B7B7] text-sm mb-2 flex flex-row items-center'>
-              <span className='mr-2 group relative'>
-                <ToolTip
-                  content='Election ID is a unique identifier for each election. It matches the contract public key that this election has on Mina. zkVot utilizes Mina like a DA layer to distribute any election related information. Thus, all the information you see in this page is 100% decentralized without any backend usage.'
-                  position='top'
-                  arrowPosition='start'
-                >
-                  <LearnMoreIcon color='#B7B7B7' />
-                </ToolTip>
-              </span>
-              Election id:{' '}
-              {String(electionData.mina_contract_id).slice(0, 12) + '...'}
-              <div className='ml-2'>
-                <CopyButton
-                  textToCopy={electionData.mina_contract_id}
-                  iconColor='#B7B7B7'
-                  position={{ top: -20, left: -38 }}
-                />
-              </div>
-            </div>
-            <span className='flex flex-row justify-center items-center'>
-              <span>
-                <Clock />
-              </span>
-              <span className='ml-1 text-sm text-[#B7B7B7]'>
-                <DateFormatter date={electionData.start_date} />
-              </span>
-            </span>
+            <div className='bg-[#1B1B1B] h-4 w-48 rounded'></div>
+            <div className='bg-[#1B1B1B] h-4 w-24 rounded'></div>
           </div>
           <div className='flex-grow min-h-52'>
-            <h2 className='text-[24px] mb-2'>{electionData.question}</h2>
-            <p className={`my-4 text-[16px] italic text-[#F6F6F6]`}>
-              {electionData.description}
-            </p>
+            <div className='bg-[#1B1B1B] h-8 w-3/4 rounded mb-4'></div>
+            <div className='bg-[#1B1B1B] h-4 w-full rounded mb-2'></div>
+            <div className='bg-[#1B1B1B] h-4 w-5/6 rounded mb-2'></div>
+            <div className='bg-[#1B1B1B] h-4 w-4/6 rounded'></div>
           </div>
         </div>
       </div>
       <div className='w-full my-5'>
-        <h3 className='text-xl mb-4'>Options</h3>
+        <div className='bg-[#1B1B1B] h-6 w-24 rounded mb-4'></div>
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-          {electionData.options.map((option, index) => (
-            <button
+          {[1, 2, 3, 4].map((_, index) => (
+            <div
               key={index}
-              className={`p-4 text-center bg-[#222222] rounded-2xl border-[1px]
-                ${selectedOption === index ? 'border-primary shadow-lg' : 'border-transparent hover:bg-[#333333]'}
-                ${eligibilityStatus !== 'eligible' ? 'cursor-not-allowed' : ''}`}
-              onClick={() => setSelectedOption(index)}
-              disabled={loading || eligibilityStatus !== 'eligible'}
-            >
-              {option}
-            </button>
+              className='p-4 bg-[#1B1B1B] rounded-2xl h-12'
+            ></div>
           ))}
         </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className='flex flex-col items-center px-4 sm:px-6 md:px-8 flex-grow  h-full justify-between'>
+      {loading && <LoadingOverlay text={nullifier ? 'Generating your vote...' : 'Please approve to proceed...'} />}
+      <div className='w-full flex flex-col items-center'>
+        {isDataLoading ? (
+          <Placeholder />
+        ) : (
+          <>
+            <div className='pb-4 w-full text-start'>
+              Already voted?{' '}
+              <button
+                className='relative inline-flex items-center font-medium text-gray-300 transition duration-300 ease-out hover:text-white'
+                onClick={goToResults}
+              >
+                See Results
+              </button>
+            </div>
+            <div className='flex flex-col md:flex-row items-start w-full h-full text-white mb-6 flex-grow'>
+              <div className='w-full md:w-1/2 flex'>
+                <div className='flex w-full h-64 rounded-3xl overflow-hidden'>
+                  <div className='w-full relative'>
+                    {electionData.image_url && electionData.image_url.length ? (
+                      <div className='w-full h-full relative'>
+                        <Image
+                          src={electionData.image_url}
+                          alt='Candidate Image'
+                          fill
+                          style={{ objectFit: 'cover' }}
+                          className='rounded-l-lg'
+                        />
+                      </div>
+                    ) : (
+                      <Placeholder />
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className='p-4 w-full h-full flex flex-col justify-between'>
+                <div className='flex flex-row w-full justify-between'>
+                  <div className='text-[#B7B7B7] text-sm mb-2 flex flex-row items-center'>
+                    <span className='mr-2 group relative'>
+                      <ToolTip
+                        content='Election ID is a unique identifier for each election. It matches the contract public key that this election has on Mina. zkVot utilizes Mina like a DA layer to distribute any election related information. Thus, all the information you see in this page is 100% decentralized without any backend usage.'
+                        position='top'
+                        arrowPosition='start'
+                      >
+                        <LearnMoreIcon color='#B7B7B7' />
+                      </ToolTip>
+                    </span>
+                    Election id:
+                    {String(electionData.mina_contract_id).slice(0, 12) + '...'}
+                    <div className='ml-2'>
+                      <CopyButton
+                        textToCopy={electionData.mina_contract_id}
+                        iconColor='#B7B7B7'
+                        position={{ top: -20, left: -38 }} />
+                    </div>
+                  </div>
+                  <span className='flex flex-row justify-center items-center'>
+                    <span>
+                      <Clock />
+                    </span>
+                    <span className='ml-1 text-sm text-[#B7B7B7]'>
+                      <DateFormatter date={electionData.start_date} />
+                    </span>
+                  </span>
+                </div>
+                <div className='flex-grow min-h-52'>
+                  <h2 className='text-[24px] mb-2'>{electionData.question}</h2>
+                  <p className={`my-4 text-[16px] italic text-[#F6F6F6]`}>
+                    {electionData.description}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className='w-full my-5'>
+              <h3 className='text-xl mb-4'>Options</h3>
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                {electionData.options.map((option, index) => (
+                  <button
+                    key={index}
+                    className={`p-4 text-center bg-[#222222] rounded-2xl border-[1px]
+                    ${selectedOption === index ? 'border-primary shadow-lg' : 'border-transparent hover:bg-[#333333]'}
+                    ${eligibilityStatus !== 'eligible' ? 'cursor-not-allowed' : ''}`}
+                    onClick={() => setSelectedOption(index)}
+                    disabled={loading || eligibilityStatus !== 'eligible'}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
       <div className='w-full pt-8 flex justify-end space-x-4'>
         <Button
@@ -289,7 +344,7 @@ export default ({
           {eligibilityStatus === 'eligible'
             ? 'Vote'
             : eligibilityStatus === 'not_eligible'
-            ? 'You are not elligible to vote'
+            ? 'You are not eligible to vote'
             : 'Connect wallet to check eligibility'}
         </Button>
         {isWalletModalOpen && (
