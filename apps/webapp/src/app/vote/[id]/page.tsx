@@ -7,9 +7,9 @@ import { Election, types, utils } from 'zkvot-core';
 
 import ProgressBar from '@/app/vote/(partials)/progress-bar.jsx';
 
-import VotingStep from '@/app/vote/(steps)/1-voting.jsx';
-import SubmissionStep from '@/app/vote/(steps)/2-submission.jsx';
-import SubmittedStep from '@/app/vote/(steps)/3-submitted.jsx';
+import VotingStep from '@/app/vote/[id]/(steps)/1-voting.jsx';
+import SubmissionStep from '@/app/vote/[id]/(steps)/2-submission.jsx';
+import SubmittedStep from '@/app/vote/[id]/(steps)/3-submitted.jsx';
 
 import { ToastContext } from '@/contexts/toast-context.jsx';
 
