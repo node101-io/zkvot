@@ -11,10 +11,7 @@ const BLOCK_INFO_CACHE_TIME = 5 * 60 * 1000;
 let lastResponse: BlockInfo;
 let lastRequestTime: number;
 
-export default async (
-  req: Request,
-  res: Response
-) => {
+export default async (_req: Request, res: Response) => {
   try {
     if (lastResponse && Date.now() - lastRequestTime < BLOCK_INFO_CACHE_TIME) {
       res.json({

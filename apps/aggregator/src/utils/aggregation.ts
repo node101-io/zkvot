@@ -59,8 +59,8 @@ async function append_vote (
   }
 
   if (
-    PreviousProof.publicInput.votersRoot != Proof.publicInput.votersRoot ||
-    PreviousProof.publicInput.electionPubKey != Proof.publicInput.electionPubKey
+    PreviousProof.publicInput.votersRoot.toBigInt() != Proof.publicInput.votersRoot.toBigInt() ||
+    PreviousProof.publicInput.electionPubKey.toBase58() != Proof.publicInput.electionPubKey.toBase58()
   )
     return callback('proof_election_mismatch');
 

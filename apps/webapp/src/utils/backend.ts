@@ -38,11 +38,16 @@ export const fetchElectionsFromBackend = async (
   is_ongoing: boolean = true
 ): Promise<types.ElectionBackendData[]> => {
   try {
-    const response = await fetch(`${API_URL}/election/filter?skip=${skip}${is_ongoing ? '&is_ongoing' : ''}${process.env.DEVNET ? '&is_devnet' : ''}`, {
-      method: 'GET',
+    const response = await fetch(`${API_URL}/election/filter`, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-      }
+      },
+      body: JSON.stringify({
+        skip,
+        is_ongoing,
+        is_devnet: !!process.env.DEVNET
+      })
     });
 
     if (!response.ok)
@@ -70,11 +75,14 @@ export const fetchElectionResultByContractIdFromBackend = async (
   proof: string
 }> => {
   try {
-    const response = await fetch(`${API_URL}/election/result?id=${id}`, {
-      method: 'GET',
+    const response = await fetch(`${API_URL}/election/result`, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-      }
+      },
+      body: JSON.stringify({
+        id
+      })
     });
 
     if (!response.ok)

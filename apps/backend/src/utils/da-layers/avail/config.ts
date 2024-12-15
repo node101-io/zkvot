@@ -17,7 +17,7 @@ export const mainnet = {
 
 export const devnet = {
   seedPhrase: process.env.AVAIL_SEED_PHRASE_DEVNET,
-  rpcEndpoint: process.env.AVAIL_RPC_ENDPOINT_MAINNET || 'https://turing-rpc.avail.so/rpc',
+  rpcEndpoint: process.env.AVAIL_RPC_ENDPOINT_DEVNET || 'https://turing-rpc.avail.so/rpc',
   providerEndpoint: process.env.AVAIL_PROVIDER_ENDPOINT_DEVNET || 'wss://turing-rpc.avail.so/ws',
   appID: 101
 };

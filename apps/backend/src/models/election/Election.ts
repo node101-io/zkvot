@@ -379,7 +379,7 @@ ElectionSchema.statics.findElectionByContractIdAndAddVote = function (
 
       Election
         .findOneAndUpdate({ mina_contract_id: data.mina_contract_id }, {$set: {
-          result: election.result.map((count, index) => index == data.new_voter.vote ? count + 1 : count)
+          result: election.result.map((count, index) => index == data.new_voter.vote - 1 ? count + 1 : count)
         }}, { new: true })
         .then((election: types.ElectionBackendData) => {
           ResultProof.findResultProofByMinaContractIdAndUpdate({

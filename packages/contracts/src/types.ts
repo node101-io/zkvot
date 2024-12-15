@@ -10,7 +10,7 @@ namespace typesNamespace {
     data: string
   };
   export type CelestiaDaLayerInfo = DaLayerInfo & {
-    namespace: string,
+    namespace: 'AAAAAAAAAAAAAAAAAAAAAAAAAGM1NjM4OWY5Yzk=',
     start_block_hash: string
   };
   export type CelestiaDataTx = {

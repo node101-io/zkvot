@@ -1,7 +1,7 @@
 'use client';
 
 import { useContext, useState, useEffect } from 'react';
-import { Proof, Poseidon } from 'o1js';
+import { Nullifier } from '@aurowallet/mina-provider';
 
 import { Election, types, utils } from 'zkvot-core';
 
@@ -9,7 +9,7 @@ import ProgressBar from '@/app/vote/(partials)/progress-bar.jsx';
 
 import VotingStep from '@/app/vote/(steps)/1-voting.jsx';
 import SubmissionStep from '@/app/vote/(steps)/2-submission.jsx';
-import ResultPage from '@/app/vote/(steps)/3-results.jsx';
+import SubmittedStep from '@/app/vote/(steps)/3-submitted.jsx';
 
 import { ToastContext } from '@/contexts/toast-context.jsx';
 
@@ -50,13 +50,14 @@ const Page = ({
     communication_layers: [],
     result: []
   });
+  const [nullifier, setNullifier] = useState<Nullifier | null>(null);
 
   const fetchElectionData = () =>
     new Promise(
       (resolve: (data: types.ElectionBackendData) => void, reject) => {
         Election.fetchElectionState(
           params.id,
-          // "B62qkCYFCQDVXtis2tLKuGQwzwKY2X7WhN5NjHrWj68wK2odS7ASxND",
+          // "B62qr3CtnWvNDFquk6mZemj2nqLjDkBBU8iLAbReUihGmu7uYx7P9Rq",
           MINA_RPC_URL,
           (err, election_state) => {
             if (err || !election_state)
@@ -69,6 +70,7 @@ const Page = ({
             utils.fetchDataFromStorageLayer(
               storageLayerInfo,
               (err, election_static_data) => {
+                console
                 if (err || !election_static_data)
                   return reject('Failed to fetch election data');
 
@@ -78,13 +80,16 @@ const Page = ({
                 ))
                   return reject('Election data commitment verification failed');
 
+                const result = election_state.voteOptions.toResults();
+
                 return resolve(
                   utils.convertElectionStaticDataToBackendData(
                     !!process.env.DEVNET,
                     params.id,
                     storageLayerInfo.id,
                     storageLayerInfo.platform,
-                    election_static_data
+                    election_static_data,
+                    result
                   )
                 );
               }
@@ -130,6 +135,8 @@ const Page = ({
               electionData={electionData}
               selectedOption={selectedOption}
               loading={loading}
+              nullifier={nullifier}
+              setNullifier={setNullifier}
               daLayerSubmissionData={daLayerSubmissionData}
               setSelectedOption={setSelectedOption}
               goToNextStep={goToNextStep}
@@ -150,7 +157,7 @@ const Page = ({
             />
           )}
           {currentStep === 3 && (
-            <ResultPage
+            <SubmittedStep
               electionData={electionData}
             />
           )}

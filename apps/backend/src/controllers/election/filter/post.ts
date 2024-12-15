@@ -1,13 +1,15 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
 
-import { types } from 'zkvot-core';
-
 import Election from '../../../models/election/Election.js';
 
 const RequestBody = z.object({
-  mina_contract_id: z.string(),
   is_devnet: z.boolean().optional(),
+  skip: z.number().optional(),
+  text: z.string().optional(),
+  start_after: z.date().optional(),
+  end_before: z.date().optional(),
+  is_ongoing: z.boolean().optional()
 });
 
 export default (
@@ -21,10 +23,10 @@ export default (
     return;
   };
 
-  Election.findOrCreateElectionByContractId(data, (err: string | null, election?: types.ElectionBackendData) => {
+  Election.findElectionsByFilter(data, (err, elections) => {
     if (err)
       return res.json({ success: false, error: err });
 
-    return res.json({ success: true, election });
+    return res.json({ success: true, elections: elections || [] });
   });
 };

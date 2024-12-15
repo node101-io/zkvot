@@ -113,9 +113,12 @@ const ElectionCard = ({
         <h2 className='text-[24px] mb-2'>{electionData.question}</h2>
         <p className='text-[#B7B7B7] italic mb-4'>{electionData.description}</p>
         <div className='flex justify-between items-center translate-x-2'>
-          <button className='relative inline-flex items-center  py-3 font-medium text-gray-300 transition duration-300 ease-out group hover:-translate-y-1 hover:text-white'>
+          <Link
+            href={`/results/${electionData.mina_contract_id}`}
+            className='relative inline-flex items-center  py-3 font-medium text-gray-300 transition duration-300 ease-out group hover:-translate-y-1 hover:text-white'
+          >
             See Results
-          </button>
+          </Link>
           <Link href={`/vote/${electionData.mina_contract_id}`}>
             <Button>Vote</Button>
           </Link>
