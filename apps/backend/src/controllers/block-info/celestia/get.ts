@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { testnet, mainnet } from 'src/utils/da-layers/celestia/config.js';
+import { testnet, mainnet } from '../../../utils/da-layers/celestia/config.js';
 
 interface BlockInfo {
   block_height: number;
