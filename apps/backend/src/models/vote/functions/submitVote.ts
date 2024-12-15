@@ -31,15 +31,14 @@ export default (
     if (!data.namespace)
       return callback('bad_request');
 
-    writeToCelestia(data.namespace, data.submission_data, (err, celestiaResult) => {
+    writeToCelestia(data.namespace, data.submission_data, is_devnet, (err, celestiaResult) => {
       if (err)
         return callback(err);
       if (!celestiaResult)
         return callback('bad_request');
-
       return callback(null, {
         txHash: '',
-        ...celestiaResult
+        blockHeight: Number(celestiaResult.blockHeight)
       });
     });
   } else {
