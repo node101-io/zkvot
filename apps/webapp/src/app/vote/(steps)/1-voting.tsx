@@ -67,7 +67,6 @@ export default ({
   //   });
   // }, [])
 
-
   useEffect(() => {
     if (electionData && electionData.question && electionData.options) {
       setIsDataLoading(false);

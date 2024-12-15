@@ -111,7 +111,6 @@ const Page = ({
       .then((election_data) => {
         setElectionData(election_data);
         submitElectionToBackend(election_data.mina_contract_id);
-        setCurrentStep(3)
       })
       .catch((error) => {
         console.error(error);
