@@ -90,7 +90,7 @@ export const verifyAggregationProof = async (
 
     if (
       options_length !== result.length ||
-      proofResults.find((any, index) => result[index] !== any)
+      proofResults.findIndex((any, index) => result[index] !== any) > -1
     ) return false;
 
     if (!(await verify(proof, JSON.parse(verification_key))))

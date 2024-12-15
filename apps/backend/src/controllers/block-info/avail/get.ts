@@ -7,7 +7,7 @@ const BLOCK_INFO_CACHE_TIME = 5 * 60 * 1000;
 let lastBlockHeight: string;
 let lastRequestTime: number;
 
-export default async (req: Request, res: Response) => {
+export default async (_req: Request, res: Response) => {
   if (lastBlockHeight && Date.now() - lastRequestTime < BLOCK_INFO_CACHE_TIME) {
     res.json({
       success: true,

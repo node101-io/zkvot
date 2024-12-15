@@ -102,6 +102,8 @@ namespace AggregationMerkleMapNamespace {
 
           vote.verify();
 
+          vote.publicOutput.vote.equals(Field.from(0)).assertFalse();
+
           vote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
           vote.publicInput.electionPubKey.assertEquals(
             publicInput.electionPubKey

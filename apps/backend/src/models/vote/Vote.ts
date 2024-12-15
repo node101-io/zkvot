@@ -196,7 +196,7 @@ VoteSchema.statics.createAndSubmitVote = function (
         else
           return callback('not_possible_error');
 
-        submitVote(submitVoteData, (err, result) => {
+        submitVote(submitVoteData, data.is_devnet, (err, result) => {
           if (err)
             return callback(err);
 

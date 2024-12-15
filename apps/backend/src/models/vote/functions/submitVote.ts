@@ -8,28 +8,26 @@ import writeToCelestia from '../../../utils/da-layers/celestia/write.js';
 export default (
   data: {
     submission_data: types.DaLayerSubmissionData;
-    da_layer: 'avail' | 'celestia';
+    da_layer: types.DaLayerInfo['name'];
     namespace?: string;
     app_id?: number;
   },
+  is_devnet: boolean,
   callback: (error: string | null, result?: { blockHeight: number, txHash: string }) => any
 ) => {
-  if (data.da_layer !== 'avail')
-    return callback(null);
-
-  if (data.da_layer == 'avail') {
+  if (data.da_layer == 'Avail') {
     if (!data.app_id)
       return callback('bad_request');
 
-    // writeToAvail(data.submission_data, (err, availResult) => {
-    //   if (err)
-    //     return callback(err);
-    //   if (!availResult)
-    //     return callback('bad_request');
+    writeToAvail(data.submission_data, is_devnet, (err, availResult) => {
+      if (err)
+        return callback(err);
+      if (!availResult)
+        return callback('bad_request');
 
-    //   return callback(null, availResult);
-    // });
-  } else if (data.da_layer == 'celestia') {
+      return callback(null, availResult);
+    });
+  } else if (data.da_layer == 'Celestia') {
     if (!data.namespace)
       return callback('bad_request');
 
