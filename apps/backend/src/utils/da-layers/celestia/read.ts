@@ -42,17 +42,15 @@ export default (
     for (let i = 0; i < jsonRes.result.length; i++) {
       const dataSubmission = jsonRes.result[i];
 
-      decodeFromBase64String(dataSubmission.data, (err, data) => {
+      decodeFromBase64String(dataSubmission.data, (err, decodedData) => {
         if (err)
           return callback(err);
 
-        submission_data_list.push({ namespace: dataSubmission.namespace, data: data });
+        submission_data_list.push({ namespace: dataSubmission.namespace, data: decodedData });
       });
     };
 
-    const result = submission_data_list.length > 0 ? submission_data_list : undefined;
-
-    return callback(null, result);
+    return callback(null, submission_data_list);
   })
   .catch(_ => callback('read_error'));
 };

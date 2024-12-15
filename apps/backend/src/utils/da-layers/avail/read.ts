@@ -1,3 +1,5 @@
+import decodeFromBase64String from '../../decodeFromBase64String.js';
+
 import { getSDK } from './sdk.js';
 import { devnet, mainnet } from './config.js';
 
@@ -9,7 +11,8 @@ export default async (
     submission_data_list?: { appId: number; data: string }[]
   ) => any
 ) => {
-  let submission_data_list = [];
+  let submission_data_list: { appId: number; data: string }[] = [];
+
   const defaultAppId = is_devnet ? devnet.appID : mainnet.appID;
 
   try {
@@ -41,16 +44,19 @@ export default async (
         if (submittedDataAppId === defaultAppId) {
           const data = String(extrinsic.method.args[0].toHuman() || '');
 
-          submission_data_list.push({ appId: submittedDataAppId, data: data });
+          decodeFromBase64String(data, (err, decodedData) => {
+            if (err)
+              return callback(err);
+
+            submission_data_list.push({ appId: submittedDataAppId, data: decodedData });
+          });
         }
       } catch (err) {
         return callback('extrinsic_error');
-      }
-    }
+      };
+    };
 
-    const result = submission_data_list.length > 0 ? submission_data_list : undefined;
-
-    return callback(null, result);
+    return callback(null, submission_data_list);
   } catch (error) {
     return callback('read_error');
   };

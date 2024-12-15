@@ -9,8 +9,8 @@ import blockInfoRouteController from './routes/blockInfoRoute.js';
 import electionRouteController from './routes/electionRoute.js';
 import voteRouteController from './routes/voteRoute.js';
 
-// import availRead from './utils/da-layers/avail/read.js';
-// import availWrite from './utils/da-layers/avail/write.js';
+import availRead from './utils/da-layers/avail/read.js';
+import availWrite from './utils/da-layers/avail/write.js';
 
 // import celestiaRead from './utils/da-layers/celestia/read.js';
 // import celestiaWrite from './utils/da-layers/celestia/write.js';
@@ -19,37 +19,37 @@ import { compileZkProgramIfNotCompiledBefore } from './utils/mina/compileZkProgr
 
 dotenv.config({ path: path.join(import.meta.dirname, '../.env') });
 
-if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY)
-  console.error('AWS_ACCESS_KEY_ID and / or AWS_SECRET_ACCESS_KEY environment variables not set');
+// if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY)
+//   console.error('AWS_ACCESS_KEY_ID and / or AWS_SECRET_ACCESS_KEY environment variables not set');
 
-const app = express();
-const server = http.createServer(app);
+// const app = express();
+// const server = http.createServer(app);
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/zkVot';
-const PORT = process.env.PORT || 8000;
+// const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/zkVot';
+// const PORT = process.env.PORT || 8000;
 
-mongoose.set('strictQuery', false);
-await mongoose.connect(MONGODB_URI);
+// mongoose.set('strictQuery', false);
+// await mongoose.connect(MONGODB_URI);
 
-app.use(express.json());
-app.use(cors({
-  origin: (origin, callback) => callback(null, true)
-}));
-app.use((req, res, next) => {
-  if (!req.query || typeof req.query != 'object') req.query = {};
-  if (!req.body || typeof req.body != 'object') req.body = {};
+// app.use(express.json());
+// app.use(cors({
+//   origin: (origin, callback) => callback(null, true)
+// }));
+// app.use((req, res, next) => {
+//   if (!req.query || typeof req.query != 'object') req.query = {};
+//   if (!req.body || typeof req.body != 'object') req.body = {};
 
-  return next();
-});
+//   return next();
+// });
 
-app.use('/api/block-info', blockInfoRouteController);
-app.use('/api/election', electionRouteController);
-app.use('/api/vote', voteRouteController);
+// app.use('/api/block-info', blockInfoRouteController);
+// app.use('/api/election', electionRouteController);
+// app.use('/api/vote', voteRouteController);
 
-server.listen(PORT, () => {
-  console.log(`Server is on port ${PORT}.`);
+// server.listen(PORT, () => {
+//   console.log(`Server is on port ${PORT}.`);
 
-  compileZkProgramIfNotCompiledBefore(false);
+//   compileZkProgramIfNotCompiledBefore(false);
 
   // availWrite({
   //   election_id: 'election_id',
@@ -61,9 +61,9 @@ server.listen(PORT, () => {
   //   console.log(err, result);
   // })
 
-  // availRead(1125505, true, (err, result) => {
-  //   console.log(err,result)
-  // })
+  availRead(1129889, true, (err, result) => {
+    console.log(err,result)
+  })
 
   // celestiaWrite(
   //   'AAAAAAAAAAAAAAAAAAAAAAAAAL89vfs7io/SsSQ=',
@@ -91,4 +91,4 @@ server.listen(PORT, () => {
 
   //     console.log(res);
   //   });
-});
+// });

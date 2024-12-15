@@ -1,3 +1,5 @@
+import encodeDataToBase64String from '../../encodeDataToBase64String.js';
+
 import { WaitFor, Keyring } from 'avail-js-sdk';
 
 import { types } from 'zkvot-core';
@@ -27,19 +29,26 @@ export default async (
 
     const account = new Keyring({ type: 'sr25519' }).addFromUri(seedPhrase);
 
-    const submissionResult = await sdk.tx.dataAvailability.submitData(
-      JSON.stringify(data),
-      WaitFor.BlockInclusion,
-      account,
-      { app_id: appID }
-    );
+    encodeDataToBase64String(data, async (err, encodedData) => {
+      if(err)
+        return callback(err);
+      if (!encodedData)
+        return callback('bad_request');
 
-    if (submissionResult.isErr)
-      return callback('submit_error');
+      const submissionResult = await sdk.tx.dataAvailability.submitData(
+        encodedData,
+        WaitFor.BlockInclusion,
+        account,
+        { app_id: appID }
+      );
 
-    return callback(null, {
-      blockHeight: submissionResult.blockNumber,
-      txHash: submissionResult.txHash.toString()
+      if (submissionResult.isErr)
+        return callback('submit_error');
+
+      return callback(null, {
+        blockHeight: submissionResult.blockNumber,
+        txHash: submissionResult.txHash.toString()
+      });
     });
   } catch (error) {
     console.error(error);
