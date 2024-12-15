@@ -9,8 +9,8 @@ import blockInfoRouteController from './routes/blockInfoRoute.js';
 import electionRouteController from './routes/electionRoute.js';
 import voteRouteController from './routes/voteRoute.js';
 
-import availRead from './utils/da-layers/avail/read.js';
-import availWrite from './utils/da-layers/avail/write.js';
+// import availRead from './utils/da-layers/avail/read.js';
+// import availWrite from './utils/da-layers/avail/write.js';
 
 import { compileZkProgramIfNotCompiledBefore } from './utils/mina/compileZkProgram.js';
 
