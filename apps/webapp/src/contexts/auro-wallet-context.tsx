@@ -122,7 +122,10 @@ export const AuroWalletProvider = ({
       if (!zkProgramWorkerClientInstance)
         throw new Error('Zkapp Worker Client not found.');
 
-      const encodedVoteProof = await zkProgramWorkerClientInstance.createVote(vote);
+      const encodedVoteProof = await zkProgramWorkerClientInstance.createVote({
+        ...vote,
+        vote: vote.vote + 1 // vote is 1-indexed in the ZKP
+      });
 
       return encodedVoteProof;
     } catch (error) {

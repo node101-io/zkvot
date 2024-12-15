@@ -183,19 +183,19 @@ export default ({
   const { subwalletAccount, connectSubwallet, submitDataToAvailViaSubwallet, isSubmitting } = useContext(SubwalletContext);
   const { showToast } = useContext(ToastContext);
 
-  electionData.communication_layers = [
-    {
-      name: 'Avail',
-      start_block_height: 123,
-      app_id: 101
-    },
-    {
-      name: 'Celestia',
-      namespace: 'fldsşd',
-      start_block_height: 123,
-      start_block_hash: 'fldsşigd'
-    }
-  ];
+  // electionData.communication_layers = [
+  //   {
+  //     name: 'Avail',
+  //     start_block_height: 123,
+  //     app_id: 101
+  //   },
+  //   {
+  //     name: 'Celestia',
+  //     namespace: 'fldsşd',
+  //     start_block_height: 123,
+  //     start_block_hash: 'fldsşigd'
+  //   }
+  // ];
 
   const [selectionMode, setSelectionMode] = useState<'direct' | 'backend'>('backend');
   const [selectedDA, setSelectedDA] = useState<types.DaLayerInfo['name']>(electionData.communication_layers[0].name);
@@ -317,7 +317,7 @@ export default ({
 
   return (
     <div className='flex flex-col items-center px-4 sm:px-6 md:px-8 flex-grow  h-full justify-between'>
-      {loading && <LoadingOverlay text='Generating zk Proof...' />}
+      {loading && <LoadingOverlay text='Submitting the vote...' />}
       <div className='w-full flex flex-col items-center'>
         <div className='flex flex-col items-start w-full h-fit text-white mb-6 bg-[#222222] p-5 rounded-[30px] '>
           <div className='flex flex-col md:flex-row w-full h-fit '>

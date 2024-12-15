@@ -47,33 +47,38 @@ export default ({ electionData }: { electionData: types.ElectionBackendData; }) 
     </div>
   );
 
+  const emptyResults = Array.from({ length: electionData.options.length }, () => ({
+    percentage: 0,
+    voteCount: '0',
+  }));
+
   const verifySoftFinalityProof = async (softFinalityResult: number[]) => {
     if (!zkProgramWorkerClientInstance) {
       showToast('zkProgramWorkerClientInstance is not found', 'error');
-      setSoftFinalityResult([]);
+      setSoftFinalityResult(emptyResults);
       return;
     }
 
     try {
       const verificationKey = await zkProgramWorkerClientInstance.getVerificationKey();
 
-      if (!verifyAggregationProof(
+      if (!(await verifyAggregationProof(
         softFinalityProof,
         verificationKey,
         electionData.mina_contract_id,
         electionData.voters_merkle_root,
         electionData.options.length,
         softFinalityResult,
-      )) {
+      ))) {
         showToast('Invalid soft finality proof', 'error');
-        setSoftFinalityResult([]);
+        setSoftFinalityResult(emptyResults);
         return;
       }
 
       setIsSoftFinalityResultVerified(true);
     } catch (error) {
       showToast('Invalid soft finality proof', 'error');
-      setSoftFinalityResult([]);
+      setSoftFinalityResult(emptyResults);
     };
   };
 

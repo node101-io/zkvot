@@ -5,6 +5,7 @@ import Image from 'next/image.js';
 import { FaImage } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
 import { Nullifier } from '@aurowallet/mina-provider';
+import { Group, PublicKey } from 'o1js';
 
 import { types } from 'zkvot-core';
 
@@ -22,6 +23,7 @@ import { ZKProgramCompileContext } from '@/contexts/zk-program-compile-context.j
 
 import LearnMoreIcon from '@/public/elections/partials/learn-more-icon.jsx';
 import Clock from '@/public/elections/partials/clock-icon.jsx';
+
 
 export default ({
   electionData,
@@ -148,7 +150,7 @@ export default ({
         return;
       }
 
-      const createdNullifier = nullifier || await createNullifier(electionData.mina_contract_id);
+      const createdNullifier = nullifier && PublicKey.fromGroup(new Group(nullifier.publicKey)).toBase58() === auroWalletAddress ? nullifier : await createNullifier(electionData.mina_contract_id);
 
       if (!createdNullifier || createdNullifier instanceof Error) {
         showToast('Failed to create the nullifier, please try again', 'error');
