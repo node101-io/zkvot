@@ -1,29 +1,36 @@
+import { types } from 'zkvot-core';
+
 import encodeDataToBase64String from '../../encodeDataToBase64String.js';
 
-const CELESTIA_RPC_URL = process.env.CELESTIA_RPC_URL || 'http://127.0.0.1:10102';
-const CELESTIA_AUTH_TOKEN = process.env.CELESTIA_AUTH_TOKEN;
-const DEFAULT_TX_FEE = 0.002;
+import { mainnet, testnet } from './config.js';
+
+const WALLET_NOT_FUNDED_ERROR_MESSAGE_REGEX: RegExp = /account (.*?) not found/;
 
 export default (
   namespace: string,
-  zkProof: object,
+  data: types.DaLayerSubmissionData,
+  is_devnet: boolean,
   callback: (
-    error: string | null,
-    data?: { blockHeight: any; }
+    err: string | null,
+    data?: { blockHeight: number | null; }
   ) => any
 ) => {
-  return callback(null, { blockHeight: 1 });
-  encodeDataToBase64String(zkProof, (error, encodedZkProof) => {
-    if (error)
-      return callback(error);
-    if (!encodedZkProof)
+  const celestiaNetwork = is_devnet ? testnet : mainnet;
+
+  if (!celestiaNetwork.rpcEndpoint || !celestiaNetwork.authToken)
+    return callback('not_authenticated_request');
+
+  encodeDataToBase64String(data, (err, encodedData) => {
+    if (err)
+      return callback(err);
+    if (!encodedData)
       return callback('bad_request');
 
-    fetch(CELESTIA_RPC_URL, {
+    fetch(celestiaNetwork.rpcEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${CELESTIA_AUTH_TOKEN}`
+        'Authorization': `Bearer ${celestiaNetwork.authToken}`
       },
       body: JSON.stringify({
         id: 1,
@@ -33,17 +40,30 @@ export default (
           [
             {
               namespace: namespace.trim(),
-              data: encodedZkProof.trim()
+              data: encodedData.trim()
             }
           ],
           {
-            gas_price: DEFAULT_TX_FEE
+            gas_price: celestiaNetwork.defaultTxFee,
+            is_gas_price_set: true
           }
         ]
       })
     })
     .then(res => res.json())
-    .then(jsonRes => callback(null, { blockHeight: jsonRes.result }))
-    .catch(_ => callback('da_layer_error'));
+    .then(jsonRes => {
+      if (WALLET_NOT_FUNDED_ERROR_MESSAGE_REGEX.test(jsonRes.error?.message))
+        return callback('wallet_not_funded');
+
+      if (!jsonRes.result)
+        return callback(null, {
+          blockHeight: null
+        });
+      else
+        return callback(null, {
+          blockHeight: jsonRes.result
+        });
+    })
+    .catch(_ => callback('write_error'));
   });
 };

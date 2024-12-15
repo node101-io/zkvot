@@ -4,7 +4,7 @@ import isBase64String from './isBase64String.js';
 
 export default (
   base64String: string,
-  callback: (err: string | null, decodedData?: JsonProof) => void
+  callback: (err: string | null, decodedData?: any) => void
 ) => {
   if (!isBase64String(base64String))
     return callback('bad_request');
