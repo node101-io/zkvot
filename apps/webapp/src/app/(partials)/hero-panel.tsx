@@ -20,6 +20,7 @@ const Panel = forwardRef((
     handleClick,
     onInputChange,
     walletAddress,
+    isAuroWalletInstalled,
     inputRef
   }: {
     activePanel?: string;
@@ -35,6 +36,7 @@ const Panel = forwardRef((
     handleClick: (target: EventTarget) => void;
     onInputChange?: (value: string) => void;
     walletAddress?: string;
+    isAuroWalletInstalled?: boolean;
     inputRef?: Ref<HTMLInputElement>;
   },
   ref: Ref<HTMLDivElement>
@@ -116,12 +118,11 @@ const Panel = forwardRef((
                 TextColor='text-green group-hover:text-black'
                 backgroundColor='bg-green'
                 onClick={event => {
-                  if (!walletAddress && handleWalletConnect)
+                  if (isAuroWalletInstalled && !walletAddress && handleWalletConnect)
                     handleWalletConnect(event.target);
                   else
                     router.push('/elections');
                 }}
-                // disabled={!!walletAddress}
               >
                 {buttonText}
               </Button>

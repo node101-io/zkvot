@@ -2,7 +2,7 @@
 
 import { Poseidon, PublicKey } from 'o1js';
 
-import { PropsWithChildren, useContext, createContext, useState } from 'react';
+import { PropsWithChildren, useContext, createContext, useState, useEffect } from 'react';
 import { CreateNullifierArgs, Nullifier } from '@aurowallet/mina-provider';
 
 import { ZKProgramCompileContext } from '@/contexts/zk-program-compile-context.jsx';
@@ -16,6 +16,7 @@ interface GenerateEncodedVoteProofParams {
 }
 interface AuroWalletContextInterface {
   auroWalletAddress: string;
+  isAuroWalletInstalled: boolean;
   connectAuroWallet: () => Promise<string>;
   createNullifier: (electionId: string) => Promise<Nullifier | Error | null>;
   generateEncodedVoteProof: (vote: GenerateEncodedVoteProofParams) => Promise<string | Error>;
@@ -24,18 +25,22 @@ interface AuroWalletContextInterface {
 
 export const AuroWalletContext = createContext<AuroWalletContextInterface>({
   auroWalletAddress: '',
+  isAuroWalletInstalled: false,
   connectAuroWallet: async () => '',
   createNullifier: async () => null,
   generateEncodedVoteProof: async () => '',
   disconnectAuroWallet: () => {},
 });
 
-export const AuroWalletProvider = ({
-  children
-}: PropsWithChildren<{}>) => {
+export const AuroWalletProvider = ({ children }: PropsWithChildren<{}>) => {
   const [auroWalletAddress, setAuroWalletAddress] = useState<AuroWalletContextInterface['auroWalletAddress']>('');
+  const [isAuroWalletInstalled, setIsAuroWalletInstalled] = useState<AuroWalletContextInterface['isAuroWalletInstalled']>(false);
 
   const { zkProgramWorkerClientInstance, isVoteProgramCompiled, isVoteProgramCompiling } = useContext(ZKProgramCompileContext);
+
+  useEffect(() => {
+    setIsAuroWalletInstalled(!!(window as any).mina);
+  }, []);
 
   const connectAuroWallet = async (): Promise<string> => {
     try {
@@ -97,21 +102,6 @@ export const AuroWalletProvider = ({
   // }
 
   const generateEncodedVoteProof = async (vote: GenerateEncodedVoteProofParams): Promise<string | Error> => {
-    // const workingElectionJson = {
-    //   electionId: 'B62qinHTtL5wUL5ccnKudxDWhZYAyWDj2HcvVY1YVLhNXwqN9cceFkz',
-    //   nullifier: {
-    //     r: '16346194317455302813137534197593798058813563456069267503760707907206335264689',
-    //     s: '1729086860553450026742784005774108720876791402296158317085038218355413912991',
-    //   },
-    //   vote: 1,
-    //   votersArray: [
-    //     'B62qmFHof1QzKNcF1aVyasHxeMiENiUsqCM2cQTZSJ9QM6yYfyY7X8Q',
-    //     'B62qrnHyqPgN8KJ1ZN4s84YGpijLqxp4wDRH6gUgb8mLJZMpN3QeJkZ',
-    //     'B62qrMoASjs48NFsaefftxs3w7mAb3mjhMZbRVczurAwTbcQEP2BMon',
-    //   ],
-    //   publicKey: 'B62qrMoASjs48NFsaefftxs3w7mAb3mjhMZbRVczurAwTbcQEP2BMon',
-    // };
-
     try {
       if (isVoteProgramCompiling)
         throw new Error('zkVot is preparing, please wait.');
@@ -146,6 +136,7 @@ export const AuroWalletProvider = ({
         createNullifier,
         generateEncodedVoteProof,
         disconnectAuroWallet,
+        isAuroWalletInstalled
       }}
     >
       {children}

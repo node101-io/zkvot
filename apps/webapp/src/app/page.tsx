@@ -15,7 +15,7 @@ import { ToastContext } from "@/contexts/toast-context.jsx";
 import { ZKProgramCompileContext } from "@/contexts/zk-program-compile-context";
 
 const Page = () => {
-  const { auroWalletAddress, connectAuroWallet } = useContext(AuroWalletContext);
+  const { auroWalletAddress, connectAuroWallet, isAuroWalletInstalled } = useContext(AuroWalletContext);
   const { showToast } = useContext(ToastContext);
 
   const { isVoteProgramCompiled } = useContext(ZKProgramCompileContext);
@@ -137,8 +137,14 @@ const Page = () => {
                   fullDescription="Once you connect your wallet, you will have access to all elections that your public key was added to. You can also check other elections and see results from All Elections button."
                   fullDescription2="Do not worry, in order not to lose your privacy with a filter, we get all elections out there into the application, and then filter them in your browser for total privacy."
                   buttonText={
-                    auroWalletAddress ? "See Elections" : "Connect Wallet"
+                    isAuroWalletInstalled ?
+                      (auroWalletAddress ?
+                        "See Elections" :
+                        "Connect Wallet"
+                      ) :
+                      "See All Elections"
                   }
+                  isAuroWalletInstalled={isAuroWalletInstalled}
                   handleWalletConnect={connectAuroWallet}
                   walletAddress={auroWalletAddress}
                 />
