@@ -7,11 +7,14 @@ import ToolTip from '@/app/(partials)/tool-tip.jsx';
 import AssignedElections from '@/app/elections/(partials)/assigned-elections.jsx';
 
 import { AuroWalletContext } from '@/contexts/auro-wallet-context.jsx';
+import { ZKProgramCompileContext } from '@/contexts/zk-program-compile-context';
+import Spinner from '@/public/general/icons/spinner';
 
 const Page = () => {
   const [activePanel, setActivePanel] = useState('All Elections');
   const [onlyOngoing, setOnlyOngoing] = useState(false);
 
+  const { isVoteProgramCompiled } = useContext(ZKProgramCompileContext);
   const { auroWalletAddress } = useContext(AuroWalletContext);
 
   const isWalletConnected = auroWalletAddress;
@@ -97,6 +100,18 @@ const Page = () => {
               </p>
             </div>
           )}
+           {!isVoteProgramCompiled && (
+            <>
+              <div className="absolute bottom-0 left-0 right-1 flex justify-end items-center h-16 ">
+                <div className="flex flex-row space-x-1 items-center justify-center">
+                <Spinner />
+                <p className="text-white text-sm">
+                    Compiling zkVot...
+                </p>
+                </div>
+              </div>
+            </>
+           )}
         </div>
       </div>
     </div>

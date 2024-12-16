@@ -14,6 +14,8 @@ import SubmittedStep from '@/app/vote/[id]/(steps)/3-submitted.jsx';
 import { ToastContext } from '@/contexts/toast-context.jsx';
 
 import { submitElectionToBackend } from '@/utils/backend.js';
+import Spinner from '@/public/general/icons/spinner';
+import { ZKProgramCompileContext } from '@/contexts/zk-program-compile-context';
 
 const MINA_RPC_URL = `https://api.minascan.io/node/${process.env.DEVNET ? 'devnet' : 'mainnet'}/v1/graphql`;
 
@@ -51,13 +53,15 @@ const Page = ({
     result: []
   });
   const [nullifier, setNullifier] = useState<Nullifier | null>(null);
+  const { isVoteProgramCompiled } = useContext(ZKProgramCompileContext);
+  
 
   const fetchElectionData = () =>
     new Promise(
       (resolve: (data: types.ElectionBackendData) => void, reject) => {
         Election.fetchElectionState(
-          params.id,
-          // "B62qr3CtnWvNDFquk6mZemj2nqLjDkBBU8iLAbReUihGmu7uYx7P9Rq",
+          // params.id,
+          "B62qr3CtnWvNDFquk6mZemj2nqLjDkBBU8iLAbReUihGmu7uYx7P9Rq",
           MINA_RPC_URL,
           (err, election_state) => {
             if (err || !election_state)
@@ -163,6 +167,18 @@ const Page = ({
           )}
         </div>
       </div>
+       {!isVoteProgramCompiled && (
+          <>
+            <div className="absolute bottom-0 left-0 right-1 flex justify-end items-center h-16 ">
+              <div className="flex flex-row space-x-1 items-center justify-center">
+              <Spinner />
+              <p className="text-white text-sm">
+                  Compiling zkVot...
+              </p>
+              </div>
+            </div>
+          </>
+        )}
     </div>
   );
 };
