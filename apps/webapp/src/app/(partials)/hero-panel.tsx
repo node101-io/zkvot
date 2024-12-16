@@ -1,4 +1,5 @@
 import { forwardRef, useState, Ref } from 'react';
+import { useRouter } from "next/navigation";
 
 import Button from '@/app/(partials)/button.jsx';
 
@@ -40,6 +41,9 @@ const Panel = forwardRef((
 ) => {
     const [hovered, setHovered] = useState(false);
     const [inputValue, setInputValue] = useState('');
+
+    const router = useRouter();
+
     const isActive = activePanel === type;
     const isOtherPanelActive = activePanel && activePanel !== type;
 
@@ -99,7 +103,8 @@ const Panel = forwardRef((
                   TextColor='text-green group-hover:text-black'
                   backgroundColor='bg-green'
                   onClick={event => {
-                    if (handleJoinClick) handleJoinClick(event.target);
+                    if (handleJoinClick)
+                      handleJoinClick(event.target);
                   }}
                 >
                   {buttonText}
@@ -111,9 +116,12 @@ const Panel = forwardRef((
                 TextColor='text-green group-hover:text-black'
                 backgroundColor='bg-green'
                 onClick={event => {
-                  if (handleWalletConnect) handleWalletConnect(event.target);
+                  if (!walletAddress && handleWalletConnect)
+                    handleWalletConnect(event.target);
+                  else
+                    router.push('/elections');
                 }}
-                disabled={!!walletAddress}
+                // disabled={!!walletAddress}
               >
                 {buttonText}
               </Button>
