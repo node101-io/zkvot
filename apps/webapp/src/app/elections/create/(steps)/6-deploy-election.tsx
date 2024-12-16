@@ -335,7 +335,6 @@ export default ({
                 </div>
               </div>
             </div>
-
             <div className="md:ml-6 flex-1">
               <div className="flex items-center mb-2 text-gray-400 text-sm space-x-1">
                 <Clock />
@@ -358,7 +357,6 @@ export default ({
               </p>
             </div>
           </div>
-
           <div className="mt-6">
             <h3 className="text-sm text-gray-400 mb-2">Options</h3>
             <div className="space-y-2">
@@ -373,17 +371,14 @@ export default ({
             </div>
           </div>
         </div>
-
         <div className="w-full">
           <h3 className="text-sm text-gray-400 mb-4">Communication Layer</h3>
           <div className="space-y-6">{renderCommunicationLayers()}</div>
         </div>
-
         <div className="w-full">
           <h3 className="text-sm text-gray-400 mb-4">Storage Layer</h3>
           <div>{renderStorageLayer()}</div>
         </div>
-
         <div className="w-full">
           <h3 className="text-sm text-gray-400 mb-4">Voters List</h3>
           {data.election.voters_list?.length > 0 ? (
@@ -393,7 +388,6 @@ export default ({
           )}
         </div>
       </div>
-
       <div className="w-full flex justify-between pt-4">
         <Button
           onClick={onPrevious}

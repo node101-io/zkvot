@@ -136,7 +136,9 @@ export const sendVoteViaBackend = async (
 
 export const fetchAvailBlockHeightFromBackend = async () => {
   try {
-    const response = await fetch(`${API_URL}/block-info/avail${process.env.DEVNET ? '?is_devnet' : ''}`);
+    const response = await fetch(`${API_URL}/block-info/avail${process.env.DEVNET ? '?is_devnet' : ''}`, {
+      signal: AbortSignal.timeout(3000)
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -158,7 +160,9 @@ export const fetchAvailBlockHeightFromBackend = async () => {
 
 export const fetchCelestiaBlockInfoFromBackend = async () => {
   try {
-    const response = await fetch(`${API_URL}/block-info/celestia`);
+    const response = await fetch(`${API_URL}/block-info/celestia`, {
+      signal: AbortSignal.timeout(3000)
+    });
 
     if (!response.ok) {
       const errorText = await response.text();

@@ -9,10 +9,9 @@ import { ZKProgramCompileContext } from "@/contexts/zk-program-compile-context.j
 import ElectionInfoStep from "@/app/elections/create/(steps)/1-election-info.jsx";
 import VotersListStep from "@/app/elections/create/(steps)/2-voters-list.jsx";
 import CommLayerSelectionStep from "@/app/elections/create/(steps)/3-comm-layer-selection.jsx";
-import CommLayerSubmissionStep from "@/app/elections/create/(steps)/4-comm-layer-submission.jsx";
-import StorageLayerSelectionStep from "@/app/elections/create/(steps)/5-storage-layer-selection.jsx";
-import StorageLayerSubmissionStep from "@/app/elections/create/(steps)/6-storage-layer-submission.jsx";
-import DeployElectionStep from "@/app/elections/create/(steps)/7-deploy-election.jsx";
+import StorageLayerSelectionStep from "@/app/elections/create/(steps)/4-storage-layer-selection.jsx";
+import StorageLayerSubmissionStep from "@/app/elections/create/(steps)/5-storage-layer-submission.jsx";
+import DeployElectionStep from "@/app/elections/create/(steps)/6-deploy-election.jsx";
 
 const HomePage = () => {
   const { isVoteProgramCompiled, compileAggregationProgramIfNotCompiled } =
@@ -89,38 +88,28 @@ const HomePage = () => {
           />
         )}
         {step === 4 && (
-          <CommLayerSubmissionStep
+          <StorageLayerSelectionStep
             onPrevious={() => setStep(3)}
-            onNext={(data: types.ElectionStaticData) => {
-              setElectionData(data);
+            onNext={(data: {
+              election: types.ElectionStaticData;
+              storage_layer_platform: types.StorageLayerPlatformCodes;
+            }) => {
+              setStorageLayerPlatform(data.storage_layer_platform);
               setStep(5);
             }}
             initialData={electionData}
           />
         )}
         {step === 5 && (
-          <StorageLayerSelectionStep
-            onPrevious={() => setStep(4)}
-            onNext={(data: {
-              election: types.ElectionStaticData;
-              storage_layer_platform: types.StorageLayerPlatformCodes;
-            }) => {
-              setStorageLayerPlatform(data.storage_layer_platform);
-              setStep(6);
-            }}
-            initialData={electionData}
-          />
-        )}
-        {step === 6 && (
           <StorageLayerSubmissionStep
-            onPrevious={() => setStep(5)}
+            onPrevious={() => setStep(4)}
             onNext={(data: {
               election: types.ElectionStaticData;
               storage_layer_platform: types.StorageLayerPlatformCodes[keyof types.StorageLayerPlatformCodes];
               storage_layer_id: string;
             }) => {
               setStorageLayerId(data.storage_layer_id);
-              setStep(7);
+              setStep(6);
             }}
             initialData={{
               election: electionData,
@@ -128,9 +117,9 @@ const HomePage = () => {
             }}
           />
         )}
-        {step === 7 && (
+        {step === 6 && (
           <DeployElectionStep
-            onPrevious={() => setStep(6)}
+            onPrevious={() => setStep(5)}
             data={{
               election: electionData,
               storage_layer_platform: storageLayerPlatform,
