@@ -60,8 +60,8 @@ const Page = ({
     new Promise(
       (resolve: (data: types.ElectionBackendData) => void, reject) => {
         Election.fetchElectionState(
-          // params.id,
-          "B62qr3CtnWvNDFquk6mZemj2nqLjDkBBU8iLAbReUihGmu7uYx7P9Rq",
+          params.id,
+          // "B62qr3CtnWvNDFquk6mZemj2nqLjDkBBU8iLAbReUihGmu7uYx7P9Rq",
           MINA_RPC_URL,
           (err, election_state) => {
             if (err || !election_state)
