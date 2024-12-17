@@ -1,19 +1,24 @@
 import { fetchAccount, fetchLastBlock, Field, Mina, PrivateKey } from 'o1js';
-import { votersList } from './mock.js';
 import { mockVotes } from '../example/createMockVotes.js';
 import { runAggregate } from '../example/runAggregateMM.js';
 
 import deploy from '../example/deployToMina.js';
 
-export async function getBlockHeight() {
+export async function getGlobalSlot() {
   const latestBlock = await fetchLastBlock(
     'https://api.minascan.io/node/devnet/v1/graphql'
   );
 
-  return Number(latestBlock.blockchainLength.toBigint());
+  return Number(latestBlock.globalSlotSinceGenesis.toBigint());
 }
 
-const currentBlock = await getBlockHeight();
+// for (let i = 0; i < 5; i++) {
+//   const privkey = PrivateKey.random();
+//   const pubkey = privkey.toPublicKey();
+//   console.log(`[PrivateKey.fromBase58("${privkey.toBase58()}"), PublicKey.fromBase58("${pubkey.toBase58()}")],`);
+// }
+
+const currentSlot = await getGlobalSlot();
 
 const feePayerKey = PrivateKey.fromBase58(
   'EKFbYSwuszwQL9RX7upm4iqfJpYooi7VMyWs1fwQiyYHYLwtr26R'
@@ -23,9 +28,8 @@ const feePayerPubKey = feePayerKey.toPublicKey();
 
 const { electionContractPk: electionPrivKey, electionContractInstance } =
   await deploy(
-    currentBlock,
-    currentBlock + 10,
-    votersList.map(each => each[0].toPublicKey()),
+    currentSlot,
+    currentSlot + 10,
     [Field.from(0), Field.from(0)],
     Field.from(0),
     feePayerKey
