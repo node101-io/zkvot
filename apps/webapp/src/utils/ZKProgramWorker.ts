@@ -198,6 +198,44 @@ export const api = {
       throw error;
     }
   },
+  async submitElectionResult(
+    electionPubKey: string,
+    electionConstants: {
+      electionStartBlock: number;
+      electionFinalizeBlock: number;
+      votersRoot: bigint;
+    },
+    aggregateProofJson: JsonProof,
+    lastAggregatorPubKey: string,
+    settlerPubKey: string,
+  ) {
+    const aggregateProof = await Aggregation.Proof.fromJSON(aggregateProofJson);
+
+    const ElectionContract = await this.loadAndCompileElectionContract(
+      electionConstants.electionStartBlock,
+      electionConstants.electionFinalizeBlock,
+      electionConstants.votersRoot
+    );
+    const ElectionContractInstance = new ElectionContract(PublicKey.fromBase58(electionPubKey));
+
+    const settleTx = await Mina.transaction(
+      {
+        sender: PublicKey.fromBase58(settlerPubKey),
+        fee: 1e9,
+      },
+      async () => {
+        await ElectionContractInstance.settleVotes(
+          aggregateProof,
+          PublicKey.fromBase58(lastAggregatorPubKey)
+        );
+      }
+    );
+    const result = await settleTx.prove();
+
+    if (!result) return;
+
+    return settleTx.toJSON();
+  },
   getVerificationKey() {
     return state.verificationKey;
   }

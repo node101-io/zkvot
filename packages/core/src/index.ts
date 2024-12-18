@@ -5,6 +5,7 @@ import AggregationTree from './AggregationTree.js';
 import Election from './Election.js';
 import MerkleTree from './MerkleTree.js';
 import Vote from './Vote.js';
+
 import types from './types.js';
 import utils from './utils.js';
 

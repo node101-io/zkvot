@@ -11,15 +11,12 @@ import blockInfoRouteController from './routes/blockInfoRoute.js';
 import electionRouteController from './routes/electionRoute.js';
 import voteRouteController from './routes/voteRoute.js';
 
-import { compileZkProgramIfNotCompiledBefore } from './utils/mina/compileZkProgram.js';
-
 const app = express();
 const server = http.createServer(app);
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/zkVot';
 const PORT = process.env.PORT || 8000;
 
-mongoose.set('strictQuery', false);
 await mongoose.connect(MONGODB_URI);
 
 app.use(express.json());
@@ -39,8 +36,6 @@ app.use('/api/vote', voteRouteController);
 
 server.listen(PORT, () => {
   console.log(`Server is on port ${PORT}.`);
-
-  compileZkProgramIfNotCompiledBefore(false);
 
   // Job.start();
 });

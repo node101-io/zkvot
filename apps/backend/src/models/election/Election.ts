@@ -166,7 +166,7 @@ const ElectionSchema = new Schema({
   },
   communication_layers: [
     {
-      name: { // celestia || avail
+      name: { // celestia || avail
         type: String,
         required: true,
         trim: true,
@@ -350,14 +350,17 @@ ElectionSchema.statics.findElectionByContractIdAndGetProof = function (
 
       ResultProof.createOrFindResultProofByMinaContractId({
         mina_contract_id: election.mina_contract_id
-      }, (error, proof) => {
-        if (error || !proof)
-          return callback(error || 'unknown_error');
+      }, (err, proof) => {
+        if (err || !proof)
+          return callback(err || 'unknown_error');
 
-        callback(null, proof);
+        return callback(null, proof);
       });
     })
-    .catch((err: any) => callback('database_error'));
+    .catch((err: any) => {
+      console.log(err);
+      return callback('database_error')
+    });
 };
 
 ElectionSchema.statics.findElectionByContractIdAndAddVote = function (
@@ -389,7 +392,7 @@ ElectionSchema.statics.findElectionByContractIdAndAddVote = function (
           }, (error) => {
             if (error)
               return callback(error);
-    
+
             return callback(null);
           });
         })
@@ -398,7 +401,7 @@ ElectionSchema.statics.findElectionByContractIdAndAddVote = function (
           return callback('database_error');
         });
     })
-    .catch((err: any) => callback('database_error'));
+    .catch((_err: any) => callback('database_error'));
 };
 
 ElectionSchema.statics.findElectionByContractIdAndGetResults = function (
@@ -429,7 +432,7 @@ ElectionSchema.statics.findElectionByContractIdAndGetResults = function (
 
         const totalVotes = election.result.reduce((acc, curr) => acc + curr, 0);
 
-        callback(null, {
+        return callback(null, {
           result: election.result.map((count, index) => {
             return {
               name: election.options[index],
@@ -441,8 +444,9 @@ ElectionSchema.statics.findElectionByContractIdAndGetResults = function (
         });
       });
     })
-    .catch((err: any) => callback('database_error'));
+    .catch((_err: any) => callback('database_error'));
 };
 
 const Election = model('Election', ElectionSchema) as Model<any> & ElectionStatics;
+
 export default Election;

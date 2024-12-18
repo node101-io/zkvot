@@ -2,8 +2,6 @@ import { JsonProof, verify } from 'o1js';
 
 import { Vote } from 'zkvot-core';
 
-import { getVerificationKey } from '../../../utils/mina/compileZkProgram.js';
-
 export default (
   data: {
     vote: JsonProof;
@@ -15,9 +13,7 @@ export default (
     vote: number;
   }) => any
 ) => {
-  const verificationKey = getVerificationKey();
-
-  if (!verificationKey)
+  if (!Vote.verificationKey)
     return callback('try_again_in_a_few_minutes');
 
   Vote.Proof
@@ -30,7 +26,7 @@ export default (
       if (voteProof.publicInput.electionPubKey.toBase58() !== data.electionPubKey)
         return callback('invalid_vote');
 
-      if (!(await verify(voteProof, verificationKey)))
+      if (!(await verify(voteProof, JSON.parse(Vote.verificationKey))))
         return callback('invalid_vote');
 
       return callback(null, {

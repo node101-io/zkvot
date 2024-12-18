@@ -40,7 +40,7 @@ export default ({
   const {
     zkProgramWorkerClientInstance,
     isVoteProgramCompiled, isVoteProgramCompiling,
-    isAggregationProgramCompiled, isAggregationProgramCompiling, compileAggregationProgramIfNotCompiled
+    isAggregationProgramCompiled, isAggregationProgramCompiling
   } = useContext(ZKProgramCompileContext);
 
   const [submitted, setSubmitted] = useState<boolean>(false);

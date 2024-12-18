@@ -14,6 +14,7 @@ import submitVote from './functions/submitVote.js';
 
 const DUPLICATED_UNIQUE_FIELD_ERROR_CODE = 11000;
 const MAX_DATABASE_TEXT_FIELD_LENGTH = 1e4;
+const RESTART_VOTE_COUNTING_INTERVAL = 5 * 1000;
 
 type VoteType = {
   election_contract_id: string;
@@ -44,10 +45,10 @@ interface VoteStatics {
     },
     callback: (error: string | null, vote?: VoteType) => any
   ) => any;
-  countVote: (
-    nullifier: string,
-    callback: (error: string | null) => any
+  countOldestUncountedVote: (
+    callback: (error: string | null, vote?: VoteType) => any
   ) => any;
+  countVotesRecursively: () => any;
 };
 
 const VoteSchema = new Schema({
@@ -134,13 +135,7 @@ VoteSchema.statics.createVote = function (
 
         vote
           .save()
-          .then((vote: any) => {
-            callback(null, vote); // Return callback async before counting
-
-            Vote.countVote(vote.nullifier, err => {
-              if (err) console.log(err); // Do not send error, submit is succesful, it is not counted only in backend
-            });
-          })
+          .then((vote: any) => callback(null, vote))
           .catch((err: any) => {
             if (err.code === DUPLICATED_UNIQUE_FIELD_ERROR_CODE)
               return callback('duplicated_unique_field');
@@ -213,16 +208,11 @@ VoteSchema.statics.createAndSubmitVote = function (
 
           vote
             .save()
-            .then((vote: any) => {
-              callback(null, vote); // Return callback async before counting
-
-              Vote.countVote(vote.nullifier, err => {
-                if (err) console.log(err); // Do not send error, submit is succesful, it is not counted only in backend
-              });
-            })
+            .then((vote: any) => callback(null, vote))
             .catch((err: any) => {
               if (err.code === DUPLICATED_UNIQUE_FIELD_ERROR_CODE)
                 return callback('duplicated_unique_field');
+
               return callback('bad_request');
             });
         });
@@ -231,12 +221,12 @@ VoteSchema.statics.createAndSubmitVote = function (
   });
 };
 
-VoteSchema.statics.countVote = function (
-  nullifier: string,
+VoteSchema.statics.countOldestUncountedVote = function (
   callback: (error: string | null) => any
 ) {
   Vote
-    .findOne({ nullifier })
+    .findOne({ is_counted: false })
+    .sort({ _id: 1 })
     .then((vote: any) => {
       if (!vote)
         return callback('document_not_found');
@@ -262,14 +252,14 @@ VoteSchema.statics.countVote = function (
               proof,
               new_voter: {
                 vote: vote.vote,
-                nullifier
+                nullifier: vote.nullifier
               }
             }, err => {
               if (err)
                 return callback(err);
 
               Vote
-                .findOneAndUpdate({ nullifier }, {$set: {
+                .findOneAndUpdate({ nullifier: vote.nullifier }, {$set: {
                   proof: '',
                   is_counted: true
                 }})
@@ -292,14 +282,14 @@ VoteSchema.statics.countVote = function (
               proof,
               new_voter: {
                 vote: vote.vote,
-                nullifier
+                nullifier: vote.nullifier
               }
             }, err => {
               if (err)
                 return callback(err);
 
               Vote
-                .findOneAndUpdate({ nullifier }, {$set: {
+                .findOneAndUpdate({ nullifier: vote.nullifier }, {$set: {
                   proof: '',
                   is_counted: true
                 }})
@@ -310,11 +300,23 @@ VoteSchema.statics.countVote = function (
                 });
             });
           });
-        }       
+        }
       });
     })
-    .catch((err: any) => callback('database_error'));
+    .catch((_err: any) => callback('database_error'));
+};
+
+VoteSchema.statics.countVotesRecursively = function () {
+  Vote.countOldestUncountedVote(err => {
+    if (err) {
+      console.error(err);
+      return setTimeout(Vote.countVotesRecursively, RESTART_VOTE_COUNTING_INTERVAL);
+    };
+
+    return Vote.countVotesRecursively();
+  });
 };
 
 const Vote = model('Vote', VoteSchema) as Model<any> & VoteStatics;
+
 export default Vote;

@@ -104,34 +104,36 @@ export const sendVoteViaBackend = async (
   election_contract_id: string,
   da_layer: types.DaLayerInfo['name']
 ) => {
-  try {
-    const response = await fetch(`${API_URL}/vote/send`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        is_devnet: !!process.env.DEVNET,
-        da_layer_submission_data,
-        election_contract_id,
-        da_layer
-      })
-    });
+  console.log(da_layer_submission_data);
 
-    if (!response.ok)
-      throw new Error('Failed to submit vote to backend');
+  // try {
+  //   const response = await fetch(`${API_URL}/vote/send`, {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify({
+  //       is_devnet: !!process.env.DEVNET,
+  //       da_layer_submission_data,
+  //       election_contract_id,
+  //       da_layer
+  //     })
+  //   });
 
-    const result = await response.json();
+  //   if (!response.ok)
+  //     throw new Error('Failed to submit vote to backend');
 
-    console.log(result);
+  //   const result = await response.json();
 
-    if (!result.success)
-      throw new Error(result.error || 'Failed to suvmit vote to backend');
+  //   console.log(result);
 
-    return result.vote;
-  } catch (error) {
-    throw new Error('Failed to submit vote to backend');
-  }
+  //   if (!result.success)
+  //     throw new Error(result.error || 'Failed to suvmit vote to backend');
+
+  //   return result.vote;
+  // } catch (error) {
+  //   throw new Error('Failed to submit vote to backend');
+  // }
 };
 
 export const fetchAvailBlockHeightFromBackend = async () => {

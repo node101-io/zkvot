@@ -7,6 +7,7 @@ import { FaCheckCircle, FaImage } from 'react-icons/fa';
 
 import { AggregationMM as Aggregation, Election, types, utils } from 'zkvot-core';
 
+import Button from '../../(partials)/button.jsx';
 import CopyButton from '@/app/(partials)/copy-button.jsx';
 import DateFormatter from '@/app/(partials)/date-formatter.jsx';
 import ToolTip from '@/app/(partials)/tool-tip.jsx';
@@ -134,6 +135,17 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
     );
   };
 
+  const handleSettleClick = () => {
+    if (!zkProgramWorkerClientInstance) {
+      showToast('Unknown error occurred, please try again', 'error');
+      return;
+    };
+
+    // const result = zkProgramWorkerClientInstance.submitElectionResult(
+
+    // );
+  };
+
   useEffect(() => {
     setLoading(true);
 
@@ -225,7 +237,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
       </div>
     </div>
   );
-  
+
   const EnhancedResults: React.FC<EnhancedResultsProps> = ({
     title,
     logo,
@@ -253,7 +265,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
             </p>
           </div>
         </div>
-        <div className='w-full space-y-7 pb-20'>
+        <div className='w-full space-y-7 pb-2'>
           {loading ? (
             <p className='text-white'>Loading results...</p>
           ) : (
@@ -345,14 +357,6 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
             </div>
              <div className='w-full flex flex-col md:flex-row items-start space-y-4 md:space-y-0 md:space-x-4'>
               <EnhancedResults
-                title='Hard Finality Results'
-                logo={MinaLogo}
-                description='These results are final, coming from the Settlement Layer. The number of votes here may increase until the election is over, but can never decrease.'
-                results={hardFinalityResult}
-                options={electionData?.options || []}
-                loading={loading}
-              />
-              <EnhancedResults
                 title='Soft Finality Results'
                 logo={electionData?.communication_layers[0].name === 'Avail' ? AvailLogo : CelestiaLogo}
                 description='These results are yet unofficial, but verified by a proof in your local browser. They are not final until they are settled by an aggregator.'
@@ -360,13 +364,24 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
                 options={electionData?.options || []}
                 loading={loading || !isSoftFinalityResultVerified}
               />
+              <EnhancedResults
+                title='Hard Finality Results'
+                logo={MinaLogo}
+                description='These results are final, coming from the Settlement Layer. The number of votes here may increase until the election is over, but can never decrease.'
+                results={hardFinalityResult}
+                options={electionData?.options || []}
+                loading={loading}
+              />
             </div>
+            <Button
+              className='mt-10 mb-20 mr-auto'
+              onClick={handleSettleClick}
+            >
+              Settle Results
+            </Button>
           </>
         )}
       </div>
     </div>
   );
-}
-
-
-
+};

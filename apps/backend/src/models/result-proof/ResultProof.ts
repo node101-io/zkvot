@@ -68,20 +68,23 @@ ResultProofSchema.statics.createOrFindResultProofByMinaContractId = function (
   ResultProof.findOne({
     mina_contract_id
   })
-  .then((proof: ResultProofType) => {
-    if (proof)
-      return callback(null, proof);
+    .then((proof: ResultProofType) => {
+      if (proof)
+        return callback(null, proof);
 
-    const newResultProofData = new ResultProof({
-      mina_contract_id,
-      proof: ''
+      const newResultProofData = new ResultProof({
+        mina_contract_id,
+        proof: ''
+      });
+
+      newResultProofData.save()
+        .then((proof: ResultProofType) => callback(null, proof))
+        .catch((err: any) => callback('database_error'));
+    })
+    .catch((err: any) => {
+      console.log(err);
+      return callback('database_error')
     });
-
-    newResultProofData.save()
-      .then((proof: ResultProofType) => callback(null, proof))
-      .catch((err: any) => callback('database_error'));
-  })
-  .catch((err: any) => callback('database_error'));
 };
 
 ResultProofSchema.statics.findResultProofByMinaContractIdAndUpdate = async function (
@@ -119,4 +122,5 @@ ResultProofSchema.statics.findResultProofByMinaContractIdAndUpdate = async funct
 };
 
 const ResultProof = model('ResultProof', ResultProofSchema) as Model<any> & ResultProofStatics;
+
 export default ResultProof;
