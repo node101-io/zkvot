@@ -1,4 +1,4 @@
-import { fetchAccount, fetchLastBlock, verify } from 'o1js';
+import { fetchAccount, fetchLastBlock, PublicKey, verify } from 'o1js';
 
 import { AggregationMM as Aggregation, Vote } from 'zkvot-core';
 
@@ -169,6 +169,26 @@ export const verifyAggregationProof = async (
     return true;
   } catch (error) {
     console.log(`Soft finality proof verification failed: ${error}`);
+    return false;
+  }
+};
+
+export const checkIfAccountExists = async (
+  publicKey: string
+): Promise<boolean> => {
+  try {
+    const account = await fetchAccount(
+      {
+        publicKey: PublicKey.fromBase58(publicKey),
+      },
+      MINA_RPC_URL
+    );
+
+    if (!account.account) return false;
+
+    return account.account.balance.toBigInt() > 0;
+  } catch (error) {
+    console.error('Error checking if account exists:', error);
     return false;
   }
 };
