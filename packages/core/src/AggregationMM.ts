@@ -115,12 +115,10 @@ namespace AggregationMerkleMapNamespace {
             Field.from(0)
           );
           currentKey.assertEquals(nullifier);
-          // Provable.log(currentRoot, previousProof.publicOutput.merkleMapRoot);
+
           currentRoot.assertEquals(previousProof.publicOutput.merkleMapRoot);
 
-          const [newRoot, newKey] = merkleMapWitness.computeRootAndKey(
-            vote.publicOutput.vote
-          );
+          const [newRoot, newKey] = merkleMapWitness.computeRootAndKey(vote.publicOutput.vote);
 
           const newVoteOptions = new Vote.VoteOptions({
             voteOptions_1: previousProof.publicOutput.voteOptions_1,

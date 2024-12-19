@@ -1,4 +1,5 @@
 import { model, Schema } from 'mongoose';
+import { Vote as VoteProgram } from 'zkvot-core';
 import aggregate from '../../utils/aggregate.js';
 import isBase64String from '../../utils/isBase64String.js';
 import decodeFromBase64String from '../../utils/decodeFromBase64String.js';
@@ -158,6 +159,9 @@ VoteSchema.statics.countOldestUncountedVote = function (callback) {
         Election.findElectionByContractIdAndGetProof(vote.election_contract_id, (err, proof) => {
             if (err || !proof)
                 return callback(err || 'unknown_error');
+            for (const voter of proof.previous_voters)
+                if (voter.nullifier === vote.nullifier)
+                    return callback('vote_already_counted');
             if (proof.proof.length) {
                 aggregate({
                     previous_proof_json: proof.proof,
@@ -166,26 +170,33 @@ VoteSchema.statics.countOldestUncountedVote = function (callback) {
                 }, (err, proof) => {
                     if (err)
                         return callback(err);
-                    Election.findElectionByContractIdAndAddVote({
-                        mina_contract_id: vote.election_contract_id,
-                        proof,
-                        new_voter: {
-                            vote: vote.vote,
-                            nullifier: vote.nullifier
-                        }
-                    }, err => {
-                        if (err)
-                            return callback(err);
-                        Vote
-                            .findOneAndUpdate({ nullifier: vote.nullifier }, { $set: {
-                                proof: '',
-                                is_counted: true
-                            } })
-                            .then(() => callback(null))
-                            .catch((err) => {
-                            console.log(err);
-                            return callback('database_error');
+                    VoteProgram.Proof.fromJSON(JSON.parse(vote.proof))
+                        .then((voteProof) => {
+                        Election.findElectionByContractIdAndAddVote({
+                            mina_contract_id: vote.election_contract_id,
+                            proof,
+                            new_voter: {
+                                vote: Number(voteProof.publicOutput.vote.toBigInt()),
+                                nullifier: vote.nullifier
+                            }
+                        }, err => {
+                            if (err)
+                                return callback(err);
+                            Vote
+                                .findOneAndUpdate({ nullifier: vote.nullifier }, { $set: {
+                                    proof: '',
+                                    is_counted: true
+                                } })
+                                .then(() => callback(null))
+                                .catch((err) => {
+                                console.log(err);
+                                return callback('database_error');
+                            });
                         });
+                    })
+                        .catch(err => {
+                        console.log(err);
+                        return callback(err);
                     });
                 });
             }
@@ -195,26 +206,33 @@ VoteSchema.statics.countOldestUncountedVote = function (callback) {
                 }, (err, proof) => {
                     if (err)
                         return callback(err);
-                    Election.findElectionByContractIdAndAddVote({
-                        mina_contract_id: vote.election_contract_id,
-                        proof,
-                        new_voter: {
-                            vote: vote.vote,
-                            nullifier: vote.nullifier
-                        }
-                    }, err => {
-                        if (err)
-                            return callback(err);
-                        Vote
-                            .findOneAndUpdate({ nullifier: vote.nullifier }, { $set: {
-                                proof: '',
-                                is_counted: true
-                            } })
-                            .then(() => callback(null))
-                            .catch((err) => {
-                            console.log(err);
-                            return callback('database_error');
+                    VoteProgram.Proof.fromJSON(JSON.parse(vote.proof))
+                        .then((voteProof) => {
+                        Election.findElectionByContractIdAndAddVote({
+                            mina_contract_id: vote.election_contract_id,
+                            proof,
+                            new_voter: {
+                                vote: Number(voteProof.publicOutput.vote.toBigInt()),
+                                nullifier: vote.nullifier
+                            }
+                        }, err => {
+                            if (err)
+                                return callback(err);
+                            Vote
+                                .findOneAndUpdate({ nullifier: vote.nullifier }, { $set: {
+                                    proof: '',
+                                    is_counted: true
+                                } })
+                                .then(() => callback(null))
+                                .catch((err) => {
+                                console.log(err);
+                                return callback('database_error');
+                            });
                         });
+                    })
+                        .catch(err => {
+                        console.log(err);
+                        return callback(err);
                     });
                 });
             }
