@@ -1,8 +1,3 @@
-if (!process.env.AVAIL_SEED_PHRASE_TESTNET)
-  console.warn('AVAIL_SEED_PHRASE_TESTNET environment variable not set');
-if (!process.env.AVAIL_SEED_PHRASE_MAINNET)
-  console.warn('AVAIL_SEED_PHRASE_MAINNET environment variable not set');
-
 const mainnet = {
   seedPhrase: process.env.AVAIL_SEED_PHRASE_MAINNET,
   rpcEndpoint: process.env.AVAIL_RPC_ENDPOINT_MAINNET || 'https://mainnet-rpc.avail.so/rpc',

@@ -1,8 +1,3 @@
-if (!process.env.CELESTIA_AUTH_TOKEN_TESTNET)
-  console.warn('CELESTIA_AUTH_TOKEN_TESTNET environment variable not set');
-if (!process.env.CELESTIA_AUTH_TOKEN_MAINNET)
-  console.warn('CELESTIA_AUTH_TOKEN_MAINNET environment variable not set');
-
 const testnet = {
   authToken: process.env.CELESTIA_AUTH_TOKEN_TESTNET,
   defaultTxFee: process.env.CELESTIA_TX_FEE_TESTNET || 0.002,

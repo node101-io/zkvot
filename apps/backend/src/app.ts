@@ -1,9 +1,8 @@
+import 'dotenv/config';
 import cors from 'cors';
 import express from 'express';
 import http from 'http';
 import mongoose from 'mongoose';
-
-import 'dotenv/config';
 
 // import Job from './cron/Job.js';
 
@@ -13,6 +12,25 @@ import voteRouteController from './routes/voteRoute.js';
 
 const app = express();
 const server = http.createServer(app);
+
+if (!process.env.MONGODB_URI)
+  console.warn('MONGODB_URI env variable not set');
+
+if (!process.env.AWS_ACCESS_KEY_ID)
+  console.warn('AWS_ACCESS_KEY_ID env variable not set');
+if (!process.env.AWS_SECRET_ACCESS_KEY)
+  console.warn('AWS_SECRET_ACCESS_KEY env variable not set');
+
+if (!process.env.AVAIL_SEED_PHRASE_DEVNET)
+  console.warn('AVAIL_SEED_PHRASE_DEVNET env variable not set');
+if (!process.env.AVAIL_SEED_PHRASE_MAINNET)
+  console.warn('AVAIL_SEED_PHRASE_MAINNET env variable not set');
+
+if (!process.env.CELESTIA_AUTH_TOKEN_TESTNET)
+  console.warn('CELESTIA_AUTH_TOKEN_TESTNET env variable not set');
+if (!process.env.CELESTIA_AUTH_TOKEN_MAINNET)
+  console.warn('CELESTIA_AUTH_TOKEN_MAINNET env variable not set');
+
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/zkVot';
 const PORT = process.env.PORT || 8000;

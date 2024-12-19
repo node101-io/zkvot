@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 import Election from './models/election/Election.js';
 import ResultProof from './models/result-proof/ResultProof.js';
 import Vote from './models/vote/Vote.js';
