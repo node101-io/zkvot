@@ -2,11 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { Mina, PublicKey, PrivateKey } from 'o1js';
 
-import {
-  Aggregation,
-  Election,
-  Vote,
-} from 'zkvot-core';
+import { Aggregation, Election, Vote } from 'zkvot-core';
 
 import logger from '../../../utils/logger.js';
 import { Level } from 'level';
@@ -127,8 +123,8 @@ const getMinaPublicKeyByPrivateKey = (
 const settleAggregatedElectionResultToMinaById = async (
   data: {
     electionConstants: {
-      electionStartBlock: number;
-      electionFinalizeBlock: number;
+      electionStartSlot: number;
+      electionFinalizeSlot: number;
       votersRoot: bigint;
     };
     aggregatorPrivateKey: PrivateKey;
@@ -208,8 +204,8 @@ readWalletConfigAndGetMinaPrivateKey(
       settleAggregatedElectionResultToMinaById(
         {
           electionConstants: {
-            electionStartBlock: 0, // TODO: Set the start block
-            electionFinalizeBlock: 5000000, // TODO: Set the end block
+            electionStartSlot: 0, // TODO: Set the start block
+            electionFinalizeSlot: 5000000, // TODO: Set the end block
             votersRoot:
               12782413428586587396271814958085798914598828491573636128982022331453004839163n, // TODO: Set the voters root
           },
