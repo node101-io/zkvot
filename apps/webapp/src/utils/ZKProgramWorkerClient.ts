@@ -60,11 +60,11 @@ export default class {
   async submitElectionResult(
     electionPubKey: string,
     electionConstants: {
-      electionStartBlock: number;
-      electionFinalizeBlock: number;
+      electionStartSlot: number;
+      electionFinalizeSlot: number;
       votersRoot: bigint;
     },
-    aggregateProofJson: JsonProof,
+    aggregateProofJson: string,
     lastAggregatorPubKey: string,
     settlerPubKey: string
   ) {

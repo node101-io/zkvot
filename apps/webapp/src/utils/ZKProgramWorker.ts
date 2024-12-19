@@ -224,19 +224,21 @@ export const api = {
   async submitElectionResult(
     electionPubKey: string,
     electionConstants: {
-      electionStartBlock: number;
-      electionFinalizeBlock: number;
+      electionStartSlot: number;
+      electionFinalizeSlot: number;
       votersRoot: bigint;
     },
-    aggregateProofJson: JsonProof,
+    aggregateProofJson: string,
     lastAggregatorPubKey: string,
     settlerPubKey: string
   ) {
-    const aggregateProof = await Aggregation.Proof.fromJSON(aggregateProofJson);
+    const aggregateProof = await Aggregation.Proof.fromJSON(
+      JSON.parse(aggregateProofJson)
+    );
 
     const ElectionContract = await this.loadAndCompileElectionContract(
-      electionConstants.electionStartBlock,
-      electionConstants.electionFinalizeBlock,
+      electionConstants.electionStartSlot,
+      electionConstants.electionFinalizeSlot,
       electionConstants.votersRoot
     );
     const ElectionContractInstance = new ElectionContract(
