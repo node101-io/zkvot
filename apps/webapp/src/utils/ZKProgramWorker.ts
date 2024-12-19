@@ -236,6 +236,9 @@ export const api = {
       JSON.parse(aggregateProofJson)
     );
 
+    await this.loadAndCompileVoteProgram();
+    await this.loadAndCompileAggregationProgram();
+
     const ElectionContract = await this.loadAndCompileElectionContract(
       electionConstants.electionStartSlot,
       electionConstants.electionFinalizeSlot,
