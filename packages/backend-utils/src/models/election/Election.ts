@@ -116,12 +116,12 @@ const ElectionSchema = new Schema({
     trim: true,
     length: 1
   },
-  start_date: {
-    type: Date,
+  start_slot: {
+    type: Number,
     required: true
   },
-  end_date: {
-    type: Date,
+  end_slot: {
+    type: Number,
     required: true
   },
   question: {
@@ -142,9 +142,8 @@ const ElectionSchema = new Schema({
   ],
   description: {
     type: String,
-    required: true,
+    required: false,
     trim: true,
-    minlength: 1,
     maxlength: MAX_DATABASE_TEXT_FIELD_LENGTH
   },
   image_url: {
@@ -254,11 +253,11 @@ ElectionSchema.statics.createElection = function (
         election
           .save()
           .then((election: types.ElectionBackendData) => callback(null, election))
-          .catch((error: {
-            code: number
-          }) => {
-            if (error.code == DUPLICATED_UNIQUE_FIELD_ERROR_CODE)
+          .catch((err: any) => {
+            if (err.code == DUPLICATED_UNIQUE_FIELD_ERROR_CODE)
               return callback('duplicated_unique_field');
+
+            console.log(err);
             return callback('database_error');
           });
       });
@@ -289,8 +288,8 @@ ElectionSchema.statics.findElectionsByFilter = function (
     is_devnet?: boolean;
     skip?: number;
     text?: string;
-    start_after?: Date;
-    end_before?: Date;
+    start_after?: number;
+    end_before?: number;
     is_ongoing?: boolean;
   },
   callback: (
@@ -312,25 +311,26 @@ ElectionSchema.statics.findElectionsByFilter = function (
 
   if (data.start_after)
     filters.push({
-      start_date: { $gte: data.start_after }
+      start_slot: { $gte: data.start_after }
     });
 
   if (data.end_before)
     filters.push({
-      end_date: { $lte: data.end_before }
+      end_slot: { $lte: data.end_before }
     });
 
-  if ('is_ongoing' in data)
-    filters.push({
-      start_date: { $lte: new Date() },
-      end_date: { $gte: new Date() }
-    });
+  // TODO: fix after migrating to timestamp
+  // if ('is_ongoing' in data)
+  //   filters.push({
+  //     start_slot: { $lte: new Date() },
+  //     end_slot: { $gte: new Date() }
+  //   });
 
   Election
     .find((filters.length > 0) ? { $and: filters } : {})
+    .find()
     .sort({ _id: 1 })
     .skip(data.skip || 0)
-    .limit(DEFAULT_QUERY_LIMIT)
     .then((elections: types.ElectionBackendData[]) => callback(null, elections))
     .catch((err: any) => callback('database_error'));
 };

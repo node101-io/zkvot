@@ -5,8 +5,8 @@ import {
   PublicKey,
   PrivateKey,
   Nullifier,
+  VerificationKey,
   fetchAccount,
-  JsonProof,
 } from 'o1js';
 import * as Comlink from 'comlink';
 
@@ -18,65 +18,88 @@ import encodeDataToBase64String from '@/utils/encodeDataToBase64String.js';
 
 const state: {
   VoteProgram: typeof Vote.Program | null;
+  voteProgramVerificationKey: VerificationKey;
   isVoteProgramCompiled: boolean;
+  isVoteProgramCompiling: boolean;
+
   AggregationProgram: typeof Aggregation.Program | null;
+  aggregationProgramVerificationKey: VerificationKey;
   isAggregationProgramCompiled: boolean;
-  verificationKey: string;
+  isAggregationProgramCompiling: boolean;
 } = {
   VoteProgram: null,
+  voteProgramVerificationKey: Vote.verificationKey,
   isVoteProgramCompiled: false,
+  isVoteProgramCompiling: false,
+
   AggregationProgram: null,
+  aggregationProgramVerificationKey: Vote.verificationKey,
   isAggregationProgramCompiled: false,
-  verificationKey: Aggregation.verificationKey,
+  isAggregationProgramCompiling: false
 };
 
 export const api = {
-  async setActiveInstance(data: { devnet?: boolean }) {
+  async setActiveInstance(data: {
+    devnet?: boolean
+  }) {
     const Network = Mina.Network({
-      mina: `https://api.minascan.io/node/${
-        data.devnet ? 'devnet' : 'mainnet'
-      }/v1/graphql`,
-      archive: `https://api.minascan.io/archive/${
-        data.devnet ? 'devnet' : 'mainnet'
-      }/v1/graphql`,
+      mina: `https://api.minascan.io/node/${data.devnet ? 'devnet' : 'mainnet'}/v1/graphql`,
+      archive: `https://api.minascan.io/archive/${data.devnet ? 'devnet' : 'mainnet'}/v1/graphql`
     });
 
     Mina.setActiveInstance(Network);
   },
   async loadAndCompileVoteProgram() {
-    if (state.isVoteProgramCompiled) return;
+    try {
+      if (state.isVoteProgramCompiled)
+        return;
+      if (state.isVoteProgramCompiling)
+        throw new Error('zkVot is loading in the background, please wait a minute');
 
-    const { Vote } = await import('zkvot-core');
+      const { Vote } = await import('zkvot-core');
 
-    state.VoteProgram = Vote.Program;
+      state.VoteProgram = Vote.Program;
 
-    console.log('VoteProgram compile');
-    console.time('VoteProgram compile');
-    await state.VoteProgram.compile({ proofsEnabled: true });
-    console.timeEnd('VoteProgram compile');
+      console.log('VoteProgram compile');
+      console.time('VoteProgram compile');
+      const { verificationKey } = await state.VoteProgram.compile({ proofsEnabled: true });
+      console.timeEnd('VoteProgram compile');
 
-    state.isVoteProgramCompiled = true;
+      state.voteProgramVerificationKey = verificationKey;
+      state.isVoteProgramCompiled = true;
+
+      return verificationKey;
+    } catch (err) {
+      state.isVoteProgramCompiling = false;
+      throw err;
+    };
   },
   async loadAndCompileAggregationProgram() {
-    if (!state.isVoteProgramCompiled)
-      throw new Error(
-        'VoteProgram not compiled. Call loadAndCompileVoteProgram() first.'
-      );
+    try {
+      if (!state.isVoteProgramCompiled)
+        throw new Error('VoteProgram is not compiled. Call loadAndCompileVoteProgram() first.');
+      if (state.isAggregationProgramCompiled)
+        return;
+      if (state.isAggregationProgramCompiling)
+        throw new Error('zkVot is loading in the background, please wait a minute');
 
-    const { AggregationMM } = await import('zkvot-core');
+      const { AggregationMM: Aggregation } = await import('zkvot-core');
 
-    state.AggregationProgram = AggregationMM.Program;
+      state.AggregationProgram = Aggregation.Program;
 
-    console.log('AggregationProgram compile');
-    console.time('AggregationProgram compile');
-    const { verificationKey } = await state.AggregationProgram.compile({
-      proofsEnabled: true,
-    });
-    console.timeEnd('AggregationProgram compile');
+      console.log('AggregationProgram compile');
+      console.time('AggregationProgram compile');
+      const { verificationKey } = await state.AggregationProgram.compile({ proofsEnabled: true });
+      console.timeEnd('AggregationProgram compile');
 
-    state.verificationKey = JSON.stringify(verificationKey);
+      state.aggregationProgramVerificationKey = verificationKey;
+      state.isAggregationProgramCompiled = true;
 
-    state.isAggregationProgramCompiled = true;
+      return verificationKey;
+    } catch (err) {
+      state.isAggregationProgramCompiling = false;
+      throw err;
+    };
   },
   async loadAndCompileElectionContract(
     electionStartSlot: number,
@@ -84,9 +107,7 @@ export const api = {
     votersRoot: bigint
   ) {
     if (!state.isVoteProgramCompiled || !state.isAggregationProgramCompiled)
-      throw new Error(
-        'AggregationProgram is not compiled. Call loadAndCompileAggregationProgram() first.'
-      );
+      throw new Error('VoteProgram and AggregationProgram must be compiled first');
 
     const { Election } = await import('zkvot-core');
 
@@ -96,6 +117,7 @@ export const api = {
       votersRoot,
     });
 
+    console.log('ElectionContract compile');
     console.time('ElectionContract compile');
     await Election.Contract.compile();
     console.timeEnd('ElectionContract compile');
@@ -109,8 +131,8 @@ export const api = {
     votersArray: string[];
     publicKey: string;
   }) {
-    if (!state.VoteProgram)
-      throw new Error('Program not loaded. Call loadProgram() first.');
+    if (!state.VoteProgram || !state.isVoteProgramCompiled)
+      throw new Error('VoteProgram must be compiled first');
 
     const votersTree = MerkleTree.createFromStringArray(data.votersArray);
 
@@ -232,21 +254,14 @@ export const api = {
     lastAggregatorPubKey: string,
     settlerPubKey: string
   ) {
-    const aggregateProof = await Aggregation.Proof.fromJSON(
-      JSON.parse(aggregateProofJson)
-    );
-
-    await this.loadAndCompileVoteProgram();
-    await this.loadAndCompileAggregationProgram();
+    const aggregateProof = await Aggregation.Proof.fromJSON(JSON.parse(aggregateProofJson));
 
     const ElectionContract = await this.loadAndCompileElectionContract(
       electionConstants.electionStartSlot,
       electionConstants.electionFinalizeSlot,
       electionConstants.votersRoot
     );
-    const ElectionContractInstance = new ElectionContract(
-      PublicKey.fromBase58(electionPubKey)
-    );
+    const ElectionContractInstance = new ElectionContract(PublicKey.fromBase58(electionPubKey));
 
     const settleTx = await Mina.transaction(
       {
@@ -266,53 +281,54 @@ export const api = {
 
     return settleTx.toJSON();
   },
-  async verifyElectionVerificationKeyOnChain(
-    electionPubKey: string,
-    electionStartSlot: number,
-    electionFinalizeSlot: number,
-    votersRoot: bigint
-  ) {
-    if (!state.isVoteProgramCompiled || !state.isAggregationProgramCompiled)
-      throw new Error(
-        'AggregationProgram is not compiled. Call loadAndCompileAggregationProgram() first.'
-      );
-
-    const { Election } = await import('zkvot-core');
-
-    Election.setContractConstants({
-      electionStartSlot,
-      electionFinalizeSlot,
-      votersRoot,
-    });
-
-    console.time('ElectionContract compile');
-    const { verificationKey } = await Election.Contract.compile();
-    console.timeEnd('ElectionContract compile');
-
-    const electionAccount = await fetchAccount({
-      publicKey: PublicKey.fromBase58(electionPubKey),
-    });
-
-    if (!electionAccount) {
-      console.error('Election account not found');
-      return false;
-    }
-
-    const onChainVerificationKey =
-      electionAccount.account?.zkapp?.verificationKey;
-
-    if (!onChainVerificationKey) {
-      console.error('On-chain verification key not found');
-      return false;
-    }
-
-    return (
-      verificationKey.hash.toBigInt() === onChainVerificationKey.hash.toBigInt()
-    );
+  getVoteProgramVerificationKey() {
+    return state.voteProgramVerificationKey;
   },
-  getVerificationKey() {
-    return state.verificationKey;
-  },
+  getAggregationProgramVerificationKey() {
+    return state.aggregationProgramVerificationKey;
+  }
+  // async verifyElectionVerificationKeyOnChain(
+  //   electionPubKey: string,
+  //   electionStartSlot: number,
+  //   electionFinalizeSlot: number,
+  //   votersRoot: bigint
+  // ) {
+  //   if (!state.isVoteProgramCompiled || !state.isAggregationProgramCompiled)
+  //     throw new Error('AggregationProgram is not compiled. Call loadAndCompileAggregationProgram() first.');
+
+  //   const { Election } = await import('zkvot-core');
+
+  //   Election.setContractConstants({
+  //     electionStartSlot,
+  //     electionFinalizeSlot,
+  //     votersRoot,
+  //   });
+
+  //   console.time('ElectionContract compile');
+  //   const { verificationKey } = await Election.Contract.compile();
+  //   console.timeEnd('ElectionContract compile');
+
+  //   const electionAccount = await fetchAccount({
+  //     publicKey: PublicKey.fromBase58(electionPubKey),
+  //   });
+
+  //   if (!electionAccount) {
+  //     console.error('Election account not found');
+  //     return false;
+  //   }
+
+  //   const onChainVerificationKey =
+  //     electionAccount.account?.zkapp?.verificationKey;
+
+  //   if (!onChainVerificationKey) {
+  //     console.error('On-chain verification key not found');
+  //     return false;
+  //   }
+
+  //   return (
+  //     verificationKey.hash.toBigInt() === onChainVerificationKey.hash.toBigInt()
+  //   );
+  // },
 };
 
 Comlink.expose(api);

@@ -1,74 +1,12 @@
-import { fetchAccount, fetchLastBlock, PublicKey, verify } from 'o1js';
+import { fetchAccount, fetchLastBlock, PublicKey, VerificationKey, verify } from 'o1js';
 
 import { AggregationMM as Aggregation, Vote } from 'zkvot-core';
 
 const MINA_APPROXIMATE_BLOCK_TIME = 3 * 60 * 1000;
-const MINA_RPC_URL = `https://api.minascan.io/node/${
-  !!process.env.DEVNET ? 'devnet' : 'mainnet'
-}/v1/graphql`;
-
-let lastBlockHeight: number;
-let lastRequestTime: number;
+const MINA_RPC_URL = `https://api.minascan.io/node/${!!process.env.DEVNET ? 'devnet' : 'mainnet'}/v1/graphql`;
 
 let lastSlot: number;
 let lastSlotRequestTime: number;
-
-export const calculateBlockHeightFromTimestamp = async (
-  startTimeStamp: Date,
-  endTimeStamp: Date
-): Promise<{
-  startBlockHeight: number;
-  endBlockHeight: number;
-}> => {
-  try {
-    if (
-      !lastRequestTime ||
-      !lastBlockHeight ||
-      Date.now() - lastRequestTime > MINA_APPROXIMATE_BLOCK_TIME
-    ) {
-      lastBlockHeight = Number(
-        (await fetchLastBlock(MINA_RPC_URL)).blockchainLength.toBigint()
-      );
-      lastRequestTime = Date.now();
-    }
-
-    let startBlockHeight;
-    let endBlockHeight;
-
-    if (startTimeStamp.valueOf() > Date.now())
-      startBlockHeight =
-        Math.ceil(
-          (new Date(startTimeStamp).valueOf() - Date.now()) /
-            MINA_APPROXIMATE_BLOCK_TIME
-        ) + lastBlockHeight;
-    else
-      startBlockHeight =
-        Math.floor(
-          (new Date(startTimeStamp).valueOf() - Date.now()) /
-            MINA_APPROXIMATE_BLOCK_TIME
-        ) + lastBlockHeight;
-
-    if (endTimeStamp.valueOf() > Date.now())
-      endBlockHeight =
-        Math.ceil(
-          (new Date(endTimeStamp).valueOf() - Date.now()) /
-            MINA_APPROXIMATE_BLOCK_TIME
-        ) + lastBlockHeight;
-    else
-      endBlockHeight =
-        Math.floor(
-          (new Date(endTimeStamp).valueOf() - Date.now()) /
-            MINA_APPROXIMATE_BLOCK_TIME
-        ) + lastBlockHeight;
-
-    return {
-      startBlockHeight,
-      endBlockHeight,
-    };
-  } catch (error) {
-    throw new Error('Failed to calculate block height');
-  }
-};
 
 export const calculateSlotFromTimestamp = async (
   startTimeStamp: Date,
@@ -93,30 +31,14 @@ export const calculateSlotFromTimestamp = async (
     let endSlot;
 
     if (startTimeStamp.valueOf() > Date.now())
-      startSlot =
-        Math.ceil(
-          (new Date(startTimeStamp).valueOf() - Date.now()) /
-            MINA_APPROXIMATE_BLOCK_TIME
-        ) + lastSlot;
+      startSlot = Math.ceil((new Date(startTimeStamp).valueOf() - Date.now()) / MINA_APPROXIMATE_BLOCK_TIME) + lastSlot;
     else
-      startSlot =
-        Math.floor(
-          (new Date(startTimeStamp).valueOf() - Date.now()) /
-            MINA_APPROXIMATE_BLOCK_TIME
-        ) + lastSlot;
+      startSlot = Math.floor((new Date(startTimeStamp).valueOf() - Date.now()) / MINA_APPROXIMATE_BLOCK_TIME) + lastSlot;
 
     if (endTimeStamp.valueOf() > Date.now())
-      endSlot =
-        Math.ceil(
-          (new Date(endTimeStamp).valueOf() - Date.now()) /
-            MINA_APPROXIMATE_BLOCK_TIME
-        ) + lastSlot;
+      endSlot = Math.ceil((new Date(endTimeStamp).valueOf() - Date.now()) / MINA_APPROXIMATE_BLOCK_TIME) + lastSlot;
     else
-      endSlot =
-        Math.floor(
-          (new Date(endTimeStamp).valueOf() - Date.now()) /
-            MINA_APPROXIMATE_BLOCK_TIME
-        ) + lastSlot;
+      endSlot = Math.floor((new Date(endTimeStamp).valueOf() - Date.now()) / MINA_APPROXIMATE_BLOCK_TIME) + lastSlot;
 
     return {
       startSlot,
@@ -124,18 +46,34 @@ export const calculateSlotFromTimestamp = async (
     };
   } catch (error) {
     throw new Error('Failed to calculate slot time');
-  }
+  };
+};
+
+export const calculateTimestampFromSlot = async (
+  start_slot: number,
+  end_slot: number
+): Promise<{
+  start_date: Date,
+  end_date: Date
+}> => {
+  const lastSlot = Number((await fetchLastBlock(MINA_RPC_URL)).globalSlotSinceGenesis.toBigint());
+
+  return {
+    start_date: new Date(Date.now() + (start_slot - lastSlot) * MINA_APPROXIMATE_BLOCK_TIME),
+    end_date: new Date(Date.now() + (end_slot - lastSlot) * MINA_APPROXIMATE_BLOCK_TIME),
+  };
 };
 
 export const verifyAggregationProof = async (
   proofJSON: string,
-  verification_key: string,
+  verification_key: VerificationKey,
   mina_contract_id: string,
   voters_merkle_root: string,
   options_length: number,
   result: number[]
 ): Promise<boolean> => {
-  if (!proofJSON.trim().length) return false;
+  if (!proofJSON.trim().length)
+    return false;
 
   try {
     const proof = await Aggregation.Proof.fromJSON(JSON.parse(proofJSON));
@@ -164,31 +102,29 @@ export const verifyAggregationProof = async (
     )
       return false;
 
-    if (!(await verify(proof, JSON.parse(verification_key)))) return false;
+    if (!(await verify(proof, verification_key))) return false;
 
     return true;
   } catch (error) {
     console.log(`Soft finality proof verification failed: ${error}`);
     return false;
-  }
+  };
 };
 
 export const checkIfAccountExists = async (
   publicKey: string
 ): Promise<boolean> => {
   try {
-    const account = await fetchAccount(
-      {
-        publicKey: PublicKey.fromBase58(publicKey),
-      },
-      MINA_RPC_URL
-    );
+    const account = await fetchAccount({
+      publicKey: PublicKey.fromBase58(publicKey),
+    }, MINA_RPC_URL);
 
-    if (!account.account) return false;
+    if (!account.account)
+      return false;
 
     return account.account.balance.toBigInt() > 0;
   } catch (error) {
     console.error('Error checking if account exists:', error);
     return false;
-  }
+  };
 };

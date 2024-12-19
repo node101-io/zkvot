@@ -3,7 +3,7 @@
 import { useEffect, useState, useContext } from 'react';
 import Image, { StaticImageData } from 'next/image';
 import { motion } from 'framer-motion';
-import { FaCheckCircle, FaImage } from 'react-icons/fa';
+import { FaImage } from 'react-icons/fa';
 
 import {
   AggregationMM as Aggregation,
@@ -28,15 +28,10 @@ import CelestiaLogo from '@/public/general/blockchain-logos/celestia.png';
 import MinaLogo from '@/public/general/blockchain-logos/mina.png';
 
 import { fetchElectionResultByContractIdFromBackend } from '@/utils/backend.js';
-import {
-  calculateSlotFromTimestamp,
-  verifyAggregationProof,
-} from '@/utils/o1js.js';
+import { calculateTimestampFromSlot, verifyAggregationProof } from '@/utils/o1js.js';
 import { AuroWalletContext } from '@/contexts/auro-wallet-context.jsx';
 
-const MINA_RPC_URL = `https://api.minascan.io/node/${
-  !!process.env.DEVNET ? 'devnet' : 'mainnet'
-}/v1/graphql`;
+const MINA_RPC_URL = `https://api.minascan.io/node/${!!process.env.DEVNET ? 'devnet' : 'mainnet'}/v1/graphql`;
 
 type Result = {
   percentage: number;
@@ -60,27 +55,30 @@ type EnhancedResultsProps = {
 
 export default function ResultsPage({ params }: { params: { id: string } }) {
   const { showToast } = useContext(ToastContext);
-  const { zkProgramWorkerClientInstance } = useContext(ZKProgramCompileContext);
+  const {
+    zkProgramWorkerClientInstance,
+    isVoteProgramCompiled, isVoteProgramCompiling,
+    isAggregationProgramCompiled, isAggregationProgramCompiling,
+    compileAggregationProgramIfNotCompiled
+  } = useContext(ZKProgramCompileContext);
 
   const [loading, setLoading] = useState<boolean>(true);
-  const [electionData, setElectionData] =
-    useState<types.ElectionBackendData | null>(null);
-  const [hardFinalityResult, setHardFinalityResult] = useState<
-    {
-      percentage: number;
-      voteCount: string;
-    }[]
-  >([]);
-  const [softFinalityResult, setSoftFinalityResult] = useState<
-    {
-      percentage: number;
-      voteCount: string;
-    }[]
-  >([]);
-  const [isSoftFinalityResultVerified, setIsSoftFinalityResultVerified] =
-    useState<boolean>(false);
+  const [electionData, setElectionData] = useState<types.ElectionBackendData | null>(null);
+  const [hardFinalityResult, setHardFinalityResult] = useState<{
+    percentage: number;
+    voteCount: string;
+  }[]>([]);
+  const [softFinalityResult, setSoftFinalityResult] = useState<{
+    percentage: number;
+    voteCount: string;
+  }[]>([]);
+  const [isSoftFinalityResultVerified, setIsSoftFinalityResultVerified] = useState<boolean>(false);
   const [softFinalityProof, setSoftFinalityProof] = useState<string>('');
   const { auroWalletAddress } = useContext(AuroWalletContext);
+  const [electionDates, setElectionDates] = useState<{
+    start_date: Date;
+    end_date: Date;
+  } | null>(null);
 
   const verifySoftFinalityProof = async (
     softFinalityResult: number[],
@@ -88,7 +86,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
   ) => {
     try {
       const verificationKey = zkProgramWorkerClientInstance
-        ? await zkProgramWorkerClientInstance.getVerificationKey()
+        ? await zkProgramWorkerClientInstance.getAggregationProgramVerificationKey()
         : Aggregation.verificationKey;
 
       if (
@@ -104,13 +102,13 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
         showToast('Invalid soft finality proof', 'error');
         setSoftFinalityResult([]);
         return;
-      }
+      };
 
       setIsSoftFinalityResultVerified(true);
     } catch (error) {
       showToast('Invalid soft finality proof', 'error');
       setSoftFinalityResult([]);
-    }
+    };
   };
 
   const fetchElectionData = () => {
@@ -165,43 +163,46 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
     if (!zkProgramWorkerClientInstance) {
       showToast('Unknown error occurred, please try again', 'error');
       return;
-    }
+    };
+
+    if (isVoteProgramCompiling || !isVoteProgramCompiled) {
+      showToast('zkVot is loading in the background, please wait a minute and try again', 'error');
+      return;
+    };
 
     if (!electionData) {
       showToast('Unknown error occurred, please try again', 'error');
       console.error('electionData is null');
       return;
-    }
+    };
 
-    const { startSlot, endSlot } = await calculateSlotFromTimestamp(
-      electionData.start_date,
-      electionData.end_date
+    await compileAggregationProgramIfNotCompiled();
+
+    zkProgramWorkerClientInstance.setActiveInstance({ devnet: !!process.env.DEVNET });
+
+    const settlementTxJson = await zkProgramWorkerClientInstance.submitElectionResult(
+      electionData?.mina_contract_id,
+      {
+        electionStartSlot: electionData.start_slot,
+        electionFinalizeSlot: electionData.end_slot,
+        votersRoot: BigInt(electionData.voters_merkle_root),
+      },
+      softFinalityProof,
+      auroWalletAddress,
+      auroWalletAddress
     );
-
-    const settlementTxJson =
-      await zkProgramWorkerClientInstance.submitElectionResult(
-        electionData?.mina_contract_id,
-        {
-          electionStartSlot: startSlot,
-          electionFinalizeSlot: endSlot,
-          votersRoot: BigInt(electionData.voters_merkle_root),
-        },
-        softFinalityProof,
-        auroWalletAddress,
-        auroWalletAddress
-      );
 
     if (!settlementTxJson) {
       showToast('Error creating settlement transaction', 'error');
       return;
-    }
+    };
 
     try {
       const { hash } = await (window as any).mina.sendTransaction({
         transaction: settlementTxJson,
         feePayer: {
           fee: 0.1,
-          memo: `zkvot.io settlement to election ${electionData.mina_contract_id}`,
+          memo: `zkvot.io`,
         },
       });
 
@@ -209,7 +210,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
       showToast('Settlement transaction sent successfully', 'success');
     } catch (error) {
       showToast('Error sending settlement transaction', 'error');
-    }
+    };
   };
 
   useEffect(() => {
@@ -220,6 +221,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
         setElectionData(data);
 
         const totalVoteCount = data.result.reduce((acc, curr) => acc + curr, 0);
+
         setHardFinalityResult(
           data.result.slice(0, data.options.length).map((each) => {
             const percentage = (each / totalVoteCount) * 100;
@@ -252,6 +254,16 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
         showToast("Error fetching election's soft finality result", 'error');
       });
   }, []);
+
+  useEffect(() => {
+    if (!electionData) return;
+
+    calculateTimestampFromSlot(electionData.start_slot, electionData.end_slot)
+      .then((dates) => setElectionDates({
+        start_date: dates.start_date,
+        end_date: dates.end_date
+      }))
+  }, [electionData]);
 
   const Placeholder = () => (
     <div className="animate-pulse flex flex-col w-full">
@@ -410,9 +422,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
                   <span className="flex flex-row justify-center items-center text-sm text-[#B7B7B7]">
                     <Clock />
                     <span className="ml-2">
-                      <DateFormatter
-                        date={electionData?.start_date || new Date()}
-                      />
+                      <DateFormatter date={electionDates?.start_date} />
                     </span>
                   </span>
                 </div>
@@ -445,7 +455,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
                     ? AvailLogo
                     : CelestiaLogo
                 }
-                description="These results are yet unofficial, but verified by a proof in your local browser. They are not final until they are settled by an aggregator."
+                description="These results are yet unofficial, but verified by a proof in your local browser. They are not final until they are settled by an aggregator or you."
                 results={softFinalityResult}
                 options={electionData?.options || []}
                 loading={loading || !isSoftFinalityResultVerified}
@@ -467,4 +477,4 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
       </div>
     </div>
   );
-}
+};

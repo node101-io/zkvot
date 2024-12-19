@@ -65,15 +65,15 @@ export const ZKProgramCompileProvider = ({ children }: PropsWithChildren<{}>) =>
 
     setIsAggregationProgramCompiling(true);
 
-    zkProgramWorkerClientInstance.loadAndCompileAggregationProgram()
-      .then(() => {
-        setIsAggregationProgramCompiled(true);
-        setIsAggregationProgramCompiling(false);
-      })
-      .catch((error: Error) => {
-        console.log(error);
-        setIsAggregationProgramCompiling(false);
-      });
+    try {
+      await zkProgramWorkerClientInstance.loadAndCompileAggregationProgram();
+      setIsAggregationProgramCompiling(false);
+      setIsAggregationProgramCompiled(true);
+    } catch (error) {
+      console.log(error);
+      setIsAggregationProgramCompiling(false);
+      return;
+    };
   };
 
   return (

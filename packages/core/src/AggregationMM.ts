@@ -6,6 +6,7 @@ import {
   PublicKey,
   SelfProof,
   Struct,
+  VerificationKey,
   ZkProgram,
 } from 'o1js';
 
@@ -143,7 +144,7 @@ namespace AggregationMerkleMapNamespace {
 
   export class Proof extends ZkProgram.Proof(Program) {}
 
-  export const verificationKey = aggregationVK;
+  export const verificationKey: VerificationKey = JSON.parse(aggregationVK);
 }
 
 export default AggregationMerkleMapNamespace;

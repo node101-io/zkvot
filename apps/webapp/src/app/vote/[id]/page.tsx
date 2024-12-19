@@ -41,8 +41,8 @@ const Page = ({
     mina_contract_id: '',
     storage_layer_id: '',
     storage_layer_platform: 'A',
-    start_date: new Date(),
-    end_date: new Date(),
+    start_slot: 0,
+    end_slot: 0,
     question: '',
     options: [],
     description: '',
@@ -54,7 +54,7 @@ const Page = ({
   });
   const [nullifier, setNullifier] = useState<Nullifier | null>(null);
   const { isVoteProgramCompiled } = useContext(ZKProgramCompileContext);
-  
+
 
   const fetchElectionData = () =>
     new Promise(

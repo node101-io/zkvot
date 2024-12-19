@@ -14,13 +14,12 @@ import StorageLayerSubmissionStep from "@/app/elections/create/(steps)/5-storage
 import DeployElectionStep from "@/app/elections/create/(steps)/6-deploy-election.jsx";
 
 const HomePage = () => {
-  const { isVoteProgramCompiled, compileAggregationProgramIfNotCompiled } =
-    useContext(ZKProgramCompileContext);
+  const { isVoteProgramCompiled, compileAggregationProgramIfNotCompiled } = useContext(ZKProgramCompileContext);
 
   const [step, setStep] = useState<number>(1);
   const [electionData, setElectionData] = useState<types.ElectionStaticData>({
-    start_date: new Date(),
-    end_date: new Date(),
+    start_slot: 0,
+    end_slot: 0,
     question: "",
     options: [],
     description: "",
@@ -28,8 +27,7 @@ const HomePage = () => {
     voters_list: [],
     communication_layers: [],
   });
-  const [storageLayerPlatform, setStorageLayerPlatform] =
-    useState<types.StorageLayerPlatformCodes>("A");
+  const [storageLayerPlatform, setStorageLayerPlatform] = useState<types.StorageLayerPlatformCodes>("A");
   const [storageLayerId, setStorageLayerId] = useState<string>("");
 
   // IMPORTANT!!!! For easy testing DO NOT delete IMPORTANT!!!!
@@ -52,7 +50,8 @@ const HomePage = () => {
   // }, []);
 
   useEffect(() => {
-    if (isVoteProgramCompiled) compileAggregationProgramIfNotCompiled();
+    if (isVoteProgramCompiled)
+      compileAggregationProgramIfNotCompiled();
   }, [isVoteProgramCompiled]);
 
   return (

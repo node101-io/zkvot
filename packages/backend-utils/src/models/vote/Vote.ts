@@ -331,6 +331,8 @@ VoteSchema.statics.countVotesRecursively = function () {
       return setTimeout(Vote.countVotesRecursively, RESTART_VOTE_COUNTING_INTERVAL);
     };
 
+    console.log('Vote counted successfully');
+
     return Vote.countVotesRecursively();
   });
 };

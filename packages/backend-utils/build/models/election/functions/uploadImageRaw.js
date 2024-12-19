@@ -28,7 +28,6 @@ export default (image_raw, callback) => {
             ContentType: 'image/webp'
         };
         s3Client?.send(new PutObjectCommand(uploadParams), (err, _data) => {
-            console.log(err);
             if (err)
                 return callback('upload_failed');
             const imageUrl = `https://${AWS_BUCKET_NAME}.s3.${AWS_BUCKET_REGION}.amazonaws.com/${fileName}`;

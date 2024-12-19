@@ -3,7 +3,7 @@ import * as Comlink from 'comlink';
 import { Election } from 'zkvot-core';
 
 import { Nullifier } from '@aurowallet/mina-provider';
-import { Field, JsonProof } from 'o1js';
+import { Field } from 'o1js';
 
 export default class {
   worker: Worker;
@@ -87,20 +87,23 @@ export default class {
       votersRoot
     );
   }
-  async verifyElectionVerificationKeyOnChain(
-    electionPubKey: string,
-    electionStartSlot: number,
-    electionFinalizeSlot: number,
-    votersRoot: bigint
-  ) {
-    return this.remoteApi.verifyElectionVerificationKeyOnChain(
-      electionPubKey,
-      electionStartSlot,
-      electionFinalizeSlot,
-      votersRoot
-    );
+  getVoteProgramVerificationKey() {
+    return this.remoteApi.getVoteProgramVerificationKey();
   }
-  getVerificationKey() {
-    return this.remoteApi.getVerificationKey();
+  getAggregationProgramVerificationKey() {
+    return this.remoteApi.getAggregationProgramVerificationKey();
   }
-}
+  // async verifyElectionVerificationKeyOnChain(
+  //   electionPubKey: string,
+  //   electionStartSlot: number,
+  //   electionFinalizeSlot: number,
+  //   votersRoot: bigint
+  // ) {
+  //   return this.remoteApi.verifyElectionVerificationKeyOnChain(
+  //     electionPubKey,
+  //     electionStartSlot,
+  //     electionFinalizeSlot,
+  //     votersRoot
+  //   );
+  // }
+};

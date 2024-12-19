@@ -3,7 +3,7 @@ import sharp from 'sharp';
 
 import generateRandomHex from '../../../utils/generateRandomHex.js';
 
-let s3Client: null | S3Client;
+let s3Client: S3Client | null;
 
 export default (
   image_raw: string,
@@ -22,7 +22,7 @@ export default (
         secretAccessKey: AWS_SECRET_ACCESS_KEY
       }
     });
-  
+
   const fileName = `${generateRandomHex()}.webp`;
   const image_formatted = image_raw.replace(/^data:image\/\w+;base64,/, '');
 
@@ -38,7 +38,6 @@ export default (
       };
 
       s3Client?.send(new PutObjectCommand(uploadParams), (err, _data) => {
-        console.log(err);
         if (err) return callback('upload_failed');
 
         const imageUrl = `https://${AWS_BUCKET_NAME}.s3.${AWS_BUCKET_REGION}.amazonaws.com/${fileName}`;

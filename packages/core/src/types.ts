@@ -39,8 +39,8 @@ namespace typesNamespace {
   export type CommunicationLayerNames = 'Avail' | 'Celestia';
 
   export type ElectionStaticData = {
-    start_date: Date;
-    end_date: Date;
+    start_slot: number;
+    end_slot: number;
     question: string;
     options: string[];
     description: string;
@@ -53,8 +53,8 @@ namespace typesNamespace {
     mina_contract_id: string;
     storage_layer_id: string;
     storage_layer_platform: StorageLayerPlatformCodes;
-    start_date: Date;
-    end_date: Date;
+    start_slot: number;
+    end_slot: number;
     question: string;
     options: string[];
     description: string;

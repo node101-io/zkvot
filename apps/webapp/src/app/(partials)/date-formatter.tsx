@@ -1,9 +1,14 @@
 import formatDate from '@/utils/formatDate';
 
 const DateFormatter = ({ date } : {
-  date: Date;
+  date: Date | undefined;
 }) => (
-  <span>{ formatDate(date) }</span>
+  <>
+    {date ?
+      <span>{ formatDate(date) }</span> :
+      <span>{'loading...'}</span>
+    }
+  </>
 );
 
 export default DateFormatter;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import Image from 'next/image.js';
 import { FaImage } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
@@ -19,6 +19,7 @@ import { ToastContext } from '@/contexts/toast-context.jsx';
 import encodeDataToBase64String from '@/utils/encodeDataToBase64String';
 import { sendVoteViaBackend } from '@/utils/backend.js';
 import { CommunicationLayerDetails } from '@/utils/constants.jsx';
+import { calculateTimestampFromSlot } from '@/utils/o1js.js';
 
 import LearnMoreIcon from '@/public/elections/partials/learn-more-icon.jsx';
 import Clock from '@/public/elections/partials/clock-icon.jsx';
@@ -93,11 +94,11 @@ const DASelection = ({
             }}
             className="inline-flex items-center text-white rounded-md hover:bg-primary-dark transition duration-200 underline"
           >
-            Download 
+            Download
           </button> your vote and submit it manually.
         </p>
         <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-     
+
           <a
             href="https://celenium.io/"
             target="_blank"
@@ -109,7 +110,7 @@ const DASelection = ({
         </div>
         <div className="mt-4 bg-[#333333] rounded-lg p-3">
           <div className="text-white text-sm flex space-x-1">
-            <span className="font-semibold">Namespace:</span> 
+            <span className="font-semibold">Namespace:</span>
             <span className='flex items-center'>
               {(communicationLayers.find(layer => layer.name === 'Celestia') as types.CelestiaDaLayerInfo).namespace || 'N/A'}
               <span className='ml-1 cursor-pointer w-fit'>
@@ -211,6 +212,20 @@ export default ({
   const [selectedDA, setSelectedDA] = useState<types.DaLayerInfo['name']>(electionData.communication_layers[0].name);
   const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false);
   const [isPopupConfirmed, setIsPopupConfirmed] = useState<boolean>(false);
+  const [electionDates, setElectionDates] = useState<{
+    start_date: Date;
+    end_date: Date;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!electionData) return;
+
+    calculateTimestampFromSlot(electionData.start_slot, electionData.end_slot)
+      .then((dates) => setElectionDates({
+        start_date: dates.start_date,
+        end_date: dates.end_date
+      }))
+  }, [electionData]);
 
   const formatAndGetDaLayerSubmissionData = (callback: (err: string | null, data?: string | undefined) => any) => {
     encodeDataToBase64String(JSON.stringify(daLayerSubmissionData), callback);
@@ -370,8 +385,8 @@ export default ({
               <div className='flex flex-col w-full'>
                 <div className='text-[#B7B7B7] text-sm mb-2 flex flex-row items-center gap-2'>
                   <Clock />
-                  <DateFormatter date={electionData.start_date} /> -{' '}
-                  <DateFormatter date={electionData.end_date} />
+                  <DateFormatter date={electionDates?.start_date} /> -{' '}
+                  <DateFormatter date={electionDates?.end_date} />
                 </div>
               </div>
               <div className='flex flex-col w-full'>

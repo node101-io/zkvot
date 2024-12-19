@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import Image from 'next/image.js';
 import Link from 'next/link.js';
 import { FaImage } from 'react-icons/fa';
@@ -12,6 +13,8 @@ import ToolTip from '@/app/(partials)/tool-tip.jsx';
 import Clock from '@/public/elections/partials/clock-icon.jsx';
 import LearnMoreIcon from '@/public/elections/partials/learn-more-icon.jsx';
 
+import { calculateTimestampFromSlot } from '@/utils/o1js.js';
+
 const ElectionCard = ({
   electionData,
   isLoading
@@ -19,6 +22,21 @@ const ElectionCard = ({
   electionData?: types.ElectionBackendData;
   isLoading: boolean;
 }) => {
+  const [electionDates, setElectionDates] = useState<{
+    start_date: Date;
+    end_date: Date;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!electionData) return;
+
+    calculateTimestampFromSlot(electionData.start_slot, electionData.end_slot)
+      .then((dates) => setElectionDates({
+        start_date: dates.start_date,
+        end_date: dates.end_date
+      }));
+  }, [electionData]);
+
   if (isLoading || !electionData)
     return (
       <div className='bg-[#1C1C1E] text-white rounded-lg shadow-md overflow-hidden animate-pulse'>
@@ -69,25 +87,12 @@ const ElectionCard = ({
           </div>
         </div>
         <div className='text-green-400 text-sm mb-1 flex justify-between'>
-          {/* <span className='flex flex-row items-center'>
-            <span className='text-primary mr-1 italic text-sm'>zkVote by</span>
-            {electionData.zkvoteBy
-              ? electionData.zkvoteBy.slice(0, 12) + '...'
-              : 'Unknown'}
-            <span className='ml-1 cursor-pointer w-fit'>
-              <CopyButton
-                textToCopy={electionData.zkvoteBy}
-                iconColor='#F6F6F6'
-                position={{ top: -16, left: -38 }}
-              />
-            </span>
-          </span> */}
           <span className='flex flex-row justify-center items-center'>
             <span>
               <Clock/>
             </span>
             <span className='ml-1 text-sm text-[#B7B7B7]'>
-              <DateFormatter date={electionData.start_date} />
+              <DateFormatter date={electionDates?.start_date } />
             </span>
           </span>
         </div>

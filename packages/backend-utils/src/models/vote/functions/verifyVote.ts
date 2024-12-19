@@ -26,7 +26,7 @@ export default (
       if (voteProof.publicInput.electionPubKey.toBase58() !== data.electionPubKey)
         return callback('invalid_vote');
 
-      if (!(await verify(voteProof, JSON.parse(Vote.verificationKey))))
+      if (!(await verify(voteProof, Vote.verificationKey)))
         return callback('invalid_vote');
 
       return callback(null, {

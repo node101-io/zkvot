@@ -7,6 +7,7 @@ import {
   Nullifier,
   Provable,
   UInt32,
+  VerificationKey,
 } from 'o1js';
 
 import MerkleTree from './MerkleTree.js';
@@ -169,7 +170,7 @@ namespace VoteNamespace {
 
   export class Proof extends ZkProgram.Proof(Program) {}
 
-  export const verificationKey = voteVK;
+  export const verificationKey: VerificationKey = JSON.parse(voteVK);
 };
 
 export default VoteNamespace;

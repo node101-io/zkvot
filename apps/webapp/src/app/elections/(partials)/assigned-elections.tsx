@@ -75,9 +75,8 @@ const AssignedElections: React.FC<AssignedElectionsProps> = ({
       try {
         const result = await fetchElectionsFromBackend(0, onlyOngoing);
 
-        if (result instanceof Error) {
+        if (result instanceof Error)
           return;
-        }
 
         let filteredElectionData: types.ElectionBackendData[] = result;
 

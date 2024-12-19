@@ -2,7 +2,6 @@
 
 import { useContext, useState, useEffect } from 'react';
 import Image from 'next/image.js';
-import { FaImage } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
 import { Nullifier } from '@aurowallet/mina-provider';
 import { Group, PublicKey } from 'o1js';
@@ -24,6 +23,7 @@ import { ZKProgramCompileContext } from '@/contexts/zk-program-compile-context.j
 import LearnMoreIcon from '@/public/elections/partials/learn-more-icon.jsx';
 import Clock from '@/public/elections/partials/clock-icon.jsx';
 
+import { calculateTimestampFromSlot } from '@/utils/o1js.js';
 
 export default ({
   electionData,
@@ -59,6 +59,20 @@ export default ({
   const [isWalletModalOpen, setIsWalletModalOpen] = useState<boolean>(false);
   const [isDataLoading, setIsDataLoading] = useState<boolean>(true);
   const [eligibilityStatus, setEligibilityStatus] = useState<'not_connected' | 'not_eligible' | 'eligible'>('not_connected');
+  const [electionDates, setElectionDates] = useState<{
+    start_date: Date;
+    end_date: Date;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!electionData) return;
+
+    calculateTimestampFromSlot(electionData.start_slot, electionData.end_slot)
+      .then((dates) => setElectionDates({
+        start_date: dates.start_date,
+        end_date: dates.end_date
+      }))
+  }, [electionData]);
 
   // useEffect(() => {
   //   (window as any).mina?.on('accountsChanged', () => {
@@ -303,7 +317,7 @@ export default ({
                       <Clock />
                     </span>
                     <span className='ml-1 text-sm text-[#B7B7B7]'>
-                      <DateFormatter date={electionData.start_date} />
+                      <DateFormatter date={electionDates?.start_date} />
                     </span>
                   </span>
                 </div>

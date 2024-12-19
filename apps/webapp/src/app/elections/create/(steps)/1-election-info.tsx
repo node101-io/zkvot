@@ -14,9 +14,9 @@ import DeleteIcon from "@/public/general/icons/delete.jsx";
 import EditIcon from "@/public/general/icons/edit.jsx";
 import PlusIcon from "@/public/general/icons/plus.jsx";
 
-import convertDateToISOString from "@/utils/convertDateToISOString.js";
 import formatDateForInput from "@/utils/formatDateForInput";
-import { ToastContext } from "@/contexts/toast-context";
+import { calculateSlotFromTimestamp } from "@/utils/o1js.js";
+
 const ChoiceItem = ({
   index,
   choice,
@@ -157,12 +157,12 @@ export default ({
   );
 
   const [startDate, setStartDate] = useState<Date>(() => {
-    const date = new Date(initialData.start_date);
+    const date = new Date();
     return isNaN(date.getTime()) ? new Date() : date;
   });
 
   const [endDate, setEndDate] = useState<Date>(() => {
-    const date = new Date(initialData.end_date);
+    const date = new Date();
     return isNaN(date.getTime()) ? new Date() : date;
   });
 
@@ -195,17 +195,20 @@ export default ({
     }
   };
 
-  const handleNext = () => {
-    if (isNextEnabled)
+  const handleNext = async () => {
+    if (isNextEnabled) {
+      const { startSlot, endSlot } = await calculateSlotFromTimestamp(startDate, endDate)
+
       onNext({
         ...initialData,
-        start_date: startDate,
-        end_date: endDate,
+        start_slot: startSlot,
+        end_slot: endSlot,
         question,
         options: choices,
         description,
         image_raw: pictureDataURL,
       });
+    }
   };
 
   return (
