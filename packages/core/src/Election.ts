@@ -21,8 +21,8 @@ import Aggregation from './AggregationMM.js';
 
 import Vote from './Vote.js';
 
-let ELECTION_START_BLOCK: number;
-let ELECTION_FINALIZE_BLOCK: number;
+let ELECTION_START_SLOT: number;
+let ELECTION_FINALIZE_SLOT: number;
 let VOTERS_ROOT: bigint;
 
 namespace ElectionNamespace {
@@ -59,12 +59,12 @@ namespace ElectionNamespace {
   };
 
   export const setContractConstants = (data: {
-    electionStartBlock: number;
-    electionFinalizeBlock: number;
+    electionStartSlot: number;
+    electionFinalizeSlot: number;
     votersRoot: bigint;
   }) => {
-    ELECTION_START_BLOCK = data.electionStartBlock;
-    ELECTION_FINALIZE_BLOCK = data.electionFinalizeBlock;
+    ELECTION_START_SLOT = data.electionStartSlot;
+    ELECTION_FINALIZE_SLOT = data.electionFinalizeSlot;
     VOTERS_ROOT = data.votersRoot;
   };
 
@@ -123,9 +123,10 @@ namespace ElectionNamespace {
       aggregateProof.publicInput.electionPubKey.assertEquals(this.address);
       aggregateProof.publicInput.votersRoot.assertEquals(Field.from(VOTERS_ROOT));
 
-      const currentBlock = this.network.blockchainLength.getAndRequireEquals();
-      currentBlock.assertGreaterThan(UInt32.from(ELECTION_START_BLOCK));
-      currentBlock.assertLessThan(UInt32.from(ELECTION_FINALIZE_BLOCK));
+      const currentSlot =
+        this.network.globalSlotSinceGenesis.getAndRequireEquals();
+      currentSlot.assertGreaterThan(UInt32.from(ELECTION_START_SLOT));
+      currentSlot.assertLessThan(UInt32.from(ELECTION_FINALIZE_SLOT));
 
       let currentMaximumCountedVotes = this.maximumCountedVotes.getAndRequireEquals();
 
@@ -159,8 +160,9 @@ namespace ElectionNamespace {
     @method.returns(Vote.VoteOptions)
     async getFinalizedResults() {
       this.account.provedState.requireEquals(Bool(true));
-      const currentBlock = this.network.blockchainLength.getAndRequireEquals();
-      currentBlock.assertGreaterThan(UInt32.from(ELECTION_FINALIZE_BLOCK));
+      const currentSlot =
+        this.network.globalSlotSinceGenesis.getAndRequireEquals();
+      currentSlot.assertGreaterThan(UInt32.from(ELECTION_FINALIZE_SLOT));
 
       return this.voteOptions.getAndRequireEquals();
     }
@@ -172,8 +174,9 @@ namespace ElectionNamespace {
       reedemerPubKey: PublicKey,
       amount: UInt64
     ) {
-      const currentBlock = this.network.blockchainLength.getAndRequireEquals();
-      currentBlock.assertGreaterThan(UInt32.from(ELECTION_FINALIZE_BLOCK));
+      const currentSlot =
+        this.network.globalSlotSinceGenesis.getAndRequireEquals();
+      currentSlot.assertGreaterThan(UInt32.from(ELECTION_FINALIZE_SLOT));
 
       const lastAggregatorPubKeyHash =
         this.lastAggregatorPubKeyHash.getAndRequireEquals();
@@ -220,8 +223,8 @@ namespace ElectionNamespace {
           return callback(null, convertFieldArrayToContractState(state));
         }
       )
-      .catch(err => {
-        return callback(err)
+      .catch((err) => {
+        return callback(err);
       });
   };
 }

@@ -1,29 +1,27 @@
 import {
   AccountUpdate,
   Field,
+  MerkleTree,
   Mina,
   Poseidon,
   PrivateKey,
-  PublicKey,
 } from 'o1js';
 
-import Aggregation from '../Aggregation.js';
+import Aggregation from '../AggregationMM.js';
 import Election from '../Election.js';
-import MerkleTree from '../MerkleTree.js';
 import Vote from '../Vote.js';
+import { votersList } from '../local/mock.js';
 
 /**
- * @param startBlock start Block of the election
- * @param endBlock end Block of the election
- * @param votersList pubkey list of the voters
+ * @param startSlot start Slot of the election
+ * @param endSlot end Slot of the election
  * @param fileCoinDatas filecoin data of the election give 2 fields
  * @param storageLayerCommitment storage layer commitment
  * @param publisherPrivateKey private key of the publisher
  */
 export default async function deploy(
-  startBlock: number,
-  endBlock: number,
-  votersList: PublicKey[],
+  startSlot: number,
+  endSlot: number,
   fileCoinDatas: Field[],
   storageLayerCommitment: Field,
   publisherPrivateKey: PrivateKey
@@ -34,25 +32,28 @@ export default async function deploy(
   });
   Mina.setActiveInstance(Network);
 
-  votersList = votersList.sort((a, b) => {
+  votersList.sort((a, b) => {
     if (
-      Poseidon.hash(a.toFields()).toBigInt() <
-      Poseidon.hash(b.toFields()).toBigInt()
+      Poseidon.hash(a[1].toFields()).toBigInt() <
+      Poseidon.hash(b[1].toFields()).toBigInt()
     ) {
       return -1;
     }
     if (
-      Poseidon.hash(a.toFields()).toBigInt() >
-      Poseidon.hash(b.toFields()).toBigInt()
+      Poseidon.hash(a[1].toFields()).toBigInt() >
+      Poseidon.hash(b[1].toFields()).toBigInt()
     ) {
       return 1;
     }
     return 0;
   });
 
-  let votersTree = MerkleTree.createFromFieldsArray(
-    votersList.map((voter) => voter.toFields())
-  );
+  let votersTree = new MerkleTree(20);
+
+  for (let i = 0; i < 4; i++) {
+    let leaf = Poseidon.hash(votersList[i][1].toFields());
+    votersTree.setLeaf(BigInt(i), leaf);
+  }
 
   if (!votersTree) throw new Error('Error creating voters tree');
 
@@ -62,8 +63,8 @@ export default async function deploy(
   const publisherPubKey = publisherPrivateKey.toPublicKey();
 
   Election.setContractConstants({
-    electionStartBlock: startBlock,
-    electionFinalizeBlock: endBlock,
+    electionStartSlot: startSlot,
+    electionFinalizeSlot: endSlot,
     votersRoot: votersRoot.toBigInt(),
   });
 
