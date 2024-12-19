@@ -3,7 +3,7 @@ import { JsonProof } from 'o1js';
 
 import { types } from 'zkvot-core';
 
-import aggregate from '../../utils/mina/aggregate.js';
+import aggregate from '../../utils/aggregate.js';
 import isBase64String from '../../utils/isBase64String.js';
 import decodeFromBase64String from '../../utils/decodeFromBase64String.js';
 

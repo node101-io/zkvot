@@ -1,5 +1,5 @@
 {
-  "extends": "@repo/config/typescript/tsconfig.core.json",
+  "extends": "@repo/config/typescript/tsconfig.backend-utils.json",
   "compilerOptions": {
     "outDir": "./build",
     "rootDir": "./src",
