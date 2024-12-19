@@ -10,6 +10,7 @@ import {
 } from 'o1js';
 
 import MerkleTree from './MerkleTree.js';
+import { verificationKey as voteVK } from './verification-keys/VoteVK.js';
 
 namespace VoteNamespace {
   /**
@@ -167,6 +168,8 @@ namespace VoteNamespace {
   });
 
   export class Proof extends ZkProgram.Proof(Program) {}
-}
+
+  export const verificationKey = voteVK;
+};
 
 export default VoteNamespace;

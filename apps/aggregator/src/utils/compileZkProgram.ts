@@ -1,32 +1,24 @@
 import { AggregationMM as Aggregation, Vote } from 'zkvot-core';
 
-const compile = async () => {
-  console.time('Vote compile');
-  Vote.Program.compile()
-    .then(() => {
-      console.timeEnd('Vote compile');
+let isCompiled: boolean = false;
 
-      console.time('Aggregation compile');
-      Aggregation.Program.compile()
-        .then(() => {
-          console.timeEnd('Aggregation compile');
+export const isZkProgramCompiled = () => isCompiled;
 
-          console.log('ZK compile successful');
-        })
-        .catch(console.error);
-    })
-    .catch(console.error);
-};
+export const compileZkProgramIfNotCompiledBefore = async () => {
+  if (isCompiled) return;
 
-const callFunctionOnce = (fn: Function) => {
-  let called = false;
+  try {
+    console.time('Vote compile');
+    await Vote.Program.compile()
+    console.timeEnd('Vote compile');
 
-  return (...args: any[]) => {
-    if (!called) {
-      called = true;
-      return fn.apply(null, args);
-    };
+    console.time('Aggregation compile');
+    await Aggregation.Program.compile()
+    console.timeEnd('Aggregation compile');
+
+    console.log('ZK compile successful');
+    isCompiled = true;
+  } catch (error) {
+    console.error('ZK compile failed', error);
   };
 };
-
-export const compileZkProgramIfNotCompiledBefore = callFunctionOnce(compile);

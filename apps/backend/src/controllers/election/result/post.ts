@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
 
-import Election from '../../../models/election/Election.js';
+import { Election } from 'zkvot-backend-utils';
 
 const RequestBody = z.object({
   id: z.string()

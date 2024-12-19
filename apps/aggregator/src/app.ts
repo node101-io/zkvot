@@ -1,14 +1,20 @@
 import express from 'express';
 import http from 'http';
+import mongoose from 'mongoose';
 
 import proveRouteController from './routes/proveRoute.js';
 
 import { compileZkProgramIfNotCompiledBefore } from './utils/compileZkProgram.js';
 
+import { Vote } from 'zkvot-backend-utils';
+
+const PORT = process.env.PORT || 8001;
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/zkVot';
+
+await mongoose.connect(MONGODB_URI);
+
 const app = express();
 const server = http.createServer(app);
-
-const PORT = 8001;
 
 app.use(express.json());
 app.use((req, res, next) => {
@@ -20,8 +26,11 @@ app.use((req, res, next) => {
 
 app.use('/prove', proveRouteController);
 
-server.listen(PORT, () => {
+console.log('countVotesRecursively')
+server.listen(PORT, async () => {
   console.log(`Server is on port ${PORT}.`);
 
-  compileZkProgramIfNotCompiledBefore(false);
+  await compileZkProgramIfNotCompiledBefore();
+
+  Vote.countVotesRecursively();
 });

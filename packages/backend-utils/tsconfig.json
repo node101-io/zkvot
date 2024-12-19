@@ -1,0 +1,9 @@
+{
+  "extends": "@repo/config/typescript/tsconfig.backend-utils.json",
+  "compilerOptions": {
+    "outDir": "./build",
+    "rootDir": "./src",
+    "baseUrl": "."
+  },
+  "include": ["./**/*.ts"]
+}

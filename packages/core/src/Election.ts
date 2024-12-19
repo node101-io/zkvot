@@ -121,17 +121,14 @@ namespace ElectionNamespace {
       aggregateProof.verify();
 
       aggregateProof.publicInput.electionPubKey.assertEquals(this.address);
-      aggregateProof.publicInput.votersRoot.assertEquals(
-        Field.from(VOTERS_ROOT)
-      );
+      aggregateProof.publicInput.votersRoot.assertEquals(Field.from(VOTERS_ROOT));
 
       const currentSlot =
         this.network.globalSlotSinceGenesis.getAndRequireEquals();
       currentSlot.assertGreaterThan(UInt32.from(ELECTION_START_SLOT));
       currentSlot.assertLessThan(UInt32.from(ELECTION_FINALIZE_SLOT));
 
-      let currentMaximumCountedVotes =
-        this.maximumCountedVotes.getAndRequireEquals();
+      let currentMaximumCountedVotes = this.maximumCountedVotes.getAndRequireEquals();
 
       currentMaximumCountedVotes.assertLessThan(
         aggregateProof.publicOutput.totalAggregatedCount
@@ -149,9 +146,7 @@ namespace ElectionNamespace {
 
       this.voteOptions.set(newVoteOptions);
 
-      this.lastAggregatorPubKeyHash.set(
-        Poseidon.hash(lastAggregatorPubKey.toFields())
-      );
+      this.lastAggregatorPubKeyHash.set(Poseidon.hash(lastAggregatorPubKey.toFields()));
 
       this.emitEvent(
         'Settlement',

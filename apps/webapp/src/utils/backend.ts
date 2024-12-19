@@ -123,8 +123,6 @@ export const sendVoteViaBackend = async (
 
     const result = await response.json();
 
-    console.log(result);
-
     if (!result.success)
       throw new Error(result.error || 'Failed to suvmit vote to backend');
 

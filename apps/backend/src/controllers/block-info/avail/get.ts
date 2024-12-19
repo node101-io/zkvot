@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { devnet, mainnet } from '../../../utils/da-layers/avail/config.js';
+import { utils } from 'zkvot-backend-utils';
 
 const BLOCK_INFO_CACHE_TIME = 5 * 60 * 1000;
 
@@ -17,7 +17,7 @@ export default async (req: Request, res: Response) => {
   };
 
   try {
-    const response = await fetch(`${'is_devnet' in req.query ? devnet.rpcEndpoint : mainnet.rpcEndpoint}/v2/status`);
+    const response = await fetch(`${'is_devnet' in req.query ? utils.avail.config.devnet.rpcEndpoint : utils.avail.config.mainnet.rpcEndpoint}/v2/status`);
     const block_height = (await response.json()).blocks.latest;
 
     lastBlockHeight = block_height;

@@ -1,5 +1,5 @@
 {
-  "extends": "@repo/config/typescript/tsconfig.contracts.json",
+  "extends": "@repo/config/typescript/tsconfig.core.json",
   "compilerOptions": {
     "outDir": "./build",
     "rootDir": "./src",

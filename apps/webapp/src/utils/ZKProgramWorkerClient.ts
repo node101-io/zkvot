@@ -3,7 +3,7 @@ import * as Comlink from 'comlink';
 import { Election } from 'zkvot-core';
 
 import { Nullifier } from '@aurowallet/mina-provider';
-import { Field } from 'o1js';
+import { Field, JsonProof } from 'o1js';
 
 export default class {
   worker: Worker;
@@ -33,9 +33,7 @@ export default class {
     votersArray: string[];
     publicKey: string;
   }) {
-    const result = await this.remoteApi.createVote(data);
-
-    return result;
+    return this.remoteApi.createVote(data);
   }
   async deployElection(
     electionDeployer: string,
@@ -46,7 +44,7 @@ export default class {
     electionDataCommitment: Field,
     settlementReward?: number
   ) {
-    const result = await this.remoteApi.deployElection(
+    return this.remoteApi.deployElection(
       electionDeployer,
       electionStartSlot,
       electionFinalizeSlot,
@@ -58,8 +56,25 @@ export default class {
       electionDataCommitment.toBigInt(),
       settlementReward || 0
     );
-
-    return result;
+  }
+  async submitElectionResult(
+    electionPubKey: string,
+    electionConstants: {
+      electionStartBlock: number;
+      electionFinalizeBlock: number;
+      votersRoot: bigint;
+    },
+    aggregateProofJson: JsonProof,
+    lastAggregatorPubKey: string,
+    settlerPubKey: string
+  ) {
+    return this.remoteApi.submitElectionResult(
+      electionPubKey,
+      electionConstants,
+      aggregateProofJson,
+      lastAggregatorPubKey,
+      settlerPubKey
+    );
   }
   async loadAndCompileElectionContract(
     electionStartSlot: number,
