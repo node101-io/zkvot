@@ -6,7 +6,7 @@ import proveRouteController from './routes/proveRoute.js';
 
 import { compileZkProgramIfNotCompiledBefore } from './utils/compileZkProgram.js';
 
-import Vote from '../../backend/src/models/vote/Vote.js';
+import { Vote } from 'zkvot-backend-utils';
 
 const PORT = process.env.PORT || 8001;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/zkVot';

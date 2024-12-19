@@ -1,0 +1,28 @@
+{
+  "name": "zkvot-backend-utils",
+  "version": "0.1.0",
+  "description": "",
+  "author": "node101",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "build/index.js",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@repo/config": "*",
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=18.14.0"
+  },
+  "dependencies": {
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./build/index.js"
+    }
+  }
+}

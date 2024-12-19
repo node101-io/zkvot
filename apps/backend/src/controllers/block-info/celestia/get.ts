@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { testnet, mainnet } from '../../../utils/da-layers/celestia/config.js';
+
+import { utils } from 'zkvot-backend-utils';
 
 interface BlockInfo {
   block_height: number;
@@ -21,7 +22,7 @@ export default async (req: Request, res: Response) => {
       return;
     }
 
-    const response = await fetch(`${'is_devnet' in req.query ? testnet.rpcEndpoint : mainnet.rpcEndpoint}/block`, {
+    const response = await fetch(`${'is_devnet' in req.query ? utils.avail.config.devnet.rpcEndpoint : utils.avail.config.mainnet.rpcEndpoint}/block`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

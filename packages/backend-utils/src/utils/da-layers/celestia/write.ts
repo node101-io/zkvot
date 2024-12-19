@@ -2,7 +2,7 @@ import { types } from 'zkvot-core';
 
 import encodeDataToBase64String from '../../encodeDataToBase64String.js';
 
-import { mainnet, testnet } from './config.js';
+import config from './config.js';
 
 const WALLET_NOT_FUNDED_ERROR_MESSAGE_REGEX: RegExp = /account (.*?) not found/;
 
@@ -15,7 +15,7 @@ export default (
     data?: { blockHeight: number | null; }
   ) => any
 ) => {
-  const celestiaNetwork = is_devnet ? testnet : mainnet;
+  const celestiaNetwork = is_devnet ? config.testnet : config.mainnet;
 
   if (!celestiaNetwork.localEndpoint || !celestiaNetwork.authToken)
     return callback('not_authenticated_request');

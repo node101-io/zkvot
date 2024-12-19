@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { types } from 'zkvot-core';
 
-import Vote from '../../../models/vote/Vote.js';
+import { Vote } from 'zkvot-backend-utils';
 
 const RequestBody = z.object({
   is_devnet: z.boolean(),

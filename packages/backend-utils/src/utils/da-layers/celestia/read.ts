@@ -1,6 +1,6 @@
 import decodeFromBase64String from '../../decodeFromBase64String.js';
 
-import { mainnet, testnet } from './config.js';
+import config from './config.js';
 
 export default (
   height: number,
@@ -13,7 +13,7 @@ export default (
 ) => {
   let submission_data_list: { namespace: string; data: string; }[] = [];
 
-  const celestiaNetwork = is_devnet ? testnet : mainnet;
+  const celestiaNetwork = is_devnet ? config.testnet : config.mainnet;
 
   if (!celestiaNetwork.localEndpoint || !celestiaNetwork.authToken)
     return callback('not_authenticated_request');

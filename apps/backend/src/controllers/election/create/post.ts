@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { types } from 'zkvot-core';
 
-import Election from '../../../models/election/Election.js';
+import { Election } from 'zkvot-backend-utils';
 
 const RequestBody = z.object({
   mina_contract_id: z.string(),

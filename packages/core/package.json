@@ -9,7 +9,6 @@
   "types": "src/index.ts",
   "scripts": {
     "build": "tsc",
-    "buildw": "tsc --watch",
     "lint": "npx eslint src/* --fix",
     "generate-vks": "node build/utils/generateVKs.js"
   },
