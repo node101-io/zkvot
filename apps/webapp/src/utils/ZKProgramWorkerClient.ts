@@ -1,6 +1,6 @@
 import * as Comlink from 'comlink';
 
-import { Election, AggregationMM as Aggregation } from 'zkvot-core';
+import { Election } from 'zkvot-core';
 
 import { Nullifier } from '@aurowallet/mina-provider';
 import { Field } from 'o1js';
@@ -16,16 +16,16 @@ export default class {
       }
     );
     this.remoteApi = Comlink.wrap(worker);
-  };
+  }
   async setActiveInstance({ devnet }: { devnet?: boolean }) {
     return this.remoteApi.setActiveInstance({ devnet });
-  };
+  }
   async loadAndCompileVoteProgram() {
     return this.remoteApi.loadAndCompileVoteProgram();
-  };
+  }
   async loadAndCompileAggregationProgram() {
     return this.remoteApi.loadAndCompileAggregationProgram();
-  };
+  }
   async createVote(data: {
     electionPubKey: string;
     nullifier: Nullifier;
@@ -36,11 +36,11 @@ export default class {
     const result = await this.remoteApi.createVote(data);
 
     return result;
-  };
+  }
   async deployElection(
     electionDeployer: string,
-    electionStartBlock: number,
-    electionFinalizeBlock: number,
+    electionStartSlot: number,
+    electionFinalizeSlot: number,
     votersRoot: bigint,
     electionStorageInfo: Election.StorageLayerInfoEncoding,
     electionDataCommitment: Field,
@@ -48,8 +48,8 @@ export default class {
   ) {
     const result = await this.remoteApi.deployElection(
       electionDeployer,
-      electionStartBlock,
-      electionFinalizeBlock,
+      electionStartSlot,
+      electionFinalizeSlot,
       votersRoot,
       {
         first: electionStorageInfo.first.toBigInt(),
@@ -60,19 +60,32 @@ export default class {
     );
 
     return result;
-  };
+  }
   async loadAndCompileElectionContract(
-    electionStartBlock: number,
-    electionFinalizeBlock: number,
+    electionStartSlot: number,
+    electionFinalizeSlot: number,
     votersRoot: bigint
   ) {
     return this.remoteApi.loadAndCompileElectionContract(
-      electionStartBlock,
-      electionFinalizeBlock,
+      electionStartSlot,
+      electionFinalizeSlot,
       votersRoot
     );
-  };
+  }
+  async verifyElectionVerificationKeyOnChain(
+    electionPubKey: string,
+    electionStartSlot: number,
+    electionFinalizeSlot: number,
+    votersRoot: bigint
+  ) {
+    return this.remoteApi.verifyElectionVerificationKeyOnChain(
+      electionPubKey,
+      electionStartSlot,
+      electionFinalizeSlot,
+      votersRoot
+    );
+  }
   getVerificationKey() {
     return this.remoteApi.getVerificationKey();
   }
-};
+}

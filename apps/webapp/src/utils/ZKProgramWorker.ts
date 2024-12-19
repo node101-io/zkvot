@@ -1,7 +1,15 @@
-import { AccountUpdate, Field, Mina, PublicKey, PrivateKey, Nullifier, verify, JsonProof } from 'o1js';
+import {
+  AccountUpdate,
+  Field,
+  Mina,
+  PublicKey,
+  PrivateKey,
+  Nullifier,
+  fetchAccount,
+} from 'o1js';
 import * as Comlink from 'comlink';
 
-import { AggregationMM as Aggregation, MerkleTree, Vote} from 'zkvot-core';
+import { AggregationMM as Aggregation, MerkleTree, Vote } from 'zkvot-core';
 
 import { Nullifier as NullifierType } from '@aurowallet/mina-provider';
 
@@ -18,14 +26,18 @@ const state: {
   isVoteProgramCompiled: false,
   AggregationProgram: null,
   isAggregationProgramCompiled: false,
-  verificationKey: Aggregation.verificationKey
+  verificationKey: Aggregation.verificationKey,
 };
 
 export const api = {
   async setActiveInstance(data: { devnet?: boolean }) {
     const Network = Mina.Network({
-      mina: `https://api.minascan.io/node/${data.devnet ? 'devnet' : 'mainnet'}/v1/graphql`,
-      archive: `https://api.minascan.io/archive/${data.devnet ? 'devnet' : 'mainnet'}/v1/graphql`,
+      mina: `https://api.minascan.io/node/${
+        data.devnet ? 'devnet' : 'mainnet'
+      }/v1/graphql`,
+      archive: `https://api.minascan.io/archive/${
+        data.devnet ? 'devnet' : 'mainnet'
+      }/v1/graphql`,
     });
 
     Mina.setActiveInstance(Network);
@@ -46,7 +58,9 @@ export const api = {
   },
   async loadAndCompileAggregationProgram() {
     if (!state.isVoteProgramCompiled)
-      throw new Error('VoteProgram not compiled. Call loadAndCompileVoteProgram() first.');
+      throw new Error(
+        'VoteProgram not compiled. Call loadAndCompileVoteProgram() first.'
+      );
 
     const { AggregationMM } = await import('zkvot-core');
 
@@ -54,7 +68,9 @@ export const api = {
 
     console.log('AggregationProgram compile');
     console.time('AggregationProgram compile');
-    const { verificationKey } = await state.AggregationProgram.compile({ proofsEnabled: true });
+    const { verificationKey } = await state.AggregationProgram.compile({
+      proofsEnabled: true,
+    });
     console.timeEnd('AggregationProgram compile');
 
     state.verificationKey = JSON.stringify(verificationKey);
@@ -62,19 +78,21 @@ export const api = {
     state.isAggregationProgramCompiled = true;
   },
   async loadAndCompileElectionContract(
-    electionStartBlock: number,
-    electionFinalizeBlock: number,
+    electionStartSlot: number,
+    electionFinalizeSlot: number,
     votersRoot: bigint
   ) {
     if (!state.isVoteProgramCompiled || !state.isAggregationProgramCompiled)
-      throw new Error('AggregationProgram is not compiled. Call loadAndCompileAggregationProgram() first.');
+      throw new Error(
+        'AggregationProgram is not compiled. Call loadAndCompileAggregationProgram() first.'
+      );
 
     const { Election } = await import('zkvot-core');
 
     Election.setContractConstants({
-      electionStartBlock,
-      electionFinalizeBlock,
-      votersRoot
+      electionStartSlot,
+      electionFinalizeSlot,
+      votersRoot,
     });
 
     console.time('ElectionContract compile');
@@ -126,15 +144,17 @@ export const api = {
       console.timeEnd('Generating vote proof');
 
       const encodedVoteProof = await new Promise<string>((resolve, reject) => {
-        encodeDataToBase64String(voteProof.proof.toJSON(), (err, base64String) => {
-          if (err)
-            return reject(err);
+        encodeDataToBase64String(
+          voteProof.proof.toJSON(),
+          (err, base64String) => {
+            if (err) return reject(err);
 
-          if (!base64String)
-            return reject('Error encoding proof to base64 string');
+            if (!base64String)
+              return reject('Error encoding proof to base64 string');
 
-          return resolve(base64String);
-        });
+            return resolve(base64String);
+          }
+        );
       });
 
       return encodedVoteProof;
@@ -145,8 +165,8 @@ export const api = {
   },
   async deployElection(
     electionDeployer: string,
-    electionStartBlock: number,
-    electionFinalizeBlock: number,
+    electionStartSlot: number,
+    electionFinalizeSlot: number,
     votersRoot: bigint,
     electionStorageInfo: {
       first: bigint;
@@ -160,16 +180,18 @@ export const api = {
       const electionContractPubKey = electionContractPrivKey.toPublicKey();
 
       const ElectionContract = await this.loadAndCompileElectionContract(
-        electionStartBlock,
-        electionFinalizeBlock,
+        electionStartSlot,
+        electionFinalizeSlot,
         votersRoot
       );
-      const ElectionContractInstance = new ElectionContract(electionContractPubKey);
+      const ElectionContractInstance = new ElectionContract(
+        electionContractPubKey
+      );
 
       const deployTx = await Mina.transaction(
         {
           sender: PublicKey.fromBase58(electionDeployer),
-          fee: 1e8
+          fee: 1e8,
         },
         async () => {
           AccountUpdate.fundNewAccount(PublicKey.fromBase58(electionDeployer));
@@ -177,20 +199,20 @@ export const api = {
           await ElectionContractInstance.initialize(
             {
               first: Field(electionStorageInfo.first),
-              last: Field(electionStorageInfo.last)
+              last: Field(electionStorageInfo.last),
             },
             Field.from(electionDataCommitment)
           );
         }
       );
-      deployTx.sign([ electionContractPrivKey ]);
+      deployTx.sign([electionContractPrivKey]);
       const result = await deployTx.prove();
 
       if (!result) return;
 
       return {
         mina_contract_id: electionContractPubKey.toBase58(),
-        txJSON: deployTx.toJSON()
+        txJSON: deployTx.toJSON(),
       };
     } catch (error) {
       console.log(error);
@@ -198,9 +220,53 @@ export const api = {
       throw error;
     }
   },
+  async verifyElectionVerificationKeyOnChain(
+    electionPubKey: string,
+    electionStartSlot: number,
+    electionFinalizeSlot: number,
+    votersRoot: bigint
+  ) {
+    if (!state.isVoteProgramCompiled || !state.isAggregationProgramCompiled)
+      throw new Error(
+        'AggregationProgram is not compiled. Call loadAndCompileAggregationProgram() first.'
+      );
+
+    const { Election } = await import('zkvot-core');
+
+    Election.setContractConstants({
+      electionStartSlot,
+      electionFinalizeSlot,
+      votersRoot,
+    });
+
+    console.time('ElectionContract compile');
+    const { verificationKey } = await Election.Contract.compile();
+    console.timeEnd('ElectionContract compile');
+
+    const electionAccount = await fetchAccount({
+      publicKey: PublicKey.fromBase58(electionPubKey),
+    });
+
+    if (!electionAccount) {
+      console.error('Election account not found');
+      return false;
+    }
+
+    const onChainVerificationKey =
+      electionAccount.account?.zkapp?.verificationKey;
+
+    if (!onChainVerificationKey) {
+      console.error('On-chain verification key not found');
+      return false;
+    }
+
+    return (
+      verificationKey.hash.toBigInt() === onChainVerificationKey.hash.toBigInt()
+    );
+  },
   getVerificationKey() {
     return state.verificationKey;
-  }
+  },
 };
 
 Comlink.expose(api);
