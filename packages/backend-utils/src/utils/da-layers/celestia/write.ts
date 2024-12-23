@@ -4,6 +4,8 @@ import encodeDataToBase64String from '../../encodeDataToBase64String.js';
 
 import config from './config.js';
 
+const NAMESPACE_NOT_LEGAL_BASE64_ERROR_MESSAGE_REGEX: RegExp = /illegal base64 data at input byte (.*?)/;
+const NAMESPACE_NOT_SUPPORTED_ERROR_MESSAGE_REGEX: RegExp = /invalid namespace: unsupported namespace (.*?)/;
 const WALLET_NOT_FUNDED_ERROR_MESSAGE_REGEX: RegExp = /account (.*?) not found/;
 
 export default (
@@ -12,7 +14,10 @@ export default (
   is_devnet: boolean,
   callback: (
     err: string | null,
-    data?: { blockHeight: number | null; }
+    data?: {
+      blockHeight: number;
+      txHash: string;
+    }
   ) => any
 ) => {
   const celestiaNetwork = is_devnet ? config.testnet : config.mainnet;
@@ -35,11 +40,11 @@ export default (
       body: JSON.stringify({
         id: 1,
         jsonrpc: '2.0',
-        method: 'blob.Submit',
+        method: 'state.SubmitPayForBlob',
         params: [
           [
             {
-              namespace: namespace.trim(),
+              namespace_id: namespace.trim(),
               data: encodedData.trim()
             }
           ],
@@ -52,16 +57,24 @@ export default (
     })
     .then(res => res.json())
     .then(jsonRes => {
+      if (NAMESPACE_NOT_LEGAL_BASE64_ERROR_MESSAGE_REGEX.test(jsonRes.error?.message))
+        return callback('namespace_not_legal_base64');
+
+      if (NAMESPACE_NOT_SUPPORTED_ERROR_MESSAGE_REGEX.test(jsonRes.error?.message))
+        return callback('namespace_not_supported');
+
       if (WALLET_NOT_FUNDED_ERROR_MESSAGE_REGEX.test(jsonRes.error?.message))
         return callback('wallet_not_funded');
 
       if (!jsonRes.result)
         return callback(null, {
-          blockHeight: null
+          blockHeight: 0,
+          txHash: ''
         });
       else
         return callback(null, {
-          blockHeight: jsonRes.result
+          blockHeight: jsonRes.result?.height,
+          txHash: jsonRes.result?.txhash
         });
     })
     .catch(_ => callback('write_error'));
