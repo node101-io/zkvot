@@ -1,15 +1,6 @@
-import {
-  Field,
-  Provable,
-  PublicKey,
-  SelfProof,
-  Struct,
-  UInt32,
-  ZkProgram,
-} from 'o1js';
+import { Field, Provable, PublicKey, SelfProof, Struct, ZkProgram } from 'o1js';
 
 import Vote from './Vote.js';
-import { Election } from './index.js';
 
 namespace AggregationNamespace {
   export class PublicInputs extends Struct({
@@ -21,9 +12,7 @@ namespace AggregationNamespace {
     totalAggregatedCount: Field,
     rangeLowerBound: Field,
     rangeUpperBound: Field,
-    voteOptions_1: Field,
-    voteOptions_2: Field,
-    voteOptions_3: Field,
+    voteOptions: Vote.VoteOptions,
   }) {}
 
   export const Program = ZkProgram({
@@ -44,9 +33,7 @@ namespace AggregationNamespace {
               totalAggregatedCount: Field.from(0),
               rangeLowerBound: lowerBound,
               rangeUpperBound: upperBound,
-              voteOptions_1: Field.from(0),
-              voteOptions_2: Field.from(0),
-              voteOptions_3: Field.from(0),
+              voteOptions: Vote.VoteOptions.empty(),
             },
           };
         },
@@ -70,9 +57,7 @@ namespace AggregationNamespace {
               totalAggregatedCount: Field.from(1),
               rangeLowerBound: nullifier,
               rangeUpperBound: nullifier,
-              voteOptions_1: newVoteOptions.voteOptions_1,
-              voteOptions_2: newVoteOptions.voteOptions_2,
-              voteOptions_3: newVoteOptions.voteOptions_3,
+              voteOptions: newVoteOptions,
             },
           };
         },
@@ -110,9 +95,7 @@ namespace AggregationNamespace {
               totalAggregatedCount: Field.from(2),
               rangeLowerBound: lowerNullifier,
               rangeUpperBound: upperNullifier,
-              voteOptions_1: newVoteOptions.voteOptions_1,
-              voteOptions_2: newVoteOptions.voteOptions_2,
-              voteOptions_3: newVoteOptions.voteOptions_3,
+              voteOptions: newVoteOptions,
             },
           };
         },
@@ -146,11 +129,8 @@ namespace AggregationNamespace {
 
           previousLowerBound.assertGreaterThan(nullifier);
 
-          const newVoteOptions = new Vote.VoteOptions({
-            voteOptions_1: previousProof.publicOutput.voteOptions_1,
-            voteOptions_2: previousProof.publicOutput.voteOptions_2,
-            voteOptions_3: previousProof.publicOutput.voteOptions_3,
-          }).addVote(vote);
+          const newVoteOptions =
+            previousProof.publicOutput.voteOptions.addVote(vote);
 
           return {
             publicOutput: {
@@ -158,9 +138,7 @@ namespace AggregationNamespace {
                 previousProof.publicOutput.totalAggregatedCount.add(1),
               rangeLowerBound: nullifier,
               rangeUpperBound: previousUpperBound,
-              voteOptions_1: newVoteOptions.voteOptions_1,
-              voteOptions_2: newVoteOptions.voteOptions_2,
-              voteOptions_3: newVoteOptions.voteOptions_3,
+              voteOptions: newVoteOptions,
             },
           };
         },
@@ -193,11 +171,8 @@ namespace AggregationNamespace {
 
           previousUpperBound.assertLessThan(nullifier);
 
-          const newVoteOptions = new Vote.VoteOptions({
-            voteOptions_1: previousProof.publicOutput.voteOptions_1,
-            voteOptions_2: previousProof.publicOutput.voteOptions_2,
-            voteOptions_3: previousProof.publicOutput.voteOptions_3,
-          }).addVote(vote);
+          const newVoteOptions =
+            previousProof.publicOutput.voteOptions.addVote(vote);
 
           return {
             publicOutput: {
@@ -205,9 +180,7 @@ namespace AggregationNamespace {
                 previousProof.publicOutput.totalAggregatedCount.add(1),
               rangeLowerBound: previousLowerBound,
               rangeUpperBound: nullifier,
-              voteOptions_1: newVoteOptions.voteOptions_1,
-              voteOptions_2: newVoteOptions.voteOptions_2,
-              voteOptions_3: newVoteOptions.voteOptions_3,
+              voteOptions: newVoteOptions,
             },
           };
         },
@@ -240,15 +213,8 @@ namespace AggregationNamespace {
 
           leftUpperBound.assertLessThan(rightLowerBound);
 
-          const voteOptions_1 = leftProof.publicOutput.voteOptions_1.add(
-            rightProof.publicOutput.voteOptions_1
-          );
-          const voteOptions_2 = leftProof.publicOutput.voteOptions_2.add(
-            rightProof.publicOutput.voteOptions_2
-          );
-
-          const voteOptions_3 = leftProof.publicOutput.voteOptions_3.add(
-            rightProof.publicOutput.voteOptions_3
+          const newVoteOptions = leftProof.publicOutput.voteOptions.merge(
+            rightProof.publicOutput.voteOptions
           );
 
           return {
@@ -259,9 +225,7 @@ namespace AggregationNamespace {
                 ),
               rangeLowerBound: leftLowerBound,
               rangeUpperBound: rightUpperBound,
-              voteOptions_1: voteOptions_1,
-              voteOptions_2: voteOptions_2,
-              voteOptions_3: voteOptions_3,
+              voteOptions: newVoteOptions,
             },
           };
         },

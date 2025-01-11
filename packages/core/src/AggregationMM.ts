@@ -11,7 +11,7 @@ import {
 } from 'o1js';
 
 import Vote from './Vote.js';
-import { verificationKey as aggregationVK } from './verification-keys/AggregationVK.js'
+import { verificationKey as aggregationVK } from './verification-keys/AggregationVK.js';
 
 namespace AggregationMerkleMapNamespace {
   export class PublicInputs extends Struct({
@@ -22,9 +22,7 @@ namespace AggregationMerkleMapNamespace {
   export class PublicOutputs extends Struct({
     totalAggregatedCount: Field,
     merkleMapRoot: Field,
-    voteOptions_1: Field,
-    voteOptions_2: Field,
-    voteOptions_3: Field,
+    voteOptions: Vote.VoteOptions,
   }) {}
 
   export const Program = ZkProgram({
@@ -41,9 +39,7 @@ namespace AggregationMerkleMapNamespace {
             publicOutput: {
               totalAggregatedCount: Field.from(0),
               merkleMapRoot: merkleMapRoot,
-              voteOptions_1: Field.from(0),
-              voteOptions_2: Field.from(0),
-              voteOptions_3: Field.from(0),
+              voteOptions: Vote.VoteOptions.empty(),
             },
           };
         },
@@ -58,7 +54,9 @@ namespace AggregationMerkleMapNamespace {
           vote.verify();
 
           vote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
-          vote.publicInput.electionPubKey.assertEquals(publicInput.electionPubKey);
+          vote.publicInput.electionPubKey.assertEquals(
+            publicInput.electionPubKey
+          );
 
           const nullifier = vote.publicOutput.nullifier;
 
@@ -79,9 +77,7 @@ namespace AggregationMerkleMapNamespace {
             publicOutput: {
               totalAggregatedCount: Field.from(1),
               merkleMapRoot: root,
-              voteOptions_1: newVoteOptions.voteOptions_1,
-              voteOptions_2: newVoteOptions.voteOptions_2,
-              voteOptions_3: newVoteOptions.voteOptions_3,
+              voteOptions: newVoteOptions,
             },
           };
         },
@@ -119,22 +115,19 @@ namespace AggregationMerkleMapNamespace {
 
           currentRoot.assertEquals(previousProof.publicOutput.merkleMapRoot);
 
-          const [newRoot, newKey] = merkleMapWitness.computeRootAndKey(vote.publicOutput.vote);
+          const [newRoot, newKey] = merkleMapWitness.computeRootAndKey(
+            vote.publicOutput.vote
+          );
 
-          const newVoteOptions = new Vote.VoteOptions({
-            voteOptions_1: previousProof.publicOutput.voteOptions_1,
-            voteOptions_2: previousProof.publicOutput.voteOptions_2,
-            voteOptions_3: previousProof.publicOutput.voteOptions_3,
-          }).addVote(vote);
+          const newVoteOptions =
+            previousProof.publicOutput.voteOptions.addVote(vote);
 
           return {
             publicOutput: {
               totalAggregatedCount:
                 previousProof.publicOutput.totalAggregatedCount.add(1),
               merkleMapRoot: newRoot,
-              voteOptions_1: newVoteOptions.voteOptions_1,
-              voteOptions_2: newVoteOptions.voteOptions_2,
-              voteOptions_3: newVoteOptions.voteOptions_3,
+              voteOptions: newVoteOptions,
             },
           };
         },
