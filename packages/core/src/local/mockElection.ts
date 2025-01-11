@@ -78,9 +78,11 @@ await fetchAccount({
   publicKey: electionPrivKey.toPublicKey(),
 });
 
-const maxCounted = await electionContractInstance.maximumCountedVotes.fetch();
+const maxCounted = (await electionContractInstance.electionState.fetch())
+  ?.maximumCountedVotes;
 
-const voteOptions = await electionContractInstance.voteOptions.fetch();
+const voteOptions = (await electionContractInstance.electionState.fetch())
+  ?.voteOptions;
 
 console.log('Maximum counted votes: ', maxCounted?.toString());
 

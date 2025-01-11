@@ -112,15 +112,10 @@ export const runAggregate = async (electionPubKey: PublicKey) => {
       ) as Aggregation.Proof;
       console.log(cachedProof.publicOutput.totalAggregatedCount.toString());
       console.log(
-        Vote.fieldToUInt32BigEndian(cachedProof.publicOutput.voteOptions_1).map(
-          (f, i) => [i + 1, f.toBigint()]
-        ),
-        Vote.fieldToUInt32BigEndian(cachedProof.publicOutput.voteOptions_2).map(
-          (f, i) => [i + 8, f.toBigint()]
-        ),
-        Vote.fieldToUInt32BigEndian(cachedProof.publicOutput.voteOptions_3).map(
-          (f, i) => [i + 15, f.toBigint()]
-        )
+        cachedProof.publicOutput.voteOptions.options.map((f, i) => [
+          i,
+          f.toBigInt(),
+        ])
       );
 
       continue;
