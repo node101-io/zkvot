@@ -75,7 +75,7 @@ async function runSingleBenchmark(numVoters: number) {
 }
 
 async function runBenchmarks() {
-  const testSizes = [50, 100, 500, 1000];
+  const testSizes = [10, 50, 1000, 10000];
 
   const allResults = [];
   for (const size of testSizes) {
