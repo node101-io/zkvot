@@ -22,6 +22,7 @@ import {
 import Aggregation from './AggregationMM.js';
 
 import Vote from './Vote.js';
+import { ElectionReduceProof } from './Reduce.js';
 
 const MAX_UPDATES_WITH_ACTIONS = 128;
 const MAX_ACTIONS_PER_UPDATE = 1;
@@ -92,8 +93,11 @@ namespace ElectionNamespace {
 
     @state(ElectionState) electionState = State<ElectionState>();
 
+    @state(Field) actionState = State<Field>();
+
     readonly events = {
       Settlement: NewSettlementEvent,
+      Reduce: ReduceEvent,
     };
 
     async deploy() {
@@ -123,6 +127,17 @@ namespace ElectionNamespace {
       });
     }
 
+    /**
+     * Settle votes for the current election. This method is called by the aggregator to settle the votes for the current election.
+     * **Must be reduced after the method call**
+     * @param aggregateProof calculated proof of the aggregation
+     * @param lastAggregatorPubKey public key of the aggregator to redeem the reward
+     *
+     * @require The current slot to be greater than the election start slot and less than the election finalize slot
+     * @require The number of counted votes so far to be less than the total number of votes in the aggregate proof to prevent spamming
+     *
+     * @emits Settlement event with the aggregator public key and the vote count
+     */
     @method
     async settleVotes(
       aggregateProof: Aggregation.Proof,
@@ -146,13 +161,15 @@ namespace ElectionNamespace {
         aggregateProof.publicOutput.totalAggregatedCount
       );
 
-      this.reducer.dispatch({
-        lastAggregatorPubKeyHash: Poseidon.hash(
-          lastAggregatorPubKey.toFields()
-        ),
-        voteOptions: aggregateProof.publicOutput.voteOptions,
-        maximumCountedVotes: aggregateProof.publicOutput.totalAggregatedCount,
-      });
+      this.reducer.dispatch(
+        new ElectionState({
+          lastAggregatorPubKeyHash: Poseidon.hash(
+            lastAggregatorPubKey.toFields()
+          ),
+          voteOptions: aggregateProof.publicOutput.voteOptions,
+          maximumCountedVotes: aggregateProof.publicOutput.totalAggregatedCount,
+        })
+      );
 
       this.emitEvent(
         'Settlement',
@@ -164,32 +181,40 @@ namespace ElectionNamespace {
     }
 
     @method
-    async reduceSettlementActions() {
-      let actions = this.reducer.getActions();
-
-      this.account.actionState.requireEquals(actions.hash);
-
+    async finalizeElection(reduceProof: ElectionReduceProof) {
       let latestElectionState = this.electionState.getAndRequireEquals();
 
-      const listIter = actions.startIterating();
+      let actionHash = this.account.actionState.getAndRequireEquals();
 
-      for (let i = 0; i < MAX_UPDATES_WITH_ACTIONS; i++) {
-        let { element: merkleActions, isDummy } = listIter.Unsafe.next();
-        let actionIter = merkleActions.startIterating();
+      reduceProof.verify();
 
-        let action = Provable.witness(
-          ElectionState,
-          () =>
-            actionIter.data.get()[0]?.element ??
-            actionIter.innerProvable.empty()
-        );
-        let emptyHash = actionIter.Constructor.emptyHash;
-        let finalHash = actionIter.nextHash(emptyHash, action);
-        finalHash = Provable.if(isDummy, emptyHash, finalHash);
-        actionIter.hash.assertEquals(finalHash);
-      }
+      reduceProof.publicOutput.actionStateHash.assertEquals(actionHash);
 
-      listIter.assertAtEnd();
+      // let actions = this.reducer.getActions();
+      // this.account.actionState.requireEquals(actions.hash);
+
+      // const iter = actions.startIterating();
+
+      // for (let i = 0; i < MAX_UPDATES_WITH_ACTIONS; i++) {
+      //   let { element: merkleActions, isDummy } = iter.Unsafe.next();
+      //   let actionIter = merkleActions.startIterating();
+
+      //   // let action = Provable.witness(
+      //   //   ElectionState,
+      //   //   () =>
+      //   //     actionIter.data.get()[0]?.element ??
+      //   //     actionIter.innerProvable.empty()
+      //   // );
+
+      //   let action = actionIter.next();
+
+      // let emptyHash = actionIter.Constructor.emptyHash;
+      //   let finalHash = actionIter.nextHash(emptyHash, action);
+      //   finalHash = Provable.if(isDummy, emptyHash, finalHash);
+      //   actionIter.hash.assertEquals(finalHash);
+      // }
+
+      // iter.assertAtEnd();
     }
 
     @method.returns(Vote.VoteOptions)
@@ -236,6 +261,8 @@ namespace ElectionNamespace {
     aggregatorPubKey: PublicKey,
     voteCount: Field,
   }) {}
+
+  export class ReduceEvent extends Struct({}) {}
 
   export const fetchElectionState = (
     contractId: string,
