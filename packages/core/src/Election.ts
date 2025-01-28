@@ -16,7 +16,9 @@ import {
   UInt64,
   UInt32,
   Provable,
+  Experimental,
 } from 'o1js';
+const { IndexedMerkleMap, BatchReducer } = Experimental;
 
 // import Aggregation from './Aggregation.js';
 import Aggregation from './AggregationMM.js';
@@ -81,11 +83,35 @@ namespace ElectionNamespace {
     lastAggregatorPubKeyHash: Field,
     voteOptions: Vote.VoteOptions,
     maximumCountedVotes: Field,
-  }) {}
+  }) {
+    toFields(): Field[] {
+      return [
+        this.lastAggregatorPubKeyHash,
+        ...this.voteOptions.toFields(),
+        this.maximumCountedVotes,
+      ];
+    }
+
+    static empty(): ElectionState {
+      return new ElectionState({
+        lastAggregatorPubKeyHash: Field.from(0),
+        voteOptions: Vote.VoteOptions.empty(),
+        maximumCountedVotes: Field.from(0),
+      });
+    }
+  }
+
+  let batchReducer = new BatchReducer({
+    actionType: ElectionState,
+    // tentative values for fast testing
+    batchSize: 3,
+    maxUpdatesFinalProof: 4,
+    maxUpdatesPerProof: 4,
+  });
+  class Batch extends batchReducer.Batch {}
+  class BatchProof extends batchReducer.BatchProof {}
 
   export class Contract extends SmartContract {
-    reducer = Reducer({ actionType: ElectionState });
-
     @state(StorageLayerInfoEncoding) storageLayerInfoEncoding =
       State<StorageLayerInfoEncoding>();
 
@@ -93,11 +119,11 @@ namespace ElectionNamespace {
 
     @state(ElectionState) electionState = State<ElectionState>();
 
-    @state(Field) actionState = State<Field>();
+    @state(Field) actionState = State(BatchReducer.initialActionState);
 
     readonly events = {
-      Settlement: NewSettlementEvent,
-      Reduce: ReduceEvent,
+      NewAggregation: NewAggregationEvent,
+      Settlement: ReducedSettlementEvent,
     };
 
     async deploy() {
@@ -120,11 +146,7 @@ namespace ElectionNamespace {
 
       this.storageLayerInfoEncoding.set(storageLayerInfoEncoding);
       this.storageLayerCommitment.set(storageLayerCommitment);
-      this.electionState.set({
-        lastAggregatorPubKeyHash: Field.from(0),
-        voteOptions: Vote.VoteOptions.empty(),
-        maximumCountedVotes: Field.from(0),
-      });
+      this.electionState.set(ElectionState.empty());
     }
 
     /**
@@ -161,7 +183,7 @@ namespace ElectionNamespace {
         aggregateProof.publicOutput.totalAggregatedCount
       );
 
-      this.reducer.dispatch(
+      batchReducer.dispatch(
         new ElectionState({
           lastAggregatorPubKeyHash: Poseidon.hash(
             lastAggregatorPubKey.toFields()
@@ -172,49 +194,49 @@ namespace ElectionNamespace {
       );
 
       this.emitEvent(
-        'Settlement',
-        new NewSettlementEvent({
+        'NewAggregation',
+        new NewAggregationEvent({
           aggregatorPubKey: lastAggregatorPubKey,
           voteCount: aggregateProof.publicOutput.totalAggregatedCount,
         })
       );
     }
 
+    /**
+     * Reduces the batch and updates the election state with the new aggregation proof that has the maximum counted votes
+     * @param batch Actions batch
+     * @param proof Batch proof
+     */
     @method
-    async finalizeElection(reduceProof: ElectionReduceProof) {
+    async reduce(batch: Batch, proof: BatchProof) {
       let latestElectionState = this.electionState.getAndRequireEquals();
 
-      let actionHash = this.account.actionState.getAndRequireEquals();
+      batchReducer.processBatch({ batch, proof }, (newState, isDummy) => {
+        let iteratedState = Provable.if(
+          isDummy,
+          ElectionState.empty(),
+          newState
+        );
 
-      reduceProof.verify();
+        latestElectionState = Provable.if(
+          iteratedState.maximumCountedVotes.greaterThan(
+            latestElectionState.maximumCountedVotes
+          ),
+          iteratedState,
+          latestElectionState
+        );
+      });
 
-      reduceProof.publicOutput.actionStateHash.assertEquals(actionHash);
+      this.electionState.set(latestElectionState);
 
-      // let actions = this.reducer.getActions();
-      // this.account.actionState.requireEquals(actions.hash);
-
-      // const iter = actions.startIterating();
-
-      // for (let i = 0; i < MAX_UPDATES_WITH_ACTIONS; i++) {
-      //   let { element: merkleActions, isDummy } = iter.Unsafe.next();
-      //   let actionIter = merkleActions.startIterating();
-
-      //   // let action = Provable.witness(
-      //   //   ElectionState,
-      //   //   () =>
-      //   //     actionIter.data.get()[0]?.element ??
-      //   //     actionIter.innerProvable.empty()
-      //   // );
-
-      //   let action = actionIter.next();
-
-      // let emptyHash = actionIter.Constructor.emptyHash;
-      //   let finalHash = actionIter.nextHash(emptyHash, action);
-      //   finalHash = Provable.if(isDummy, emptyHash, finalHash);
-      //   actionIter.hash.assertEquals(finalHash);
-      // }
-
-      // iter.assertAtEnd();
+      this.emitEvent(
+        'Settlement',
+        new ReducedSettlementEvent({
+          aggregatorPubKeyHash: latestElectionState.lastAggregatorPubKeyHash,
+          voteCount: latestElectionState.maximumCountedVotes,
+          voteOptions: latestElectionState.voteOptions,
+        })
+      );
     }
 
     @method.returns(Vote.VoteOptions)
@@ -257,12 +279,16 @@ namespace ElectionNamespace {
     }
   }
 
-  export class NewSettlementEvent extends Struct({
+  export class NewAggregationEvent extends Struct({
     aggregatorPubKey: PublicKey,
     voteCount: Field,
   }) {}
 
-  export class ReduceEvent extends Struct({}) {}
+  export class ReducedSettlementEvent extends Struct({
+    aggregatorPubKeyHash: Field,
+    voteCount: Field,
+    voteOptions: Vote.VoteOptions,
+  }) {}
 
   export const fetchElectionState = (
     contractId: string,

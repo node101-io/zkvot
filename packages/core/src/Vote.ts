@@ -63,6 +63,10 @@ namespace VoteNamespace {
       return new VoteOptions({ options });
     }
 
+    toFields(): Field[] {
+      return this.options;
+    }
+
     /**
      * Adds a vote to current vote options
      * @param vote Vote Proof
