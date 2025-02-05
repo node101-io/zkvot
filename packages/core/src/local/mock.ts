@@ -2,6 +2,7 @@ import { PublicKey, PrivateKey } from 'o1js';
 
 export const votersArray = [];
 
+// prettier-ignore
 export const votersList: Array<[PrivateKey, PublicKey]> = [
 [PrivateKey.fromBase58("EKFdeu5o26MKq4yPeANHKExWnPUJkpxCzVSVqKuwjypkpLAjG4RY"), PublicKey.fromBase58("B62qrDCHJDzP9ZUuez5WCnNRCMxReDtfRkLMktD29NnE9vDAP8W9ViX")],
 [PrivateKey.fromBase58("EKFNEWbvZZg6vhhdD9SjtHPVy8uzxBnpdN3rGiK8GkAxBtPavxGT"), PublicKey.fromBase58("B62qr4gw8LNeCGgzwGw2bnCiyeQnD2LKZ5wHTjJ3Gd91bhCTHLsEqrf")],

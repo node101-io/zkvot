@@ -11,23 +11,18 @@ import {
   Bool,
   Struct,
   Poseidon,
-  Reducer,
   Signature,
   UInt64,
   UInt32,
   Provable,
   Experimental,
 } from 'o1js';
-const { IndexedMerkleMap, BatchReducer } = Experimental;
+const { BatchReducer } = Experimental;
 
 // import Aggregation from './Aggregation.js';
 import Aggregation from './AggregationMM.js';
 
 import Vote from './Vote.js';
-import { ElectionReduceProof } from './Reduce.js';
-
-const MAX_UPDATES_WITH_ACTIONS = 128;
-const MAX_ACTIONS_PER_UPDATE = 1;
 
 let ELECTION_START_SLOT: number;
 let ELECTION_FINALIZE_SLOT: number;
@@ -108,8 +103,10 @@ namespace ElectionNamespace {
     maxUpdatesFinalProof: 4,
     maxUpdatesPerProof: 4,
   });
-  class Batch extends batchReducer.Batch {}
-  class BatchProof extends batchReducer.BatchProof {}
+
+  export const BatchReducerInstance = batchReducer;
+  export class Batch extends batchReducer.Batch {}
+  export class BatchProof extends batchReducer.BatchProof {}
 
   export class Contract extends SmartContract {
     @state(StorageLayerInfoEncoding) storageLayerInfoEncoding =
@@ -120,6 +117,8 @@ namespace ElectionNamespace {
     @state(ElectionState) electionState = State<ElectionState>();
 
     @state(Field) actionState = State(BatchReducer.initialActionState);
+
+    @state(Field) actionStack = State(BatchReducer.initialActionStack);
 
     readonly events = {
       NewAggregation: NewAggregationEvent,
@@ -142,6 +141,7 @@ namespace ElectionNamespace {
       storageLayerInfoEncoding: StorageLayerInfoEncoding,
       storageLayerCommitment: Field
     ) {
+      super.init();
       this.account.provedState.requireEquals(Bool(false));
 
       this.storageLayerInfoEncoding.set(storageLayerInfoEncoding);
@@ -174,7 +174,7 @@ namespace ElectionNamespace {
 
       const currentSlot =
         this.network.globalSlotSinceGenesis.getAndRequireEquals();
-      currentSlot.assertGreaterThan(UInt32.from(ELECTION_START_SLOT));
+      currentSlot.assertGreaterThanOrEqual(UInt32.from(ELECTION_START_SLOT));
       currentSlot.assertLessThan(UInt32.from(ELECTION_FINALIZE_SLOT));
 
       let currentElectionState = this.electionState.getAndRequireEquals();
@@ -249,6 +249,13 @@ namespace ElectionNamespace {
       return this.electionState.getAndRequireEquals().voteOptions;
     }
 
+    /**
+     * Redeem the reward for the settlement of the votes. This method is called by the aggregator that has the maximum counted votes.
+     * @param aggregatorPubKey Public key of the aggregator that will redeem the reward
+     * @param aggregatorSignature
+     * @param reedemerPubKey
+     * @param amount
+     */
     @method
     async redeemSettlementReward(
       aggregatorPubKey: PublicKey,
@@ -267,6 +274,7 @@ namespace ElectionNamespace {
         Poseidon.hash(aggregatorPubKey.toFields())
       );
 
+      // Todo salt or another way to prevent replay attacks, or maybe it's not needed
       aggregatorSignature.verify(aggregatorPubKey, [
         lastAggregatorPubKeyHash,
         Poseidon.hash(reedemerPubKey.toFields()),

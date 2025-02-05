@@ -10,7 +10,10 @@ const db = new Level('./cachedProofsDb', { valueEncoding: 'json' });
 
 dotenv.config();
 
-export const runAggregate = async (electionPubKey: PublicKey) => {
+export const runAggregate = async (
+  electionPubKey: PublicKey,
+  partialLength?: number
+) => {
   console.time('Compiling vote program');
   let { verificationKey } = await Vote.Program.compile();
   console.timeEnd('Compiling vote program');
@@ -35,7 +38,11 @@ export const runAggregate = async (electionPubKey: PublicKey) => {
 
   let expectedResults = new Array(21).fill(0);
 
-  for (let i = 0; i < voteProofs.length; i++) {
+  for (
+    let i = 0;
+    i < (partialLength !== undefined ? partialLength : voteProofs.length);
+    i++
+  ) {
     const voteProof = await Vote.Proof.fromJSON(voteProofs[i]);
 
     const nullifier = voteProof.publicOutput.nullifier.toBigInt();
@@ -181,7 +188,7 @@ export const runAggregate = async (electionPubKey: PublicKey) => {
     aggregatorProof.publicOutput.totalAggregatedCount.toString()
   );
   await fs.writeFile(
-    'merkleMapAggregateProof.json',
+    `merkleMapAggregateProof${partialLength}.json`,
     JSON.stringify(aggregatorProof, null, 2)
   );
   return aggregatorProof;
