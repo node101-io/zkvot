@@ -14,6 +14,8 @@ import MerkleTree from './MerkleTree.js';
 import { verificationKey as voteVK } from './verification-keys/VoteVK.js';
 
 namespace VoteNamespace {
+  export const VOTE_OPTION_COMPRESSED = 7;
+  export const VOTE_OPTIONS_LEN = 1;
   /**
    * Converts a UInt32 array to a Field in big endian order
    * @param arr UInt32 array
@@ -39,7 +41,7 @@ namespace VoteNamespace {
   export function fieldToUInt32BigEndian(options: Field): UInt32[] {
     let bytes = Provable.witness(Provable.Array(UInt32, 7), () => {
       let w = options.toBigInt();
-      return Array.from({ length: 7 }, (_, k) => {
+      return Array.from({ length: VOTE_OPTION_COMPRESSED }, (_, k) => {
         return UInt32.from((w >> BigInt(32 * (6 - k))) & 0xffffffffn);
       });
     });
@@ -51,19 +53,18 @@ namespace VoteNamespace {
 
   /**
    * Vote options struct for the election
-   * Each field represents the number of votes for a 7-option vote
+   * Each field represents the number of votes for a VOTE_OPTION_COMPRESSED-option vote
    */
   export class VoteOptions extends Struct({
-    voteOptions_1: Field,
-    voteOptions_2: Field,
-    voteOptions_3: Field,
+    options: Provable.Array(Field, VOTE_OPTIONS_LEN),
   }) {
     static empty(): VoteOptions {
-      return new VoteOptions({
-        voteOptions_1: Field.from(0),
-        voteOptions_2: Field.from(0),
-        voteOptions_3: Field.from(0),
-      });
+      const options = Array<Field>(VOTE_OPTIONS_LEN).fill(Field.from(0));
+      return new VoteOptions({ options });
+    }
+
+    toFields(): Field[] {
+      return this.options;
     }
 
     /**
@@ -72,23 +73,38 @@ namespace VoteNamespace {
      * @returns Updated VoteOptions
      */
     addVote(vote: Proof) {
-      let batchOptionsArray: Field[] = new Array(4).fill(Field.from(0));
-      for (let i = 0; i <= 2; i++) {
-        let optionsArray: UInt32[] = new Array(7).fill(UInt32.from(0));
-        for (let j = 1; j <= 7; j++) {
+      for (let i = 0; i <= VOTE_OPTIONS_LEN - 1; i++) {
+        let optionsArray: UInt32[] = new Array(VOTE_OPTION_COMPRESSED).fill(
+          UInt32.from(0)
+        );
+        for (let j = 1; j <= VOTE_OPTION_COMPRESSED; j++) {
           optionsArray[j - 1] = Provable.if(
-            vote.publicOutput.vote.equals(Field.from(j + 7 * i)),
+            vote.publicOutput.vote.equals(
+              Field.from(j + VOTE_OPTION_COMPRESSED * i)
+            ),
             UInt32.from(1),
             UInt32.from(0)
           );
         }
-        batchOptionsArray[i] = UInt32ToFieldBigEndian(optionsArray);
+        const mask = UInt32ToFieldBigEndian(optionsArray);
+
+        this.options[i] = this.options[i].add(mask);
       }
-      return new VoteOptions({
-        voteOptions_1: this.voteOptions_1.add(batchOptionsArray[0]),
-        voteOptions_2: this.voteOptions_2.add(batchOptionsArray[1]),
-        voteOptions_3: this.voteOptions_3.add(batchOptionsArray[2]),
-      });
+
+      return this;
+    }
+
+    /**
+     * Merges two vote options
+     * @param voteOptions VoteOptions to merge
+     * @returns Merged VoteOptions
+     */
+    merge(voteOptions: VoteOptions): VoteOptions {
+      for (let i = 0; i <= VOTE_OPTIONS_LEN - 1; i++) {
+        this.options[i] = this.options[i].add(voteOptions.options[i]);
+      }
+
+      return this;
     }
 
     /**
@@ -99,19 +115,11 @@ namespace VoteNamespace {
       // TODO: Convert to unprovable at start, unoptimized like this
       let results: number[] = [];
 
-      let voteArr = fieldToUInt32BigEndian(this.voteOptions_1);
-      for (let i = 0; i < 7; i++) {
-        results.push(Number(voteArr[i].toBigint()));
-      }
-
-      voteArr = fieldToUInt32BigEndian(this.voteOptions_2);
-      for (let i = 0; i < 7; i++) {
-        results.push(Number(voteArr[i].toBigint()));
-      }
-
-      voteArr = fieldToUInt32BigEndian(this.voteOptions_3);
-      for (let i = 0; i < 7; i++) {
-        results.push(Number(voteArr[i].toBigint()));
+      for (let i = 0; i < VOTE_OPTIONS_LEN; i++) {
+        let voteArr = fieldToUInt32BigEndian(this.options[i]);
+        for (let j = 0; j < VOTE_OPTION_COMPRESSED; j++) {
+          results.push(Number(voteArr[j].toBigint()));
+        }
       }
 
       return results;
@@ -171,6 +179,6 @@ namespace VoteNamespace {
   export class Proof extends ZkProgram.Proof(Program) {}
 
   export const verificationKey: VerificationKey = JSON.parse(voteVK);
-};
+}
 
 export default VoteNamespace;

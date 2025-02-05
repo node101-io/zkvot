@@ -14,7 +14,10 @@ import {
   Signature,
   UInt64,
   UInt32,
+  Provable,
+  Experimental,
 } from 'o1js';
+const { BatchReducer } = Experimental;
 
 // import Aggregation from './Aggregation.js';
 import Aggregation from './AggregationMM.js';
@@ -40,9 +43,7 @@ namespace ElectionNamespace {
       storageLayerCommitment: fields[2],
       lastAggregatorPubKeyHash: fields[3],
       voteOptions: new Vote.VoteOptions({
-        voteOptions_1: fields[4],
-        voteOptions_2: fields[5],
-        voteOptions_3: fields[6],
+        options: fields.slice(4, 6),
       }),
       maximumCountedVotes: fields[7],
     };
@@ -73,20 +74,55 @@ namespace ElectionNamespace {
     last: Field,
   }) {}
 
+  export class ElectionState extends Struct({
+    lastAggregatorPubKeyHash: Field,
+    voteOptions: Vote.VoteOptions,
+    maximumCountedVotes: Field,
+  }) {
+    toFields(): Field[] {
+      return [
+        this.lastAggregatorPubKeyHash,
+        ...this.voteOptions.toFields(),
+        this.maximumCountedVotes,
+      ];
+    }
+
+    static empty(): ElectionState {
+      return new ElectionState({
+        lastAggregatorPubKeyHash: Field.from(0),
+        voteOptions: Vote.VoteOptions.empty(),
+        maximumCountedVotes: Field.from(0),
+      });
+    }
+  }
+
+  let batchReducer = new BatchReducer({
+    actionType: ElectionState,
+    // tentative values for fast testing
+    batchSize: 3,
+    maxUpdatesFinalProof: 4,
+    maxUpdatesPerProof: 4,
+  });
+
+  export const BatchReducerInstance = batchReducer;
+  export class Batch extends batchReducer.Batch {}
+  export class BatchProof extends batchReducer.BatchProof {}
+
   export class Contract extends SmartContract {
     @state(StorageLayerInfoEncoding) storageLayerInfoEncoding =
       State<StorageLayerInfoEncoding>();
 
     @state(Field) storageLayerCommitment = State<Field>();
 
-    @state(Field) lastAggregatorPubKeyHash = State<Field>();
+    @state(ElectionState) electionState = State<ElectionState>();
 
-    @state(Vote.VoteOptions) voteOptions = State<Vote.VoteOptions>();
+    @state(Field) actionState = State(BatchReducer.initialActionState);
 
-    @state(Field) maximumCountedVotes = State<Field>();
+    @state(Field) actionStack = State(BatchReducer.initialActionStack);
 
     readonly events = {
-      Settlement: NewSettlementEvent,
+      NewAggregation: NewAggregationEvent,
+      Settlement: ReducedSettlementEvent,
     };
 
     async deploy() {
@@ -105,14 +141,25 @@ namespace ElectionNamespace {
       storageLayerInfoEncoding: StorageLayerInfoEncoding,
       storageLayerCommitment: Field
     ) {
+      super.init();
       this.account.provedState.requireEquals(Bool(false));
 
       this.storageLayerInfoEncoding.set(storageLayerInfoEncoding);
       this.storageLayerCommitment.set(storageLayerCommitment);
-      this.voteOptions.set(Vote.VoteOptions.empty());
-      this.maximumCountedVotes.set(Field.from(0));
+      this.electionState.set(ElectionState.empty());
     }
 
+    /**
+     * Settle votes for the current election. This method is called by the aggregator to settle the votes for the current election.
+     * **Must be reduced after the method call**
+     * @param aggregateProof calculated proof of the aggregation
+     * @param lastAggregatorPubKey public key of the aggregator to redeem the reward
+     *
+     * @require The current slot to be greater than the election start slot and less than the election finalize slot
+     * @require The number of counted votes so far to be less than the total number of votes in the aggregate proof to prevent spamming
+     *
+     * @emits Settlement event with the aggregator public key and the vote count
+     */
     @method
     async settleVotes(
       aggregateProof: Aggregation.Proof,
@@ -121,38 +168,73 @@ namespace ElectionNamespace {
       aggregateProof.verify();
 
       aggregateProof.publicInput.electionPubKey.assertEquals(this.address);
-      aggregateProof.publicInput.votersRoot.assertEquals(Field.from(VOTERS_ROOT));
+      aggregateProof.publicInput.votersRoot.assertEquals(
+        Field.from(VOTERS_ROOT)
+      );
 
       const currentSlot =
         this.network.globalSlotSinceGenesis.getAndRequireEquals();
-      currentSlot.assertGreaterThan(UInt32.from(ELECTION_START_SLOT));
+      currentSlot.assertGreaterThanOrEqual(UInt32.from(ELECTION_START_SLOT));
       currentSlot.assertLessThan(UInt32.from(ELECTION_FINALIZE_SLOT));
 
-      let currentMaximumCountedVotes = this.maximumCountedVotes.getAndRequireEquals();
+      let currentElectionState = this.electionState.getAndRequireEquals();
 
-      currentMaximumCountedVotes.assertLessThan(
+      currentElectionState.maximumCountedVotes.assertLessThan(
         aggregateProof.publicOutput.totalAggregatedCount
       );
 
-      this.maximumCountedVotes.set(
-        aggregateProof.publicOutput.totalAggregatedCount
+      batchReducer.dispatch(
+        new ElectionState({
+          lastAggregatorPubKeyHash: Poseidon.hash(
+            lastAggregatorPubKey.toFields()
+          ),
+          voteOptions: aggregateProof.publicOutput.voteOptions,
+          maximumCountedVotes: aggregateProof.publicOutput.totalAggregatedCount,
+        })
       );
 
-      const newVoteOptions = new Vote.VoteOptions({
-        voteOptions_1: aggregateProof.publicOutput.voteOptions_1,
-        voteOptions_2: aggregateProof.publicOutput.voteOptions_2,
-        voteOptions_3: aggregateProof.publicOutput.voteOptions_3,
+      this.emitEvent(
+        'NewAggregation',
+        new NewAggregationEvent({
+          aggregatorPubKey: lastAggregatorPubKey,
+          voteCount: aggregateProof.publicOutput.totalAggregatedCount,
+        })
+      );
+    }
+
+    /**
+     * Reduces the batch and updates the election state with the new aggregation proof that has the maximum counted votes
+     * @param batch Actions batch
+     * @param proof Batch proof
+     */
+    @method
+    async reduce(batch: Batch, proof: BatchProof) {
+      let latestElectionState = this.electionState.getAndRequireEquals();
+
+      batchReducer.processBatch({ batch, proof }, (newState, isDummy) => {
+        let iteratedState = Provable.if(
+          isDummy,
+          ElectionState.empty(),
+          newState
+        );
+
+        latestElectionState = Provable.if(
+          iteratedState.maximumCountedVotes.greaterThan(
+            latestElectionState.maximumCountedVotes
+          ),
+          iteratedState,
+          latestElectionState
+        );
       });
 
-      this.voteOptions.set(newVoteOptions);
-
-      this.lastAggregatorPubKeyHash.set(Poseidon.hash(lastAggregatorPubKey.toFields()));
+      this.electionState.set(latestElectionState);
 
       this.emitEvent(
         'Settlement',
-        new NewSettlementEvent({
-          aggregatorPubKey: lastAggregatorPubKey,
-          voteCount: aggregateProof.publicOutput.totalAggregatedCount,
+        new ReducedSettlementEvent({
+          aggregatorPubKeyHash: latestElectionState.lastAggregatorPubKeyHash,
+          voteCount: latestElectionState.maximumCountedVotes,
+          voteOptions: latestElectionState.voteOptions,
         })
       );
     }
@@ -164,9 +246,16 @@ namespace ElectionNamespace {
         this.network.globalSlotSinceGenesis.getAndRequireEquals();
       currentSlot.assertGreaterThan(UInt32.from(ELECTION_FINALIZE_SLOT));
 
-      return this.voteOptions.getAndRequireEquals();
+      return this.electionState.getAndRequireEquals().voteOptions;
     }
 
+    /**
+     * Redeem the reward for the settlement of the votes. This method is called by the aggregator that has the maximum counted votes.
+     * @param aggregatorPubKey Public key of the aggregator that will redeem the reward
+     * @param aggregatorSignature
+     * @param reedemerPubKey
+     * @param amount
+     */
     @method
     async redeemSettlementReward(
       aggregatorPubKey: PublicKey,
@@ -179,12 +268,13 @@ namespace ElectionNamespace {
       currentSlot.assertGreaterThan(UInt32.from(ELECTION_FINALIZE_SLOT));
 
       const lastAggregatorPubKeyHash =
-        this.lastAggregatorPubKeyHash.getAndRequireEquals();
+        this.electionState.getAndRequireEquals().lastAggregatorPubKeyHash;
 
       lastAggregatorPubKeyHash.assertEquals(
         Poseidon.hash(aggregatorPubKey.toFields())
       );
 
+      // Todo salt or another way to prevent replay attacks, or maybe it's not needed
       aggregatorSignature.verify(aggregatorPubKey, [
         lastAggregatorPubKeyHash,
         Poseidon.hash(reedemerPubKey.toFields()),
@@ -197,9 +287,15 @@ namespace ElectionNamespace {
     }
   }
 
-  export class NewSettlementEvent extends Struct({
+  export class NewAggregationEvent extends Struct({
     aggregatorPubKey: PublicKey,
     voteCount: Field,
+  }) {}
+
+  export class ReducedSettlementEvent extends Struct({
+    aggregatorPubKeyHash: Field,
+    voteCount: Field,
+    voteOptions: Vote.VoteOptions,
   }) {}
 
   export const fetchElectionState = (
