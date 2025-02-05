@@ -1,16 +1,16 @@
 import fs from 'fs/promises';
-import { Field, Mina, MerkleTree, PrivateKey, Poseidon, Nullifier } from 'o1js';
+import { Field, MerkleTree, PrivateKey, Poseidon, Nullifier } from 'o1js';
 import dotenv from 'dotenv';
-import { votersList } from '../local/mock.js';
+import { votersList } from './mock.js';
 import Vote from '../Vote.js';
 import MerkleTreeNamespace from '../MerkleTree.js';
 import Aggregation from '../AggregationMM.js';
 dotenv.config();
 
-let Local = await Mina.LocalBlockchain({ proofsEnabled: true });
-Mina.setActiveInstance(Local);
-
-export const mockVotes = async (electionPrivateKey: PrivateKey) => {
+export const mockVotes = async (
+  electionPrivateKey: PrivateKey,
+  compile = true
+) => {
   votersList.sort((a, b) => {
     if (
       Poseidon.hash(a[1].toFields()).toBigInt() <
@@ -39,9 +39,43 @@ export const mockVotes = async (electionPrivateKey: PrivateKey) => {
 
   await fs.writeFile('votersRoot.json', JSON.stringify(votersRoot, null, 2));
 
-  console.log('compiling vote program');
-  let { verificationKey } = await Vote.Program.compile();
-  console.log('verification key', verificationKey.data.slice(0, 10) + '..');
+  if (compile) {
+    console.log('compiling vote program');
+    let { verificationKey } = await Vote.Program.compile();
+    console.log('verification key', verificationKey.data.slice(0, 10) + '..');
+
+    await fs.writeFile(
+      'voteVerificationKey.json',
+      JSON.stringify(
+        {
+          data: verificationKey.data,
+          hash: verificationKey.hash.toString(),
+        },
+        null,
+        2
+      )
+    );
+
+    console.log('compiling aggregation program');
+    let { verificationKey: voteAggregatorVerificationKey } =
+      await Aggregation.Program.compile();
+    console.log(
+      'aggregation verification key',
+      voteAggregatorVerificationKey.data.slice(0, 10) + '..'
+    );
+
+    await fs.writeFile(
+      'voteAggregatorVerificationKey.json',
+      JSON.stringify(
+        {
+          data: voteAggregatorVerificationKey.data,
+          hash: voteAggregatorVerificationKey.hash.toString(),
+        },
+        null,
+        2
+      )
+    );
+  }
 
   console.log('casting votes');
 
@@ -50,7 +84,9 @@ export const mockVotes = async (electionPrivateKey: PrivateKey) => {
 
   let voteProofs = [];
   for (let i = 0; i < 4; i++) {
-    let vote = BigInt(Math.floor(Math.random() * 7) + 1);
+    let vote = BigInt(
+      Math.floor(Math.random() * Vote.VOTE_OPTIONS_LEN * 7) + 1
+    );
     let privateKey = votersList[i][0];
     let voterKey = privateKey.toPublicKey();
     let merkleTreeWitness = votersTree.getWitness(BigInt(i));
@@ -101,18 +137,5 @@ export const mockVotes = async (electionPrivateKey: PrivateKey) => {
   });
 
   await fs.writeFile('voteProofs.json', JSON.stringify(voteProofs, null, 2));
-  let { verificationKey: voteAggregatorVerificationKey } =
-    await Aggregation.Program.compile();
-
-  await fs.writeFile(
-    'voteAggregatorVerificationKey.json',
-    JSON.stringify(
-      {
-        data: voteAggregatorVerificationKey.data,
-        hash: voteAggregatorVerificationKey.hash.toString(),
-      },
-      null,
-      2
-    )
-  );
+  console.log('vote proofs written to voteProofs.json');
 };

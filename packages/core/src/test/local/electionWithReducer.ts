@@ -7,12 +7,12 @@ import {
   MerkleTree,
 } from 'o1js';
 import dotenv from 'dotenv';
-import { mockVotes } from './createMockVotes.js';
-import { runAggregate } from './runAggregateMM.js';
-import Election from '../Election.js';
-import Aggregation from '../AggregationMM.js';
-import Vote from '../Vote.js';
-import { votersList } from '../local/mock.js';
+import { mockVotes } from '../createMockVotes.js';
+import { runAggregate } from '../runAggregateMM.js';
+import Election from '../../Election.js';
+import Aggregation from '../../AggregationMM.js';
+import Vote from '../../Vote.js';
+import { votersList } from '../mock.js';
 
 dotenv.config();
 

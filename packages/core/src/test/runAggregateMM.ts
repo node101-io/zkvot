@@ -6,21 +6,29 @@ import fs from 'fs/promises';
 import Aggregation from '../AggregationMM.js';
 import Vote from '../Vote.js';
 
-const db = new Level('./cachedProofsDb', { valueEncoding: 'json' });
+// const db = new Level('./cachedProofsDb', { valueEncoding: 'json' });
 
 dotenv.config();
 
 export const runAggregate = async (
   electionPubKey: PublicKey,
-  partialLength?: number
+  partialLength?: number,
+  compile = true
 ) => {
-  console.time('Compiling vote program');
-  let { verificationKey } = await Vote.Program.compile();
-  console.timeEnd('Compiling vote program');
+  let verificationKey: any;
 
-  console.time('Compiling range aggregation program');
-  await Aggregation.Program.compile();
-  console.timeEnd('Compiling range aggregation program');
+  if (compile) {
+    console.time('Compiling vote program');
+    verificationKey = await Vote.Program.compile();
+    console.timeEnd('Compiling vote program');
+    console.time('Compiling range aggregation program');
+    await Aggregation.Program.compile();
+    console.timeEnd('Compiling range aggregation program');
+  } else {
+    console.log('Reading verification key');
+    const verificationKeyJson = await fs.readFile('voteVerificationKey.json');
+    verificationKey = JSON.parse(verificationKeyJson.toString());
+  }
 
   console.log('Reading vote proofs');
 
@@ -36,7 +44,7 @@ export const runAggregate = async (
   console.log('Checking votes');
   const leaves: [bigint, Vote.Proof][] = [];
 
-  let expectedResults = new Array(21).fill(0);
+  let expectedResults = new Array(Vote.VOTE_OPTIONS_LEN * 7).fill(0);
 
   for (
     let i = 0;
@@ -72,36 +80,35 @@ export const runAggregate = async (
   let cachedNullifiers: bigint[] = [];
   let countedSoFar = 0;
   let merkleMap = new MerkleMap();
-  try {
-    const storedDataString = await db.get('aggregated_vote_data');
+  // try {
+  //   const storedDataString = await db.get('aggregated_vote_data');
 
-    if (!storedDataString) {
-      console.log('No aggregated vote data found');
-    } else {
-      const storedData = JSON.parse(storedDataString);
+  //   if (!storedDataString) {
+  //     console.log('No aggregated vote data found');
+  //   } else {
+  //     const storedData = JSON.parse(storedDataString);
 
-      const nullifiersAndVotes: [bigint, number][] = storedData.nullifiers.map(
-        (item: { bigIntValue: string; intValue: string }) => {
-          return [BigInt(item.bigIntValue), Number(item.intValue)];
-        }
-      );
+  //     const nullifiersAndVotes: [bigint, number][] = storedData.nullifiers.map(
+  //       (item: { bigIntValue: string; intValue: string }) => {
+  //         return [BigInt(item.bigIntValue), Number(item.intValue)];
+  //       }
+  //     );
 
-      nullifiersAndVotes.forEach((item) => {
-        merkleMap.set(Field.from(item[0]), Field.from(item[1]));
-      });
+  //     nullifiersAndVotes.forEach((item) => {
+  //       merkleMap.set(Field.from(item[0]), Field.from(item[1]));
+  //     });
 
-      const proofJson = JSON.parse(storedData.proof);
-      aggregatorProof = await Aggregation.Proof.fromJSON(proofJson);
-      cachedNullifiers = nullifiersAndVotes.map((item) => item[0]);
-      countedSoFar = Number(
-        aggregatorProof.publicOutput.totalAggregatedCount.toBigInt()
-      );
-      console.log('Retrieved nullifiers:', cachedNullifiers.length);
-      console.log('Proof retrieved');
-    }
-  } catch (error) {
-    console.error('Error retrieving aggregated vote data:', error);
-  }
+  //     const proofJson = JSON.parse(storedData.proof);
+  //     aggregatorProof = await Aggregation.Proof.fromJSON(proofJson);
+  //     cachedNullifiers = nullifiersAndVotes.map((item) => item[0]);
+  //     countedSoFar = Number(
+  //       aggregatorProof.publicOutput.totalAggregatedCount.toBigInt()
+  //     );
+  //     console.log('Retrieved nullifiers:', cachedNullifiers.length);
+  //   }
+  // } catch (error) {
+  //   console.error('Error retrieving aggregated vote data:', error);
+  // }
 
   const remainingNullifiers = leaves.filter(
     (leaf) => !cachedNullifiers.includes(leaf[0])
@@ -129,13 +136,13 @@ export const runAggregate = async (
       remainingNullifiers[0][1].publicOutput.vote
     );
     cachedNullifiers.push(remainingNullifiers[0][0]);
-    db.put(
-      'aggregated_vote_data',
-      JSON.stringify({
-        nullifiers: cachedNullifiers.map((n) => n.toString()),
-        proof: aggregatorProof.toJSON(),
-      })
-    );
+    // db.put(
+    //   'aggregated_vote_data',
+    //   JSON.stringify({
+    //     nullifiers: cachedNullifiers.map((n) => n.toString()),
+    //     proof: aggregatorProof.toJSON(),
+    //   })
+    // );
 
     remainingNullifiers.shift();
   }
@@ -171,20 +178,19 @@ export const runAggregate = async (
     countedSoFar++;
     merkleMap.set(Field.from(nullifier), voteProof.publicOutput.vote);
     cachedNullifiers.push(nullifier);
-    db.put(
-      'aggregated_vote_data',
-      JSON.stringify({
-        nullifiers: cachedNullifiers.map((n) => n.toString()),
-        proof: aggregatorProof.toJSON(),
-      })
-    );
+    // db.put(
+    //   'aggregated_vote_data',
+    //   JSON.stringify({
+    //     nullifiers: cachedNullifiers.map((n) => n.toString()),
+    //     proof: aggregatorProof.toJSON(),
+    //   })
+    // );
 
     console.timeEnd('Vote aggregated');
   }
 
-  console.log('Aggregation complete');
   console.log(
-    'Total aggregated count:',
+    'Aggregation complete. Total aggregated count:',
     aggregatorProof.publicOutput.totalAggregatedCount.toString()
   );
   await fs.writeFile(

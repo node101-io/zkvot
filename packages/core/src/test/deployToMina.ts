@@ -10,7 +10,7 @@ import {
 import Aggregation from '../AggregationMM.js';
 import Election from '../Election.js';
 import Vote from '../Vote.js';
-import { votersList } from '../local/mock.js';
+import { votersList } from '../test/mock.js';
 
 /**
  * @param startSlot start Slot of the election
@@ -62,11 +62,22 @@ export default async function deploy(
 
   const publisherPubKey = publisherPrivateKey.toPublicKey();
 
+  const electionContractPk = PrivateKey.random();
+  console.log(electionContractPk.toBase58());
+  const electionContractPubKey = electionContractPk.toPublicKey();
+  console.log(electionContractPubKey.toBase58());
+
+  const electionContractInstance = new Election.Contract(
+    electionContractPubKey
+  );
+
   Election.setContractConstants({
     electionStartSlot: startSlot,
     electionFinalizeSlot: endSlot,
     votersRoot: votersRoot.toBigInt(),
   });
+
+  Election.BatchReducerInstance.setContractInstance(electionContractInstance);
 
   console.time('Compile Vote Program');
   await Vote.Program.compile();
@@ -76,18 +87,17 @@ export default async function deploy(
   await Aggregation.Program.compile();
   console.timeEnd('Compile Aggregate Program');
 
+  console.log('Compiling batch reducer');
+  await Election.BatchReducerInstance.compile();
+  console.log('Batch reducer compiled');
+
+  console.log('Compiling election contract');
+  await Election.Contract.compile();
+  console.log('Election contract compiled');
+
   console.time('Compile Election Contract');
   await Election.Contract.compile();
   console.timeEnd('Compile Election Contract');
-
-  const electionContractPk = PrivateKey.random();
-  console.log(electionContractPk.toBase58());
-  const electionContractPubKey = electionContractPk.toPublicKey();
-  console.log(electionContractPubKey.toBase58());
-
-  const electionContractInstance = new Election.Contract(
-    electionContractPubKey
-  );
 
   const electionData = new Election.StorageLayerInfoEncoding({
     first: fileCoinDatas[0],
