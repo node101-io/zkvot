@@ -10,27 +10,34 @@ import WalletSelectionModal from '@/app/(partials)/wallet-selection-modal.jsx';
 import { AuroWalletContext } from '@/contexts/auro-wallet-context.jsx';
 import { SelectedWalletContext } from '@/contexts/selected-wallet-context.jsx';
 import { SubwalletContext } from '@/contexts/subwallet-context.jsx';
+import { NamadaWalletContext } from '@/contexts/namada-wallet-context';
 
 import LogoutIcon from '@/public/general/icons/logout.jsx';
 
 import AuroIcon from '@/public/general/wallet-logos/auro.png';
 import SubwalletIcon from '@/public/general/wallet-logos/subwallet.png';
+import NamadaIcon from '@/public/general/wallet-logos/namada.png';
 
 const WalletButton = () => {
-  const { auroWalletAddress, connectAuroWallet, disconnectAuroWallet } = useContext(AuroWalletContext);
-  const { selectedWallet, setSelectedWallet } = useContext(SelectedWalletContext);
-  const { subwalletAccount, connectSubwallet, disconnectSubwallet } = useContext(SubwalletContext);
+  const { auroWalletAddress, connectAuroWallet, disconnectAuroWallet } =
+    useContext(AuroWalletContext);
+  const { selectedWallet, setSelectedWallet } = useContext(
+    SelectedWalletContext
+  );
+  const { subwalletAccount, connectSubwallet, disconnectSubwallet } =
+    useContext(SubwalletContext);
+
+  const { namadaWalletAddress, connectNamadaWallet, disconnectNamadaWallet } =
+    useContext(NamadaWalletContext);
 
   const [isWalletModalOpen, setIsWalletModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!!auroWalletAddress.trim().length)
-      setSelectedWallet('Auro');
+    if (!!auroWalletAddress.trim().length) setSelectedWallet('Auro');
     else if (!!subwalletAccount?.address.trim().length)
       setSelectedWallet('Subwallet');
-    else
-      setSelectedWallet(null);
-  }, [auroWalletAddress, subwalletAccount])
+    else if (!!namadaWalletAddress.trim().length) setSelectedWallet('Namada');
+  }, [auroWalletAddress, subwalletAccount, namadaWalletAddress]);
 
   const handleConnect = () => {
     setIsWalletModalOpen(true);
@@ -45,7 +52,10 @@ const WalletButton = () => {
     } else if (wallet === 'Subwallet') {
       await connectSubwallet();
       setSelectedWallet('Subwallet');
-    };
+    } else if (wallet === 'Namada') {
+      await connectNamadaWallet();
+      setSelectedWallet('Namada');
+    }
   };
 
   const handleDisconnect = () => {
@@ -55,7 +65,10 @@ const WalletButton = () => {
     } else if (selectedWallet === 'Subwallet') {
       disconnectSubwallet();
       setSelectedWallet(null);
-    };
+    } else if (selectedWallet === 'Namada') {
+      disconnectNamadaWallet();
+      setSelectedWallet(null);
+    }
   };
 
   const formatWalletAddress = (address: string) => {
@@ -69,33 +82,39 @@ const WalletButton = () => {
         return AuroIcon;
       case 'Subwallet':
         return SubwalletIcon;
+      case 'Namada':
+        return NamadaIcon;
       default:
         return '';
     }
   };
 
   return (
-    <div className='flex items-center'>
+    <div className="flex items-center">
       {selectedWallet ? (
-        <div className='flex items-center space-x-4 py-2'>
-          <div className='flex items-center space-x-2'>
+        <div className="flex items-center space-x-4 py-2">
+          <div className="flex items-center space-x-2">
             <Image
               src={getWalletIcon(selectedWallet)}
               alt={selectedWallet}
               width={26}
               height={26}
-              className='rounded-full'
+              className="rounded-full"
             />
-            <div className='text-white'>
-              {formatWalletAddress(selectedWallet === 'Auro' ? auroWalletAddress : subwalletAccount?.address || '')}
+            <div className="text-white">
+              {formatWalletAddress(
+                selectedWallet === 'Auro'
+                  ? auroWalletAddress
+                  : subwalletAccount?.address || ''
+              )}
             </div>
           </div>
 
           <button
             onClick={handleDisconnect}
-            className='flex items-center space-x-2 hover:opacity-75'
+            className="flex items-center space-x-2 hover:opacity-75"
           >
-            <LogoutIcon/>
+            <LogoutIcon />
           </button>
         </div>
       ) : (
@@ -103,7 +122,7 @@ const WalletButton = () => {
           <Button onClick={handleConnect}>Connect Wallet</Button>
           {isWalletModalOpen && (
             <WalletSelectionModal
-              availableWallets={[ 'Auro', 'Subwallet' ]}
+              availableWallets={['Auro', 'Subwallet', 'Namada']}
               onClose={() => setIsWalletModalOpen(false)}
               onSelectWallet={handleWalletSelection}
             />
