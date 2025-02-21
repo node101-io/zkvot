@@ -11,18 +11,21 @@ const nextConfig = {
     if (!isServer) {
       config.resolve.alias = {
         ...config.resolve.alias,
-        o1js: path.resolve(import.meta.dirname, '../../node_modules/o1js/dist/web/index.js'),
+        o1js: path.resolve(
+          import.meta.dirname,
+          '../../node_modules/o1js/dist/web/index.js'
+        ),
       };
 
-      config.optimization.minimize = false
+      config.optimization.minimize = false;
     } else {
       config.externals.push('o1js'); // https://nextjs.org/docs/app/api-reference/next-config-js/serverExternalPackages
     }
     config.experiments = { ...config.experiments, topLevelAwait: true };
     config.resolve.extensionAlias = {
       '.js': ['.ts', '.js'],
-      '.jsx': ['.tsx', '.jsx']
-    }
+      '.jsx': ['.tsx', '.jsx'],
+    };
     return config;
   },
   // To enable o1js for the web, we must set the COOP and COEP headers.
@@ -39,7 +42,7 @@ const nextConfig = {
           {
             key: 'Cross-Origin-Embedder-Policy',
             value: 'require-corp',
-          }
+          },
         ],
       },
     ];
@@ -48,9 +51,9 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'zkvot.s3.eu-central-1.amazonaws.com'
-      }
-    ]
+        hostname: 'zkvot.s3.eu-central-1.amazonaws.com',
+      },
+    ],
   },
 };
 
