@@ -5,7 +5,7 @@ import fs from 'fs/promises';
 
 import Aggregation from '../Aggregation.js';
 import AggregationTree from '../AggregationTree.js';
-import Vote from '../Vote.js';
+import Vote from '../vote/Vote.js';
 
 const db = new Level('./cachedProofsDb', { valueEncoding: 'json' });
 

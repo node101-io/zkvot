@@ -1,6 +1,6 @@
 import { Field, PublicKey, SelfProof, Struct, ZkProgram } from 'o1js';
 
-import Vote from './Vote.js';
+import Vote from '../vote/Vote.js';
 
 namespace AggregationNamespace {
   export class PublicInputs extends Struct({

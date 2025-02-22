@@ -4,7 +4,7 @@ import { Field, MerkleMap, PublicKey, verify } from 'o1js';
 import fs from 'fs/promises';
 
 import Aggregation from '../AggregationMM.js';
-import Vote from '../Vote.js';
+import Vote from '../vote/Vote.js';
 
 // const db = new Level('./cachedProofsDb', { valueEncoding: 'json' });
 

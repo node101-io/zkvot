@@ -20,9 +20,9 @@ import {
 const { BatchReducer } = Experimental;
 
 // import Aggregation from './Aggregation.js';
-import Aggregation from './AggregationMM.js';
+import Aggregation from '../aggregation-programs/AggregationMM.js';
 
-import Vote from './Vote.js';
+import Vote from '../vote/Vote.js';
 
 let ELECTION_START_SLOT: number;
 let ELECTION_FINALIZE_SLOT: number;

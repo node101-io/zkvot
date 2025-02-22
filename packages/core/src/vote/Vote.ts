@@ -10,8 +10,8 @@ import {
   VerificationKey,
 } from 'o1js';
 
-import MerkleTree from './MerkleTree.js';
-import { verificationKey as voteVK } from './verification-keys/VoteVK.js';
+import MerkleTree from '../aggregation-programs/MerkleTree.js';
+import { verificationKey as voteVK } from '../verification-keys/VoteVK.js';
 
 namespace VoteNamespace {
   export const VOTE_OPTION_COMPRESSED = 7;

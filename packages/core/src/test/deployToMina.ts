@@ -9,7 +9,7 @@ import {
 
 import Aggregation from '../AggregationMM.js';
 import Election from '../Election.js';
-import Vote from '../Vote.js';
+import Vote from '../vote/Vote.js';
 import { votersList } from '../test/mock.js';
 
 /**
