@@ -9,9 +9,9 @@ import {
 import dotenv from 'dotenv';
 import { mockVotes } from '../createMockVotes.js';
 import { runAggregate } from '../runAggregateMM.js';
-import Election from '../../Election.js';
-import Aggregation from '../../AggregationMM.js';
-import Vote from '../../Vote.js';
+import Election from '../../election-contracts/Election.js';
+// import Aggregation from '../../aggregation-programs/AggregationMM.js';
+import Vote from '../../vote/Vote.js';
 import { votersList } from '../mock.js';
 
 dotenv.config();

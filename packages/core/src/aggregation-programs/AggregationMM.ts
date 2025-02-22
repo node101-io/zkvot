@@ -1,11 +1,19 @@
-import { Field, PublicKey, SelfProof, Struct, ZkProgram } from 'o1js';
+import {
+  Field,
+  MerkleMap,
+  MerkleMapWitness,
+  Provable,
+  PublicKey,
+  SelfProof,
+  Struct,
+  VerificationKey,
+  ZkProgram,
+} from 'o1js';
 
-import Vote from './Vote.js';
-import { IndexedMerkleMap } from 'o1js/dist/node/lib/provable/merkle-tree-indexed.js';
+import Vote from '../vote/Vote.js';
+import { verificationKey as aggregationVK } from '../verification-keys/AggregationVK.js';
 
 namespace AggregationMerkleMapNamespace {
-  class MerkleMap extends IndexedMerkleMap(20) {}
-
   export class PublicInputs extends Struct({
     votersRoot: Field,
     electionPubKey: PublicKey,
@@ -18,7 +26,7 @@ namespace AggregationMerkleMapNamespace {
   }) {}
 
   export const Program = ZkProgram({
-    name: 'AggregationIndexedMerkleMapProgram',
+    name: 'AggregationMerkleMapProgram',
     publicInput: PublicInputs,
     publicOutput: PublicOutputs,
 
@@ -26,7 +34,7 @@ namespace AggregationMerkleMapNamespace {
       base_empty: {
         privateInputs: [],
         async method() {
-          const merkleMapRoot = new MerkleMap().root;
+          const merkleMapRoot = new MerkleMap().getRoot();
           return {
             publicOutput: {
               totalAggregatedCount: Field.from(0),
@@ -37,8 +45,12 @@ namespace AggregationMerkleMapNamespace {
         },
       },
       base_one: {
-        privateInputs: [Vote.Proof],
-        async method(publicInput: PublicInputs, vote: Vote.Proof) {
+        privateInputs: [Vote.Proof, MerkleMapWitness],
+        async method(
+          publicInput: PublicInputs,
+          vote: Vote.Proof,
+          merkleWitness: MerkleMapWitness
+        ) {
           vote.verify();
 
           vote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
@@ -50,66 +62,33 @@ namespace AggregationMerkleMapNamespace {
 
           const newVoteOptions = Vote.VoteOptions.empty().addVote(vote);
 
-          const merkleMap = new MerkleMap();
-          merkleMap.insert(nullifier, vote.publicOutput.vote);
+          const [currentRoot, currentKey] = merkleWitness.computeRootAndKey(
+            Field.from(0)
+          );
+
+          currentKey.assertEquals(nullifier);
+          currentRoot.assertEquals(new MerkleMap().getRoot());
+
+          const [root, key] = merkleWitness.computeRootAndKey(
+            vote.publicOutput.vote
+          );
 
           return {
             publicOutput: {
               totalAggregatedCount: Field.from(1),
-              merkleMapRoot: merkleMap.root,
-              voteOptions: newVoteOptions,
-            },
-          };
-        },
-      },
-      base_two: {
-        privateInputs: [Vote.Proof, Vote.Proof],
-        async method(
-          publicInput: PublicInputs,
-          lowerVote: Vote.Proof,
-          upperVote: Vote.Proof
-        ) {
-          lowerVote.verify();
-          upperVote.verify();
-
-          lowerVote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
-          upperVote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
-          lowerVote.publicInput.electionPubKey.assertEquals(
-            publicInput.electionPubKey
-          );
-          upperVote.publicInput.electionPubKey.assertEquals(
-            publicInput.electionPubKey
-          );
-
-          const lowerNullifier = lowerVote.publicOutput.nullifier;
-          const upperNullifier = upperVote.publicOutput.nullifier;
-
-          lowerNullifier.assertLessThan(upperNullifier);
-
-          const merkleMap = new MerkleMap();
-          merkleMap.insert(lowerNullifier, lowerVote.publicOutput.vote);
-          merkleMap.insert(upperNullifier, upperVote.publicOutput.vote);
-
-          const newVoteOptions = Vote.VoteOptions.empty()
-            .addVote(lowerVote)
-            .addVote(upperVote);
-
-          return {
-            publicOutput: {
-              totalAggregatedCount: Field.from(2),
-              merkleMapRoot: merkleMap.root,
+              merkleMapRoot: root,
               voteOptions: newVoteOptions,
             },
           };
         },
       },
       append_vote: {
-        privateInputs: [SelfProof, Vote.Proof, MerkleMap],
+        privateInputs: [SelfProof, Vote.Proof, MerkleMapWitness],
         async method(
           publicInput: PublicInputs,
           previousProof: SelfProof<PublicInputs, PublicOutputs>,
           vote: Vote.Proof,
-          merkleMap: MerkleMap
+          merkleMapWitness: MerkleMapWitness
         ) {
           previousProof.verify();
           previousProof.publicInput.electionPubKey.assertEquals(
@@ -121,13 +100,24 @@ namespace AggregationMerkleMapNamespace {
 
           vote.verify();
 
+          vote.publicOutput.vote.equals(Field.from(0)).assertFalse();
           vote.publicInput.votersRoot.assertEquals(publicInput.votersRoot);
+
           vote.publicInput.electionPubKey.assertEquals(
             publicInput.electionPubKey
           );
           const nullifier = vote.publicOutput.nullifier;
 
-          merkleMap.insert(nullifier, vote.publicOutput.vote);
+          const [currentRoot, currentKey] = merkleMapWitness.computeRootAndKey(
+            Field.from(0)
+          );
+          currentKey.assertEquals(nullifier);
+
+          currentRoot.assertEquals(previousProof.publicOutput.merkleMapRoot);
+
+          const [newRoot, newKey] = merkleMapWitness.computeRootAndKey(
+            vote.publicOutput.vote
+          );
 
           const newVoteOptions =
             previousProof.publicOutput.voteOptions.addVote(vote);
@@ -136,7 +126,7 @@ namespace AggregationMerkleMapNamespace {
             publicOutput: {
               totalAggregatedCount:
                 previousProof.publicOutput.totalAggregatedCount.add(1),
-              merkleMapRoot: merkleMap.root,
+              merkleMapRoot: newRoot,
               voteOptions: newVoteOptions,
             },
           };
@@ -146,6 +136,8 @@ namespace AggregationMerkleMapNamespace {
   });
 
   export class Proof extends ZkProgram.Proof(Program) {}
+
+  export const verificationKey: VerificationKey = JSON.parse(aggregationVK);
 }
 
 export default AggregationMerkleMapNamespace;

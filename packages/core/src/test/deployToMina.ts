@@ -7,9 +7,9 @@ import {
   PrivateKey,
 } from 'o1js';
 
-import Aggregation from '../AggregationMM.js';
-import Election from '../Election.js';
-import Vote from '../Vote.js';
+import Aggregation from '../aggregation-programs/AggregationMM.js';
+import Election from '../election-contracts/Election.js';
+import Vote from '../vote/Vote.js';
 import { votersList } from '../test/mock.js';
 
 /**

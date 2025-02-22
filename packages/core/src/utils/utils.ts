@@ -1,15 +1,15 @@
 import { Field, Poseidon, PublicKey } from 'o1js';
 
-import Election from './Election.js';
-import MerkleTree from './MerkleTree.js';
+import Election from '../election-contracts/Election.js';
+import MerkleTree from '../aggregation-programs/MerkleTree.js';
 
 import {
   fetchDataFromArweave,
   fetchDataFromFilecoin,
   fetchDataFromIPFS,
-} from './utils/storageLayer.js';
+} from './storageLayer.js';
 
-import types from './types.js';
+import types from '../types.js';
 
 namespace utilsNamespace {
   export const convertFieldToString = (field: Field): string => {
@@ -131,7 +131,7 @@ namespace utilsNamespace {
           .toBigInt()
           .toString() || '',
       communication_layers: electionData.communication_layers,
-      result
+      result,
     };
   };
 
