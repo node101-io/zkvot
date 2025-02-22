@@ -12,12 +12,14 @@ import {
   Struct,
   Poseidon,
   Signature,
-  UInt64,
   UInt32,
   Provable,
   Experimental,
   assert,
+  AccountUpdate,
+  UInt64,
 } from 'o1js';
+
 const { BatchReducer } = Experimental;
 
 // import Aggregation from './Aggregation.js';
@@ -34,33 +36,34 @@ namespace ElectionNamespace {
 
   const convertFieldArrayToContractState = (fields: Field[]): ContractState => {
     return {
-      storageLayerInfoEncoding: {
-        first: fields[0],
-        last: fields[1],
-      },
-      storageLayerCommitment: fields[2],
-      lastAggregatorPubKeyHash: fields[3],
-      voteOptions: new Vote.VoteOptions({
-        options: fields.slice(4, 6),
+      controller: PublicKey.fromFields(fields.slice(0, 1)),
+      electionState: new ElectionState({
+        lastAggregatorPubKeyHash: fields[1],
+        voteOptions: new Vote.VoteOptions({
+          options: fields.slice(2, 4),
+        }),
+        maximumCountedVotes: fields[4],
       }),
-      maximumCountedVotes: fields[7],
     };
   };
 
-  export const ContractErrors = {};
-
-  export type ContractState = {
-    storageLayerInfoEncoding: StorageLayerInfoEncoding;
-    storageLayerCommitment: Field;
-    lastAggregatorPubKeyHash: Field;
-    voteOptions: Vote.VoteOptions;
-    maximumCountedVotes: Field;
+  export const ContractErrors = {
+    controllerNotFethed: 'Controller could not be fetched',
+    votersRootNotFetched: 'Voters root could not be fetched',
+    electionSlotsNotFetched: 'Election slots could not be fetched',
+    votersRootMismatch: 'Voters root mismatch',
+    electionNotStarted: 'Election not started yet',
+    electionFinalized: 'Election finalized',
+    electionNotFinalized: 'Election not finalized yet',
+    lessThanMaximum:
+      'You are trying to settle proof with less votes than the current maximum',
+    aggregatorMismatch: 'Aggregator public key hash does not match',
   };
 
-  export class StorageLayerInfoEncoding extends Struct({
-    first: Field,
-    last: Field,
-  }) {}
+  export type ContractState = {
+    controller: PublicKey;
+    electionState: ElectionState;
+  };
 
   export class ElectionState extends Struct({
     lastAggregatorPubKeyHash: Field,
@@ -97,13 +100,10 @@ namespace ElectionNamespace {
   export class BatchProof extends batchReducer.BatchProof {}
 
   export class Contract extends SmartContract {
-    @state(ElectionState) electionState = State<ElectionState>();
-
-    @state(Field) actionState = State(BatchReducer.initialActionState);
-
-    @state(Field) actionStack = State(BatchReducer.initialActionStack);
-
     @state(PublicKey) controller = State<PublicKey>();
+    @state(ElectionState) electionState = State<ElectionState>();
+    @state(Field) actionState = State(BatchReducer.initialActionState);
+    @state(Field) actionStack = State(BatchReducer.initialActionStack);
 
     readonly events = {
       NewAggregation: NewAggregationEvent,
@@ -112,7 +112,7 @@ namespace ElectionNamespace {
 
     static controllerContract: new (
       ...args: any
-    ) => ElectionController.electionControllerBase =
+    ) => ElectionController.ElectionControllerBase =
       ElectionController.Contract;
 
     async deploy() {
@@ -127,25 +127,40 @@ namespace ElectionNamespace {
     }
 
     @method
-    async initialize(controller: PublicKey) {
+    async initialize(controller: PublicKey, settlerReward: UInt64) {
       super.init();
 
       this.controller.set(controller);
       this.account.provedState.requireEquals(Bool(false));
       this.electionState.set(ElectionState.empty());
+
+      const accountUpdate = AccountUpdate.createSigned(
+        this.sender.getAndRequireSignature()
+      );
+
+      accountUpdate.send({ to: this.address, amount: settlerReward });
     }
 
-    public async getControllerContract(): Promise<ElectionController.electionControllerBase> {
+    /**
+     * @returns The balance of the contract.
+     */
+    async getContractBalance() {
+      const accountUpdate = AccountUpdate.create(this.address);
+      const tokenBalance = accountUpdate.account.balance.get(); // getAndReqEq ??
+      return tokenBalance;
+    }
+
+    async getControllerContract(): Promise<ElectionController.ElectionControllerBase> {
       const controller = await Provable.witnessAsync(PublicKey, async () => {
         let pk = await this.controller.fetch();
-        assert(pk !== undefined, 'Controller could not be fetched');
+        assert(pk !== undefined, ContractErrors.controllerNotFethed);
         return pk;
       });
       this.controller.requireEquals(controller);
       return new ElectionNamespace.Contract.controllerContract(controller);
     }
 
-    public async getControllerConstants(): Promise<{
+    async getControllerConstants(): Promise<{
       votersRoot: Field;
       electionStartSlot: UInt32;
       electionFinalizeSlot: UInt32;
@@ -156,12 +171,12 @@ namespace ElectionNamespace {
         Provable.Array(Field, 2),
         async () => {
           let votersRoot = await controller.votersRoot.fetch();
-          assert(votersRoot !== undefined, 'Voters root could not be fetched');
+          assert(votersRoot !== undefined, ContractErrors.votersRootNotFetched);
           let electionStartEndSlots =
             await controller.electionStartEndSlots.fetch();
           assert(
             electionStartEndSlots !== undefined,
-            'Election slots could not be fetched'
+            ContractErrors.electionSlotsNotFetched
           );
           return [votersRoot, electionStartEndSlots];
         }
@@ -202,17 +217,27 @@ namespace ElectionNamespace {
         await this.getControllerConstants();
 
       aggregateProof.publicInput.electionPubKey.assertEquals(this.address);
-      aggregateProof.publicInput.votersRoot.assertEquals(votersRoot);
+      aggregateProof.publicInput.votersRoot.assertEquals(
+        votersRoot,
+        ContractErrors.votersRootMismatch
+      );
 
       const currentSlot =
         this.network.globalSlotSinceGenesis.getAndRequireEquals();
-      currentSlot.assertGreaterThanOrEqual(electionStartSlot);
-      currentSlot.assertLessThan(electionFinalizeSlot);
+      currentSlot.assertGreaterThanOrEqual(
+        electionStartSlot,
+        ContractErrors.electionNotStarted
+      );
+      currentSlot.assertLessThan(
+        electionFinalizeSlot,
+        ContractErrors.electionFinalized
+      );
 
       let currentElectionState = this.electionState.getAndRequireEquals();
 
       currentElectionState.maximumCountedVotes.assertLessThan(
-        aggregateProof.publicOutput.totalAggregatedCount
+        aggregateProof.publicOutput.totalAggregatedCount,
+        ContractErrors.lessThanMaximum
       );
 
       batchReducer.dispatch(
@@ -279,7 +304,10 @@ namespace ElectionNamespace {
 
       const { electionFinalizeSlot } = await this.getControllerConstants();
 
-      currentSlot.assertGreaterThan(electionFinalizeSlot);
+      currentSlot.assertGreaterThan(
+        electionFinalizeSlot,
+        ContractErrors.electionNotFinalized
+      );
 
       return this.electionState.getAndRequireEquals().voteOptions;
     }
@@ -289,25 +317,27 @@ namespace ElectionNamespace {
      * @param aggregatorPubKey Public key of the aggregator that will redeem the reward
      * @param aggregatorSignature
      * @param reedemerPubKey
-     * @param amount
      */
     @method
     async redeemSettlementReward(
       aggregatorPubKey: PublicKey,
       aggregatorSignature: Signature,
-      reedemerPubKey: PublicKey,
-      amount: UInt64
+      reedemerPubKey: PublicKey
     ) {
       const currentSlot =
         this.network.globalSlotSinceGenesis.getAndRequireEquals();
       const { electionFinalizeSlot } = await this.getControllerConstants();
-      currentSlot.assertGreaterThan(electionFinalizeSlot);
+      currentSlot.assertGreaterThan(
+        electionFinalizeSlot,
+        ContractErrors.electionNotFinalized
+      );
 
       const lastAggregatorPubKeyHash =
         this.electionState.getAndRequireEquals().lastAggregatorPubKeyHash;
 
       lastAggregatorPubKeyHash.assertEquals(
-        Poseidon.hash(aggregatorPubKey.toFields())
+        Poseidon.hash(aggregatorPubKey.toFields()),
+        ContractErrors.aggregatorMismatch
       );
 
       // Todo salt or another way to prevent replay attacks, or maybe it's not needed
@@ -316,9 +346,11 @@ namespace ElectionNamespace {
         Poseidon.hash(reedemerPubKey.toFields()),
       ]);
 
+      const amount = await this.getContractBalance();
+
       this.send({
         to: reedemerPubKey,
-        amount: amount,
+        amount,
       });
     }
   }

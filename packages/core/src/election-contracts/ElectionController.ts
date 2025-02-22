@@ -7,14 +7,11 @@ import {
   Permissions,
   State,
   state,
-  PublicKey,
   Bool,
   Struct,
   UInt32,
   Provable,
 } from 'o1js';
-
-import Vote from '../vote/Vote.js';
 
 namespace ElectionControllerNamespace {
   type FetchError = {
@@ -22,7 +19,7 @@ namespace ElectionControllerNamespace {
     statusText: string;
   };
 
-  export type electionControllerBase = SmartContract & {
+  export type ElectionControllerBase = SmartContract & {
     storageLayerInfoEncoding: State<StorageLayerInfoEncoding>;
     storageLayerCommitment: State<Field>;
     votersRoot: State<Field>;
@@ -61,22 +58,16 @@ namespace ElectionControllerNamespace {
         last: fields[1],
       },
       storageLayerCommitment: fields[2],
-      lastAggregatorPubKeyHash: fields[3],
-      voteOptions: new Vote.VoteOptions({
-        options: fields.slice(4, 6),
-      }),
-      maximumCountedVotes: fields[7],
+      votersRoot: fields[3],
+      electionStartEndSlots: fields[4],
     };
   };
-
-  export const ContractErrors = {};
 
   export type ContractState = {
     storageLayerInfoEncoding: StorageLayerInfoEncoding;
     storageLayerCommitment: Field;
-    lastAggregatorPubKeyHash: Field;
-    voteOptions: Vote.VoteOptions;
-    maximumCountedVotes: Field;
+    votersRoot: Field;
+    electionStartEndSlots: Field;
   };
 
   export class StorageLayerInfoEncoding extends Struct({
@@ -86,18 +77,13 @@ namespace ElectionControllerNamespace {
 
   export class Contract
     extends SmartContract
-    implements electionControllerBase
+    implements ElectionControllerBase
   {
     // prettier-ignore
     @state(StorageLayerInfoEncoding) storageLayerInfoEncoding = State<StorageLayerInfoEncoding>();
     @state(Field) storageLayerCommitment = State<Field>();
     @state(Field) votersRoot = State<Field>();
     @state(Field) electionStartEndSlots = State<Field>();
-
-    readonly events = {
-      NewAggregation: NewAggregationEvent,
-      Settlement: ReducedSettlementEvent,
-    };
 
     async deploy() {
       await super.deploy();
@@ -130,18 +116,7 @@ namespace ElectionControllerNamespace {
     }
   }
 
-  export class NewAggregationEvent extends Struct({
-    aggregatorPubKey: PublicKey,
-    voteCount: Field,
-  }) {}
-
-  export class ReducedSettlementEvent extends Struct({
-    aggregatorPubKeyHash: Field,
-    voteCount: Field,
-    voteOptions: Vote.VoteOptions,
-  }) {}
-
-  export const fetchElectionState = (
+  export const fetchElectionControllerState = (
     contractId: string,
     mina_rpc_url: string,
     callback: (error: string | null, state?: ContractState) => any

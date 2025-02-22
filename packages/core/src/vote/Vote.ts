@@ -15,7 +15,7 @@ import { verificationKey as voteVK } from '../verification-keys/VoteVK.js';
 
 namespace VoteNamespace {
   export const VOTE_OPTION_COMPRESSED = 7;
-  export const VOTE_OPTIONS_LEN = 1;
+  export const VOTE_OPTIONS_LEN = 2;
   /**
    * Converts a UInt32 array to a Field in big endian order
    * @param arr UInt32 array

@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import { votersList } from './mock.js';
 import Vote from '../vote/Vote.js';
 import MerkleTreeNamespace from '../aggregation-programs/MerkleTree.js';
-import Aggregation from '../AggregationMM.js';
+import Aggregation from '../aggregation-programs/AggregationMM.js';
 dotenv.config();
 
 export const mockVotes = async (

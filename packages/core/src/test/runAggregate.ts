@@ -3,8 +3,8 @@ import { Level } from 'level';
 import { Field, PublicKey, verify } from 'o1js';
 import fs from 'fs/promises';
 
-import Aggregation from '../Aggregation.js';
-import AggregationTree from '../AggregationTree.js';
+import Aggregation from '../aggregation-programs/Aggregation.js';
+import AggregationTree from '../aggregation-programs/AggregationTree.js';
 import Vote from '../vote/Vote.js';
 
 const db = new Level('./cachedProofsDb', { valueEncoding: 'json' });

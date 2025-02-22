@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 
 import Vote from '../vote/Vote.js';
-import Aggregation from '../AggregationMM.js';
+import Aggregation from '../aggregation-programs/AggregationMM.js';
 
 const { verificationKey: voteVerificationKey } = await Vote.Program.compile();
 const { verificationKey: aggregationVerificationKey } =
