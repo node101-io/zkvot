@@ -1,9 +1,9 @@
 import { fetchAccount, fetchLastBlock, Field, Mina, PrivateKey } from 'o1js';
-import { mockVotes } from '../createMockVotes.js';
-import { runAggregate } from '../runAggregateMM.js';
+import { mockVotes } from '../../createMockVotes.js';
+import { runAggregate } from '../../runAggregateMM.js';
 import deploy from '../deployToMina.js';
-import Election from '../../election-contracts/Election.js';
-import { votersList } from '../mock.js';
+import Election from '../../../election-contracts/Election.js';
+import { votersList } from '../../mock.js';
 
 export async function getGlobalSlot() {
   const latestBlock = await fetchLastBlock(
