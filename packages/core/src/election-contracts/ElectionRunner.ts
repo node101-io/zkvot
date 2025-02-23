@@ -90,8 +90,8 @@ namespace ElectionNamespace {
   let batchReducer = new BatchReducer({
     actionType: ElectionState,
     // tentative values for fast testing
-    batchSize: 3,
-    maxUpdatesFinalProof: 4,
+    batchSize: 50,
+    maxUpdatesFinalProof: 50,
     maxUpdatesPerProof: 4,
   });
 
