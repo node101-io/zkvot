@@ -36,3 +36,6 @@ src/local/mock.js
 mock.js
 
 ecdsa256/
+
+merkleMapAggregateProof*.json
+voteVerificationKey.json
