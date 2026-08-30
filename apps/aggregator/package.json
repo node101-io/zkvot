@@ -12,8 +12,8 @@
   "author": "node101",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.21.0",
-    "mongoose": "^8.7.2",
+    "express": "^5.2.1",
+    "mongoose": "^8.24.4",
     "o1js": "^2",
     "zkvot-backend-utils": "*",
     "zkvot-core": "*"
